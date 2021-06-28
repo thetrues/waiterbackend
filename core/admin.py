@@ -1,3 +1,14 @@
 from django.contrib import admin
+from core.models import *
 
-# Register your models here.
+models: list = [
+    Item,
+    InventoryRecord,
+    DailyStock,
+    Menu,
+    Additive,
+    Order,
+    CompleteOrder,
+]
+
+admin.site.register(models)
