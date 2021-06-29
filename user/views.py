@@ -1,5 +1,3 @@
-from typing import Dict
-from django.http.response import Http404
 from user.serializers import RegistrationSerializer, UserSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
