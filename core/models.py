@@ -33,8 +33,8 @@ class BaseConfig(models.Model):
 
     class Meta:
         abstract: bool = True
-        ordering: str = ("-id",)
-        indexes = [
+        ordering: set = ("-id",)
+        indexes: list = [
             models.Index(
                 fields=[
                     "name",
@@ -78,8 +78,8 @@ class InventoryRecord(models.Model):
         return str(self.item)
 
     class Meta:
-        ordering: str = ("-id",)
-        indexes = [
+        ordering: set = ("-id",)
+        indexes: list = [
             models.Index(
                 fields=[
                     "item",
@@ -111,8 +111,8 @@ class DailyStock(models.Model):
         return str(self.inventoryrecord)
 
     class Meta:
-        ordering: str = ("-id",)
-        indexes = [
+        ordering: set = ("-id",)
+        indexes: list = [
             models.Index(
                 fields=[
                     "inventoryrecord",
@@ -163,7 +163,7 @@ class Order(models.Model):
 
     class Meta:
         ordering: set = ("-id",)
-        indexes = [
+        indexes: list = [
             models.Index(
                 fields=[
                     "menu",
@@ -197,7 +197,7 @@ class CompleteOrder(models.Model):
 
     class Meta:
         ordering: set = ("-id",)
-        indexes = [
+        indexes: list = [
             models.Index(
                 fields=[
                     "customer_name",
