@@ -1,9 +1,9 @@
-from core.serializers import ItemSerializer, MenuSerializer
+from core.serializers import AdditiveSerializer, ItemSerializer, MenuSerializer
 from rest_framework import permissions, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from core.models import Item, Menu
+from core.models import Additive, Item, Menu
 
 
 class ItemView(APIView):
@@ -139,4 +139,72 @@ class ManageMenuView(APIView):
         """Delete menu instance"""
         menu = self.get_object(pk)
         menu.delete()
+        return Response(status=status.HTTP_200_OK)
+
+
+class AdditiveView(APIView):
+    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+
+    def get(self, request, format=None):
+        """Returns a list of all additives"""
+        additives = Additive.objects.all()
+        serializer = AdditiveSerializer(additives, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, format=None):
+        """Create additive instance"""
+        data: dict = {}
+        serializer = AdditiveSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            data = {"message": "Additive created."}
+        else:
+            data = serializer.errors
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+class ManageAdditiveView(APIView):
+    """Additive Management APIs
+
+    get_object(self, pk) -> additive or None:
+            returns additive object is any or None if not found.
+
+    get(self, request, pk, format=None) -> additive:
+            returns additive object found from get_object(self, pk).
+
+    put(self, request, pk, format=None) -> additive:
+            update additive details and returns additive object.
+
+    delete(self, request, pk, format=None) -> None:
+            delete additive and returns None.
+    """
+
+    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+
+    def get_object(self, pk):
+        """Get additive instance"""
+        try:
+            return Additive.objects.get(pk=pk)
+        except Additive.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk, format=None):
+        """Get additive instance"""
+        additive = self.get_object(pk)
+        serializer = AdditiveSerializer(additive)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk, format=None):
+        """Update additive instance"""
+        additive = self.get_object(pk)
+        serializer = AdditiveSerializer(instance=additive, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        """Delete additive instance"""
+        additive = self.get_object(pk)
+        additive.delete()
         return Response(status=status.HTTP_200_OK)
