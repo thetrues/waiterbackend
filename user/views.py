@@ -151,7 +151,7 @@ class ActivateDeactivateUserAccountView(APIView):
 
 
 class CustomAuthTokenView(ObtainAuthToken):
-    """Activate or Deactivate a user account API
+    """Get or Create a user authentication token API
 
     post(self, request, *args, **kwargs) -> dict:
         get or create a new auth token for a user.
