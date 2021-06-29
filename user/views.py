@@ -8,7 +8,7 @@ from rest_framework import status
 from user.models import User
 
 
-class Registration(APIView):
+class RegistrationView(APIView):
     """Registration View"""
 
     def post(self, request):
@@ -25,13 +25,14 @@ class Registration(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-class GetUsersView(APIView):
+class GetAllUsersView(APIView):
     """GetUsersView
 
     get(self, request, format=None)
         Returns a list of users
     """
-    permission_classes = [permissions.IsAdminUser]
+
+    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
 
     def get(self, request, format=None):
         """Returns a list of all users"""
@@ -40,7 +41,43 @@ class GetUsersView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CustomAuthToken(ObtainAuthToken):
+class ManageUserView(APIView):
+    """
+    Retrieve, update or delete a user instance.
+    """
+
+    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+
+    def get_object(self, pk):
+        """Get user instance"""
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise status.HTTP_404_NOT_FOUND
+
+    def get(self, request, pk, format=None):
+        """Get user instance"""
+        user = self.get_object(pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        """Update user instance"""
+        user = self.get_object(pk)
+        serializer = UserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk, format=None):
+        """Delete user instance"""
+        user = self.get_object(pk)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CustomAuthTokenView(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         """get or create a new auth token for a user."""
         serializer = self.serializer_class(
