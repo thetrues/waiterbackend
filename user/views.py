@@ -1,3 +1,4 @@
+from rest_framework.exceptions import NotFound
 from user.serializers import RegistrationSerializer, UserSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -70,13 +71,13 @@ class ManageUserView(APIView):
         try:
             return User.objects.get(pk=pk)
         except User.DoesNotExist:
-            raise status.HTTP_404_NOT_FOUND
+            raise NotFound
 
     def get(self, request, pk, format=None):
         """Get user instance"""
         user = self.get_object(pk)
         serializer = UserSerializer(user)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk, format=None):
         """Update user instance"""
@@ -91,7 +92,7 @@ class ManageUserView(APIView):
         """Delete user instance"""
         user = self.get_object(pk)
         user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 
 class ChangeUserPasswordView(APIView):
@@ -111,7 +112,7 @@ class ChangeUserPasswordView(APIView):
         try:
             return User.objects.get(pk=pk)
         except:
-            raise status.HTTP_404_NOT_FOUND
+            raise NotFound
 
     def post(self, request, pk, *args, **kwargs):
         data: dict = {}
@@ -138,7 +139,7 @@ class ActivateDeactivateUserAccountView(APIView):
             return User.objects.get(pk=pk)
         except User.DoesNotExist:
             ic("User does not exist")
-            raise status.HTTP_404_NOT_FOUND
+            raise NotFound
 
     def post(self, request, pk, *args, **kwargs):
         """Deactivate or Activate user account"""

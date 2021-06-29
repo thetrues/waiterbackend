@@ -23,7 +23,7 @@ class BaseConfig(models.Model):
     name = models.CharField(max_length=255, unique=True)
     objects = Manager()
 
-    def __str__(self) -> str:
+    def __str__(self) -> str():
         """String representation of object
 
         Returns:
@@ -69,7 +69,7 @@ class InventoryRecord(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     objects = Manager()
 
-    def __str__(self) -> str:
+    def __str__(self) -> str():
         """String representation of InventoryRecord object
 
         Returns:
@@ -102,7 +102,7 @@ class DailyStock(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     objects = Manager()
 
-    def __str__(self) -> str:
+    def __str__(self) -> str():
         """String representation of DailyStock object
 
         Returns:
@@ -153,7 +153,7 @@ class Order(models.Model):
     additives = models.ManyToManyField(Additive, blank=True)
     objects = Manager()
 
-    def __str__(self):
+    def __str__(self) -> str():
         """[summary]
 
         Returns:
@@ -187,7 +187,7 @@ class CompleteOrder(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     objects = Manager()
 
-    def __str__(self):
+    def __str__(self) -> str():
         """[summary]
 
         Returns:
