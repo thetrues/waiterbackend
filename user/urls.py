@@ -6,4 +6,6 @@ urlpatterns = [
     path("w/api/accounts/auth-token/", views.CustomAuthTokenView.as_view()),
     path("w/api/accounts/users/", views.GetAllUsersView.as_view()),
     path("w/api/accounts/<int:pk>/user/", views.ManageUserView.as_view()),
+    path("w/api/accounts/<int:pk>/user/change-password/", views.ChangeUserPasswordView.as_view()),
+    path("w/api/accounts/<int:pk>/user/activate-deactivate-account/", views.ActivateDeactivateUserAccountView.as_view()),
 ]

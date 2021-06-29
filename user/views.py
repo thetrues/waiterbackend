@@ -1,3 +1,5 @@
+from typing import Dict
+from django.http.response import Http404
 from user.serializers import RegistrationSerializer, UserSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -6,6 +8,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions
 from rest_framework import status
 from user.models import User
+from icecream import ic
 
 
 class RegistrationView(APIView):
@@ -15,14 +18,19 @@ class RegistrationView(APIView):
         data: dict = {}
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
-            data["response"] = "User account created."
-            data["username"] = user.username
-            token = Token.objects.get(user=user).key
-            data["token"] = token
+            data = self.create_acount(serializer)
         else:
             data = serializer.errors
         return Response(data, status=status.HTTP_200_OK)
+
+    def create_acount(self, serializer):
+        user = serializer.save()
+        return {
+            "id": user.id,
+            "username": user.username,
+            "token": Token.objects.get(user=user).key,
+            "message": "User account created.",
+        }
 
 
 class GetAllUsersView(APIView):
@@ -42,8 +50,19 @@ class GetAllUsersView(APIView):
 
 
 class ManageUserView(APIView):
-    """
-    Retrieve, update or delete a user instance.
+    """User Management APIs
+
+    get_object(self, pk) -> user or None:
+        returns user object is any or None if not found.
+
+    get(self, request, pk, format=None) -> user:
+        returns user object found from get_object(self, pk).
+
+    put(self, request, pk, format=None) -> user:
+        update user details and returns user object.
+
+    delete(self, request, pk, format=None) -> None:
+        delete user and returns None.
     """
 
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
@@ -67,7 +86,7 @@ class ManageUserView(APIView):
         serializer = UserSerializer(user, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
@@ -77,7 +96,68 @@ class ManageUserView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class ChangeUserPasswordView(APIView):
+    """Change User Password API
+
+    get_object(self, pk) -> user:
+        get user instance
+
+    post(self, request, pk, format=None) -> dict:
+        set or change user password and returns user object
+    """
+
+    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+
+    def get_object(self, pk):
+        """Get user instance"""
+        try:
+            return User.objects.get(pk=pk)
+        except:
+            raise status.HTTP_404_NOT_FOUND
+
+    def post(self, request, pk, *args, **kwargs):
+        data: dict = {}
+        """update user password and returns user object."""
+        user = self.get_object(pk=pk)
+        user.set_password(request.data["password"])
+        user.save()
+        data = {"message": "Password changed."}
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+class ActivateDeactivateUserAccountView(APIView):
+    """Activate or Deactivate a user account API
+
+    post(self, request, pk, format=None) -> user:
+        Activate or Deactivate a user account.
+    """
+
+    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+
+    def get_object(self, pk):
+        """Get user instance"""
+        try:
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            ic("User does not exist")
+            raise status.HTTP_404_NOT_FOUND
+
+    def post(self, request, pk, *args, **kwargs):
+        """Deactivate or Activate user account"""
+        user = self.get_object(pk)
+        user.is_active = not user.is_active
+        user.save()
+        data: dict = {"message": "Operation Success."}
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
 class CustomAuthTokenView(ObtainAuthToken):
+    """Activate or Deactivate a user account API
+
+    post(self, request, *args, **kwargs) -> dict:
+        get or create a new auth token for a user.
+    """
+
     def post(self, request, *args, **kwargs):
         """get or create a new auth token for a user."""
         serializer = self.serializer_class(
