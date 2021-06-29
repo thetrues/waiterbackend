@@ -18,6 +18,9 @@ INSTALLED_APPS = [
 
     'core.apps.CoreConfig',
     'user.apps.UserConfig',
+
+	'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 AUTH_USER_MODEL = "user.User"
