@@ -99,3 +99,16 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = "/static/"
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = "media"
+
+# AWS_ACCESS_KEY_ID = "AKIA3QQ4ME7FNEZFWNGZ"
+# AWS_SECRET_ACCESS_KEY = "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"
+# AWS_STORAGE_BUCKET_NAME = "waiterstore"
+
+# AWS_S3_FILE_OVERWRITE = False
+# AWS_DEFAULT_ACL = None
+
+# DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"

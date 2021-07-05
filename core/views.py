@@ -1,8 +1,13 @@
-from core.serializers import AdditiveSerializer, ItemSerializer, MenuSerializer
+from core.serializers import (
+    AdditiveSerializer,
+    InventoryRecordSerializer,
+    ItemSerializer,
+    MenuSerializer,
+)
 from rest_framework import permissions, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-from core.models import Additive, Item, Menu
+from core.models import Additive, InventoryRecord, Item, Menu
 from rest_framework.views import APIView
 from icecream import ic
 
@@ -209,3 +214,39 @@ class ManageAdditiveView(APIView):
         additive = self.get_object(pk)
         additive.delete()
         return Response(status=status.HTTP_200_OK)
+
+
+class InventoryRecordView(APIView):
+    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+
+    def get(self, request, format=None):
+        """Returns a list of all inventory records"""
+        data: list = []
+        temp_dict: dict = {}
+        queryset = InventoryRecord.objects.all()
+        data = self.get_inventory_records(data, temp_dict, queryset)
+        return Response(data, status=status.HTTP_200_OK)
+
+    def get_inventory_records(self, data, temp_dict, queryset) -> list():
+        for record in queryset:
+            temp_dict["record_id"] = record.id
+            temp_dict["item"] = {
+                "item_id": record.item.id,
+                "name": record.item.name,
+                "unit": record.item.unit,
+            }
+            temp_dict["quantity"] = record.quantity
+            temp_dict["price"] = record.price
+            temp_dict["threshold"] = record.threshold
+            temp_dict["created_at"] = record.created_at
+            temp_dict["updated_at"] = record.updated_at
+            temp_dict["created_by"] = record.created_by.username
+            data.append(temp_dict)
+            temp_dict = {}
+        return data
+    
+    def post(self, request, format=None):
+        """Create inventory record instance"""
+        data: dict = {}
+        ic(request.data)
+        return Response(data=data, status=status.HTTP_200_OK)
