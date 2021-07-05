@@ -13,4 +13,5 @@ urlpatterns = [
     path("additives/<int:pk>/additive/", views.ManageAdditiveView.as_view()),
     # InventoryRecord
     path("inventory-records/", views.InventoryRecordView.as_view()),
+    path("inventory-records/<int:pk>/record/", views.ManageInventoryRecordView.as_view()),
 ]

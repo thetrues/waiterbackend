@@ -1,14 +1,14 @@
+from core.models import Additive, InventoryRecord, Item, Menu
 from core.serializers import (
     AdditiveSerializer,
-    InventoryRecordSerializer,
     ItemSerializer,
     MenuSerializer,
 )
 from rest_framework import permissions, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-from core.models import Additive, InventoryRecord, Item, Menu
 from rest_framework.views import APIView
+from django.utils import timezone
 from user.models import User
 from icecream import ic
 
@@ -78,7 +78,7 @@ class ManageItemView(APIView):
         """Delete item instance"""
         item = self.get_object(pk)
         item.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response({"message": "Operation success"}, status=status.HTTP_200_OK)
 
 
 class MenuView(APIView):
@@ -146,7 +146,7 @@ class ManageMenuView(APIView):
         """Delete menu instance"""
         menu = self.get_object(pk)
         menu.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response({"message": "Operation success"}, status=status.HTTP_200_OK)
 
 
 class AdditiveView(APIView):
@@ -214,7 +214,7 @@ class ManageAdditiveView(APIView):
         """Delete additive instance"""
         additive = self.get_object(pk)
         additive.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response({"message": "Operation success"}, status=status.HTTP_200_OK)
 
 
 class InventoryRecordView(APIView):
@@ -261,3 +261,90 @@ class InventoryRecordView(APIView):
             ic(e)
             data = {"message": "Error occurred"}
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+class ManageInventoryRecordView(APIView):
+    """Inventory Record Management APIs
+
+    get_object(self, pk) -> inventory record or None:
+            returns inventory record object is any or None if not found.
+
+    get(self, request, pk, format=None) -> inventory record:
+            returns inventory record object found from get_object(self, pk).
+
+    put(self, request, pk, format=None) -> inventory record:
+            update inventory record details and returns inventory record object.
+
+    delete(self, request, pk, format=None) -> None:
+            delete inventory record and returns None.
+    """
+
+    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+
+    def get_object(self, pk):
+        """Get inventory record instance"""
+        try:
+            return InventoryRecord.objects.get(pk=pk)
+        except InventoryRecord.DoesNotExist:
+            raise NotFound
+
+    def get(self, request, pk, format=None):
+        """Get inventory record instance"""
+        record = self.get_object(pk)
+        data = {
+            "id": record.id,
+            "item": {
+                "id": record.item.id,
+                "name": record.item.name,
+                "unit": record.item.unit,
+            },
+            "quantity": record.quantity,
+            "price": record.price,
+            "threshold": record.threshold,
+            "created_at": record.created_at,
+            "updated_at": record.updated_at,
+            "created_by": record.created_by.username,
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk, format=None):
+        """Update inventory instance"""
+        inventory_record = self.get_object(pk)
+        try:
+            data = self.update_record(request, inventory_record)
+            ic("Updated")
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            data = {"message": str(e)}
+            return Response(data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def update_record(self, request, inventory_record):
+        inventory_record.item = Item.objects.get(name=request.data.get("item"))
+        inventory_record.price = request.data.get("price")
+        inventory_record.quantity = request.data.get("quantity")
+        inventory_record.threshold = request.data.get("threshold")
+        inventory_record.updated_at = timezone.now()
+        inventory_record.created_by = User.objects.get(
+            username=request.data.get("created_by")
+        )
+        inventory_record.save()
+        return {
+            "id": inventory_record.id,
+            "item": {
+                "id": inventory_record.item.id,
+                "name": inventory_record.item.name,
+                "unit": inventory_record.item.unit,
+            },
+            "quantity": inventory_record.quantity,
+            "price": inventory_record.price,
+            "threshold": inventory_record.threshold,
+            "created_at": inventory_record.created_at,
+            "updated_at": inventory_record.updated_at,
+            "created_by": inventory_record.created_by.username,
+        }
+
+    def delete(self, request, pk, format=None):
+        """Delete inventory_record instance"""
+        inventory_record = self.get_object(pk)
+        inventory_record.delete()
+        return Response({"message": "Operation success"}, status=status.HTTP_200_OK)

@@ -24,7 +24,7 @@ class AdditiveSerializer(serializers.HyperlinkedModelSerializer):
         fields = ["id", "name"]
 
 
-class InventoryRecordSerializer(serializers.HyperlinkedModelSerializer):
+class InventoryRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = InventoryRecord
         fields = [
