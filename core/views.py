@@ -9,6 +9,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from core.models import Additive, InventoryRecord, Item, Menu
 from rest_framework.views import APIView
+from user.models import User
 from icecream import ic
 
 
@@ -244,9 +245,19 @@ class InventoryRecordView(APIView):
             data.append(temp_dict)
             temp_dict = {}
         return data
-    
+
     def post(self, request, format=None):
         """Create inventory record instance"""
-        data: dict = {}
-        ic(request.data)
+        try:
+            InventoryRecord.objects.create(
+                item=Item.objects.get(name=request.data.get("item")),
+                price=request.data.get("price"),
+                quantity=request.data.get("quantity"),
+                threshold=request.data.get("threshold"),
+                created_by=User.objects.get(username=request.data.get("created_by")),
+            )
+            data = {"success": "Operation success"}
+        except Exception as e:
+            ic(e)
+            data = {"message": "Error occurred"}
         return Response(data=data, status=status.HTTP_200_OK)
