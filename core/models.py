@@ -128,6 +128,7 @@ class Menu(BaseConfig):
             models ([type]): [description]
     """
 
+    image = models.FileField(upload_to="menu/images/", null=True, blank=True)
     price = models.FloatField()
 
 
