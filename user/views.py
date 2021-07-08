@@ -1,7 +1,8 @@
-from rest_framework.exceptions import NotFound
 from user.serializers import RegistrationSerializer, UserSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
+from django.contrib.auth import login, authenticate
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import permissions
@@ -30,6 +31,21 @@ class RegistrationView(APIView):
             "token": Token.objects.get(user=user).key,
             "message": "User account created.",
         }
+
+
+class LoginView(APIView):
+    """Login View"""
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            data = {"message": "Login success"}
+        else:
+            data = {"message": "Invalid credentials"}
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 class GetAllUsersView(APIView):
@@ -114,7 +130,7 @@ class ChangeUserPasswordView(APIView):
         except:
             raise NotFound
 
-    def post(self, request, pk, *args, **kwargs):
+    def put(self, request, pk, *args, **kwargs):
         data: dict = {}
         """update user password and returns user object."""
         user = self.get_object(pk=pk)
