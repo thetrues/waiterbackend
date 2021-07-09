@@ -1,3 +1,4 @@
+from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -29,36 +30,42 @@ class MenuViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
     queryset = Menu.objects.all()
     serializer_class = MenuSerializer
+    authentication_classes = (TokenAuthentication,)
 
 
 class AdditiveViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
     queryset = Additive.objects.all()
     serializer_class = AdditiveSerializer
+    authentication_classes = (TokenAuthentication,)
 
 
 class MainInventoryItemViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
     queryset = MainInventoryItem.objects.all()
     serializer_class = MainInventoryItemSerializer
+    authentication_classes = (TokenAuthentication,)
 
 
 class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
     queryset = MainInventoryItemRecord.objects.all()
     serializer_class = MainInventoryItemRecordSerializer
+    authentication_classes = (TokenAuthentication,)
 
 
 class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
     queryset = MiscellaneousInventoryRecord.objects.all()
     serializer_class = MiscellaneousInventoryRecordSerializer
+    authentication_classes = (TokenAuthentication,)
 
 
 class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
     queryset = RestaurantCustomerOrder.objects.all()
     serializer_class = RestaurantCustomerOrderSerializer
+    authentication_classes = (TokenAuthentication,)
 
     def create(self, request, *args, **kwargs):
         serializer = RestaurantCustomerOrderSerializer(data=request.data)
@@ -89,6 +96,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
     queryset = CustomerDish.objects.all()
     serializer_class = CustomerDishSerializer
+    authentication_classes = (TokenAuthentication,)
 
     def create(self, request, *args, **kwargs):
         serializer = CustomerDishSerializer(data=request.data)
@@ -136,6 +144,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
     queryset = CustomerDishPayment.objects.all()
     serializer_class = CustomerDishPaymentSerializer
+    authentication_classes = (TokenAuthentication,)
 
     @action(
         detail=False,

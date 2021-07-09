@@ -1,4 +1,5 @@
 from user.serializers import RegistrationSerializer, UserSerializer
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth import login, authenticate
 from rest_framework.authtoken.models import Token
@@ -56,6 +57,7 @@ class GetAllUsersView(APIView):
     """
 
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+    authentication_classes = (TokenAuthentication,)
 
     def get(self, request, format=None):
         """Returns a list of all users"""
@@ -81,6 +83,7 @@ class ManageUserView(APIView):
     """
 
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+    authentication_classes = (TokenAuthentication,)
 
     def get_object(self, pk):
         """Get user instance"""
@@ -122,6 +125,7 @@ class ChangeUserPasswordView(APIView):
     """
 
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+    authentication_classes = (TokenAuthentication,)
 
     def get_object(self, pk):
         """Get user instance"""
@@ -148,6 +152,7 @@ class ActivateDeactivateUserAccountView(APIView):
     """
 
     permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+    authentication_classes = (TokenAuthentication,)
 
     def get_object(self, pk):
         """Get user instance"""
