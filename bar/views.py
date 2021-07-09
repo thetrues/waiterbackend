@@ -11,11 +11,11 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = RegularInventoryRecord.objects.all()
     serializer_class = RegularInventoryRecordSerializer
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = [TokenAuthentication]
 
 
 class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = TekilaInventoryRecord.objects.all()
     serializer_class = TekilaInventoryRecordSerializer
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = [TokenAuthentication]
