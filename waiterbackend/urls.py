@@ -12,7 +12,6 @@ urlpatterns = (
         path("admin/", admin.site.urls),
         path("", include("user.urls")),
         path("w/api/", include("core.urls")),
-        # path("api/v1/", include(router.urls)),
     ]
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
