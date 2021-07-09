@@ -56,7 +56,7 @@ class GetAllUsersView(APIView):
         Returns a list of users
     """
 
-    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request, format=None):
@@ -82,7 +82,7 @@ class ManageUserView(APIView):
         delete user and returns None.
     """
 
-    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (TokenAuthentication,)
 
     def get_object(self, pk):
@@ -124,7 +124,7 @@ class ChangeUserPasswordView(APIView):
         set or change user password and returns user object
     """
 
-    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (TokenAuthentication,)
 
     def get_object(self, pk):
@@ -151,7 +151,7 @@ class ActivateDeactivateUserAccountView(APIView):
         Activate or Deactivate a user account.
     """
 
-    permission_classes = [permissions.IsAdminUser, permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     authentication_classes = (TokenAuthentication,)
 
     def get_object(self, pk):
