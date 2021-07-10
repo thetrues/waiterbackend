@@ -37,7 +37,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
 
 
 class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = TekilaInventoryRecord.objects.all()
     serializer_class = TekilaInventoryRecordSerializer
     authentication_classes = [TokenAuthentication]
