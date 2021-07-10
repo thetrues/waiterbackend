@@ -29,6 +29,7 @@ class RegistrationView(APIView):
         return {
             "id": user.id,
             "username": user.username,
+            "user_type": user.user_type,
             "token": Token.objects.get(user=user).key,
             "message": "User account created.",
         }
@@ -57,7 +58,7 @@ class GetAllUsersView(APIView):
     """
 
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = [TokenAuthentication]
 
     def get(self, request, format=None):
         """Returns a list of all users"""
@@ -83,7 +84,7 @@ class ManageUserView(APIView):
     """
 
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = [TokenAuthentication]
 
     def get_object(self, pk):
         """Get user instance"""
@@ -125,7 +126,7 @@ class ChangeUserPasswordView(APIView):
     """
 
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = [TokenAuthentication]
 
     def get_object(self, pk):
         """Get user instance"""
@@ -152,7 +153,7 @@ class ActivateDeactivateUserAccountView(APIView):
     """
 
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = (TokenAuthentication,)
+    authentication_classes = [TokenAuthentication]
 
     def get_object(self, pk):
         """Get user instance"""
