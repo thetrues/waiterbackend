@@ -5,7 +5,7 @@ from django.db import models
 
 
 class RegularInventoryRecord(BaseInventory):
-    item = models.ForeignKey(Item, related_name='item', on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, related_name="item", on_delete=models.CASCADE)
     total_items = models.IntegerField(default=0)
     selling_price_per_item = models.IntegerField(default=0)
 
@@ -13,7 +13,7 @@ class RegularInventoryRecord(BaseInventory):
         return str(self.item)
 
     def estimate_sales(self):
-        return self.quantity * self.selling_price_per_item * self.total_items
+        return self.selling_price_per_item * self.total_items
 
     def estimate_profit(self):
         return self.estimate_sales() - self.purchasing_price
@@ -33,7 +33,7 @@ class TekilaInventoryRecord(BaseInventory):
         return self.item.name
 
     def estimate_sales(self):
-        return self.quantity * self.selling_price_per_shot * self.total_shots_per_tekila
+        return self.selling_price_per_shot * self.total_shots_per_tekila
 
     def estimate_profit(self):
         return self.estimate_sales() - self.purchasing_price
