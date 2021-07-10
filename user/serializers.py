@@ -13,6 +13,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             last_name=self.validated_data["last_name"],
             mobile_phone=self.validated_data["mobile_phone"],
             username=self.validated_data["username"],
+            user_type=self.validated_data["user_type"],
         )
         password = self.validated_data["password"]
         confirm_password = self.validated_data["confirm_password"]
