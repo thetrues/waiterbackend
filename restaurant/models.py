@@ -211,7 +211,7 @@ class CustomerDishPayment(models.Model):
 
     @property
     def get_total_amount_to_pay(self) -> float():
-        return self.customer_dish.get_total_price["total"]
+        return self.customer_dish.get_total_price
 
     @property
     def get_remaining_amount(self) -> float():
