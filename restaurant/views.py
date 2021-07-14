@@ -62,7 +62,7 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
 
 class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = RestaurantCustomerOrder.objects.all()
     serializer_class = RestaurantCustomerOrderSerializer
     authentication_classes = [TokenAuthentication]
