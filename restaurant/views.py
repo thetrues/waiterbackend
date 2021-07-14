@@ -109,7 +109,7 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
 
 
 class CustomerDishViewSet(viewsets.ModelViewSet):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     queryset = CustomerDish.objects.all()
     serializer_class = CustomerDishSerializer
     authentication_classes = [TokenAuthentication]
