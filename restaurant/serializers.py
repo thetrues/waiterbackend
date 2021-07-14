@@ -1,4 +1,10 @@
-from restaurant.models import Additive, CustomerDish, CustomerDishPayment, Menu, RestaurantCustomerOrder
+from restaurant.models import (
+    Additive,
+    CustomerDish,
+    CustomerDishPayment,
+    Menu,
+    RestaurantCustomerOrder,
+)
 from restaurant.models import (
     MainInventoryItem,
     MainInventoryItemRecord,
@@ -30,7 +36,7 @@ class MenuSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Menu
-        fields = ["id", "name", "price", "image"]
+        fields = ["id", "name", "description", "price", "image"]
 
 
 class AdditiveSerializer(serializers.HyperlinkedModelSerializer):
@@ -42,13 +48,19 @@ class AdditiveSerializer(serializers.HyperlinkedModelSerializer):
 class RestaurantCustomerOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = RestaurantCustomerOrder
-        fields = "__all__"
+        fields = [
+            "sub_menu",
+            "quantity",
+        ]
 
 
 class CustomerDishSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerDish
-        fields = "__all__"
+        fields = [
+            "customer_name",
+            "customer_phone",
+        ]
 
 
 class CustomerDishPaymentSerializer(serializers.ModelSerializer):

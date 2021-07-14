@@ -62,10 +62,26 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
 
 class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     queryset = RestaurantCustomerOrder.objects.all()
     serializer_class = RestaurantCustomerOrderSerializer
     authentication_classes = [TokenAuthentication]
+
+    def list(self, request, *args, **kwargs):
+        res: dict = []
+        [
+            res.append(
+                {
+                    "sub_menu": order.sub_menu.id,
+                    "quantity": order.quantity,
+                    "order_number": order.order_number,
+                    "created_by": order.created_by.id,
+                    "date_created": order.date_created,
+                }
+            )
+            for order in self.queryset
+        ]
+        return Response(res, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         serializer = RestaurantCustomerOrderSerializer(data=request.data)
@@ -80,64 +96,123 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
             sub_menu=Menu.objects.get(id=request.data.get("sub_menu")),
             quantity=request.data.get("quantity"),
             order_number=str(uuid.uuid4())[:7],
-            created_by=User.objects.get(id=request.data.get("created_by")),
+            created_by=request.user,
         )
         return {
             "id": object.id,
-            "sub_menu": str(object.sub_menu),
+            "sub_menu": object.sub_menu.name,
             "quantity": object.quantity,
             "order_number": object.order_number,
             "date_created": object.date_created,
-            "created_by": str(object.created_by),
+            "created_by": object.created_by.username,
         }
 
 
 class CustomerDishViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    # permission_classes = [permissions.IsAuthenticated]
     queryset = CustomerDish.objects.all()
     serializer_class = CustomerDishSerializer
     authentication_classes = [TokenAuthentication]
 
-    def create(self, request, *args, **kwargs):
-        serializer = CustomerDishSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({"message": serializer.errors}, status.HTTP_400_BAD_REQUEST)
+    def list(self, request, *args, **kwargs):
+	
+        return Response(self.get_list(), status=status.HTTP_200_OK)
 
-        data = self.perform_create(request)
-        return Response(data, status.HTTP_201_CREATED)
+    def get_list(self):
+        res: list = []
+        [
+            res.append(
+                {
+                    "id": _.id,
+                    "customer_name": _.customer_name,
+                    "customer_phone": _.customer_phone,
+                    "dish_number": _.dish_number,
+                    "total_price": _.get_total_price,
+                    "orders": self.get_orders(_),
+                }
+            )
+            for _ in self.queryset
+        ]
+        return res
+
+    def get_additives(self, object):
+        res: list = []
+        for order in object.orders.all():
+            res.append(
+                {
+                    "order_id": order.id,
+                    "additives": order.additives.values("name"),
+                }
+            )
+        return res
+
+    def create(self, request, *args, **kwargs):
+        try:
+            data = self.perform_create(request)
+
+            return Response(data, status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"message": e}, status.HTTP_400_BAD_REQUEST)
 
     def perform_create(self, request) -> dict():
         object = CustomerDish.objects.create(
             customer_name=request.data.get("customer_name"),
+            customer_phone=request.data.get("customer_phone"),
             dish_number=str(uuid.uuid4())[:8],
-            created_by=User.objects.get(id=request.data.get("created_by")),
+            created_by=request.user,
         )
-        [
-            object.orders.add(RestaurantCustomerOrder.objects.get(id=_))
-            for _ in request.data.getlist("orders")
-        ]
+        self.add_orders(request)
         object.save()
-        orders = self.get_orders(object)
         return {
             "customer_name": object.customer_name,
+            "customer_phone": object.customer_phone,
             "dish_number": object.dish_number,
-            "orders": orders,
+            "orders": self.get_orders(object),
             "created_by": str(object.created_by),
             "date_created": object.date_created,
         }
 
-    def get_orders(self, object) -> list():
+    def add_orders(self, request):
+        for _ in request.data.get("orders"):
+            order = RestaurantCustomerOrder.objects.create(
+                sub_menu=Menu.objects.get(id=int(_["menu_id"])),
+                quantity=_["quantity"],
+                order_number=str(uuid.uuid4())[:7],
+                created_by=request.user,
+            )
+            for ad_id in _["additives"]:
+                order.additives.add(Additive.objects.get(id=int(ad_id)))
+            order.save()
+
+    def get_orders(self, object):
         orders: list = []
-        return [
+
+        def _get_additives_by_order(order):
+            temp: list = []
+            for additive in order.additives.all():
+                temp.append(
+                    {
+                        "additive_id": additive.id,
+                        "additive_name": additive.name,
+                    }
+                )
+            return temp
+
+        for order in object.orders.all():
             orders.append(
                 {
-                    "order_id": order.order_number,
-                    "sub_menu": str(order.sub_menu),
+                    "order_id": order.id,
+                    "order_number": order.order_number,
+                    "sub_menu": {
+                        "sub_menu_id": order.sub_menu.id,
+                        "sub_menu_name": order.sub_menu.name,
+                        "sub_menu_price": order.sub_menu.price,
+                        "sub_menu_additives": _get_additives_by_order(order),
+                    },
                     "quantity": order.quantity,
                 },
             )
-            for order in object.orders.all()
-        ]
+        return orders
 
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):

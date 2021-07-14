@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from core.models import BaseConfig, BaseInventory, Item
 from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
@@ -61,6 +62,7 @@ class Menu(BaseConfig):
             models ([type]): [description]
     """
 
+    description = models.CharField(max_length=255)
     image = models.FileField(upload_to="menu/images/", null=True, blank=True)
     price = models.FloatField()
 
@@ -82,12 +84,18 @@ class BaseCustomerOrder(models.Model):
     """Base customer order class"""
 
     quantity = models.PositiveIntegerField()
+    additives = models.ManyToManyField(Additive)
     order_number = models.CharField(
         max_length=255, null=True, blank=True, unique=True, help_text="Leave blank"
     )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
     objects = Manager()
+
+    @property
+    @abstractmethod
+    def total(self):
+        """Returns the total price: i.e sub_menu__price * quantity"""
 
     class Meta:
         abstract: bool = True
@@ -97,6 +105,12 @@ class RestaurantCustomerOrder(BaseCustomerOrder):
     """single customer order"""
 
     sub_menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
+
+    @property
+    def total(self) -> float():
+        """Returns the total price: i.e sub_menu__price * quantity"""
+
+        return self.quantity * self.sub_menu.price
 
     def __str__(self) -> str():
         return f"{self.sub_menu.name} Order#{self.order_number}"
@@ -111,6 +125,7 @@ class CustomerDish(models.Model):
     """Customer Dish class"""
 
     customer_name = models.CharField(max_length=255)
+    customer_phone = models.CharField(max_length=15, null=True, blank=True)
     orders = models.ManyToManyField(RestaurantCustomerOrder)
     dish_number = models.CharField(
         max_length=255, null=True, blank=True, help_text="Leave blank"
@@ -124,7 +139,10 @@ class CustomerDish(models.Model):
 
     @property
     def get_total_price(self) -> float():
-        return self.orders.all().aggregate(total=Sum("sub_menu__price"))
+        res_: int = 0
+        for order in self.orders.all():
+            res_ += order.total
+        return res_
 
     @property
     def get_dish_detail(self) -> float():
@@ -194,7 +212,7 @@ class CustomerDishPayment(models.Model):
     @property
     def get_total_amount_to_pay(self) -> float():
         return self.customer_dish.get_total_price["total"]
-    
+
     @property
     def get_remaining_amount(self) -> float():
         return self.get_total_amount_to_pay - self.amount_paid
