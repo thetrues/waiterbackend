@@ -9,6 +9,7 @@ class RegularInventoryRecord(BaseInventory):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     total_items = models.IntegerField()
     selling_price_per_item = models.IntegerField()
+    threshold = models.IntegerField()
 
     def __str__(self) -> str():
         return str(self.item)
@@ -29,6 +30,7 @@ class TekilaInventoryRecord(BaseInventory):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     total_shots_per_tekila = models.IntegerField()
     selling_price_per_shot = models.IntegerField()
+    threshold = models.IntegerField()
 
     def __str__(self):
         return self.item.name

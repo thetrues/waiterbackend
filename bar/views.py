@@ -1,3 +1,5 @@
+from bar.models import RegularInventoryRecord, TekilaInventoryRecord
+from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -5,8 +7,6 @@ from bar.serializers import (
     RegularInventoryRecordSerializer,
     TekilaInventoryRecordSerializer,
 )
-from bar.models import RegularInventoryRecord, TekilaInventoryRecord
-from rest_framework.authentication import TokenAuthentication
 
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):

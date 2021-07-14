@@ -1,14 +1,23 @@
-from user.models import User
 from django.db.models.manager import Manager
 from abc import abstractmethod
+from user.models import User
 from django.db import models
 
 
+STOKE_STATUS_CHOICES: set = (
+    ("available", "Available"),
+    ("unavailable", "Unavailable"),
+)
+
+
 class BaseInventory(models.Model):
-    quantity = models.PositiveIntegerField(default=0)
-    purchasing_price = models.PositiveIntegerField(default=0)
+    quantity = models.PositiveIntegerField()
+    purchasing_price = models.PositiveIntegerField()
     date_purchased = models.DateTimeField()
     date_perished = models.DateTimeField(null=True, blank=True)
+    stock_status = models.CharField(
+        max_length=11, choices=STOKE_STATUS_CHOICES, null=True, blank=True
+    )
     objects = Manager()
 
     @abstractmethod
