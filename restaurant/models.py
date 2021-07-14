@@ -1,6 +1,5 @@
 from abc import abstractmethod
-from core.models import BaseConfig, BaseInventory, Item
-from django.db.models.aggregates import Sum
+from core.models import BaseConfig, BaseInventory, BasePayment, Item
 from django.db.models.manager import Manager
 from user.models import User
 from django.db import models
@@ -10,12 +9,8 @@ from django.db import models
 
 class MainInventoryItem(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    amount_per_unit = models.PositiveIntegerField(
-        default=0, help_text="e.g 4 Plates per 1 Kg"
-    )
-    price_per_unit = models.PositiveIntegerField(
-        default=0, help_text="e.g 1200 per 1 plate"
-    )
+    amount_per_unit = models.PositiveIntegerField(help_text="e.g 4 Plates per 1 Kg")
+    price_per_unit = models.PositiveIntegerField(help_text="e.g 1200 per 1 plate")
     objects = Manager()
 
     def __str__(self) -> str():
@@ -32,7 +27,7 @@ class MainInventoryItem(models.Model):
 
 class MainInventoryItemRecord(BaseInventory):
     main_inventory_item = models.ForeignKey(MainInventoryItem, on_delete=models.CASCADE)
-    threshold = models.IntegerField(default=0)
+    threshold = models.IntegerField()
 
     def __str__(self) -> str():
         """String representation of object
@@ -165,46 +160,10 @@ class CustomerDish(models.Model):
         unique_together = (("customer_name", "dish_number"),)
 
 
-PAYMENT_STATUS_CHOICES: set = (
-    ("paid", "Fully Paid"),
-    ("partial", "Partially Paid"),
-    ("unpaid", "Not Paid"),
-)
-
-PAYMENT_METHODS: set = (
-    ("cash", "Cash"),
-    ("mobile", "Mobile Money"),
-    ("card", "Credit Card"),
-)
-
-
-class CustomerDishPayment(models.Model):
+class CustomerDishPayment(BasePayment):
     """customer dish payment class"""
 
     customer_dish = models.ForeignKey(CustomerDish, on_delete=models.CASCADE)
-    payment_status = models.CharField(
-        max_length=7,
-        choices=PAYMENT_STATUS_CHOICES,
-        null=True,
-        blank=True,
-        help_text="Leave blank",
-    )
-    payment_method = models.CharField(
-        max_length=6,
-        choices=PAYMENT_METHODS,
-        null=True,
-        blank=True,
-        help_text="Leave blank",
-    )
-    amount_paid = models.IntegerField()
-    date_paid = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(
-        null=True,
-        blank=True,
-        help_text="Leave blank",
-    )
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    objects = Manager()
 
     def __str__(self) -> str():
         return f"{self.customer_dish}: Payment Status{self.payment_status}"
@@ -216,8 +175,3 @@ class CustomerDishPayment(models.Model):
     @property
     def get_remaining_amount(self) -> float():
         return self.get_total_amount_to_pay - self.amount_paid
-
-    class Meta:
-        ordering: list = ["-id"]
-        verbose_name = "Customer Dish Payment"
-        verbose_name_plural = "Customer Dish Payments"
