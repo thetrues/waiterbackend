@@ -7,6 +7,7 @@ from bar.serializers import (
     RegularInventoryRecordSerializer,
     TekilaInventoryRecordSerializer,
 )
+from itertools import chain
 
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
@@ -122,3 +123,52 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
 
 # Sales Management
 
+
+class BarItemViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    regular_items = RegularInventoryRecord.objects.filter(stock_status="available")
+    tekila_items = TekilaInventoryRecord.objects.filter(stock_status="available")
+    queryset = regular_items
+    authentication_classes = [TokenAuthentication]
+
+    def list(self, request, *args, **kwargs):
+        response: list = []
+        self.append_regular(response)
+        self.append_tekila(response)
+        return Response(data=response, status=status.HTTP_200_OK)
+
+    def append_regular(self, response):
+        for item in self.regular_items:
+            response.append(
+                {
+                    # "id": item.id,
+                    "name": item.item.name,
+                    # "total_items": item.total_items,
+                    "selling_price_per_item": item.selling_price_per_item,
+                    # "threshold": item.threshold,
+                    # "purchased_quantity": item.quantity,
+                    "items_available": item.available_quantity,
+                    # "purchasing_price": item.purchasing_price,
+                    # "date_purchased": item.date_purchased,
+                    "stock_status": item.stock_status,
+                    "item_type": "Regular",
+                }
+            )
+
+    def append_tekila(self, response):
+        for tk_item in self.tekila_items:
+            response.append(
+                {
+                    # "id": tk_item.id,
+                    "name": tk_item.item.name,
+                    # "total_shots_per_tekila": tk_item.total_shots_per_tekila,
+                    "selling_price_per_shot": tk_item.selling_price_per_shot,
+                    # "threshold": tk_item.threshold,
+                    # "purchased_quantity": tk_item.quantity,
+                    "items_available": tk_item.available_quantity,
+                    # "purchasing_price": tk_item.purchasing_price,
+                    # "date_purchased": tk_item.date_purchased,
+                    "stock_status": tk_item.stock_status,
+                    "item_type": "Tekila",
+                }
+            )

@@ -15,6 +15,7 @@ v1.register("core/items", core_views.ItemViewSet)
 # bar endpoints
 v1.register("bar/regular-inventory-record", bar_views.RegularInventoryRecordViewSet)
 v1.register("bar/tekila-inventory-record", bar_views.TekilaInventoryRecordViewSet)
+v1.register("bar/items", bar_views.BarItemViewSet)
 
 
 # restaurant endpoints
