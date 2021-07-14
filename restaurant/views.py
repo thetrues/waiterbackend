@@ -115,7 +115,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
 
     def list(self, request, *args, **kwargs):
-	
+
         return Response(self.get_list(), status=status.HTTP_200_OK)
 
     def get_list(self):
@@ -198,21 +198,28 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
                 )
             return temp
 
-        for order in object.orders.all():
-            orders.append(
-                {
-                    "order_id": order.id,
-                    "order_number": order.order_number,
-                    "sub_menu": {
-                        "sub_menu_id": order.sub_menu.id,
-                        "sub_menu_name": order.sub_menu.name,
-                        "sub_menu_price": order.sub_menu.price,
-                        "sub_menu_additives": _get_additives_by_order(order),
-                    },
-                    "quantity": order.quantity,
-                },
-            )
+        try:
+            for order in object.orders.all():
+                self.append_orders(orders, _get_additives_by_order, order)
+        except AttributeError:
+            for order in object.customer_dish.orders.all():
+                self.append_orders(orders, _get_additives_by_order, order)
         return orders
+
+    def append_orders(self, orders, _get_additives_by_order, order):
+        orders.append(
+            {
+                "order_id": order.id,
+                "order_number": order.order_number,
+                "sub_menu": {
+                    "sub_menu_id": order.sub_menu.id,
+                    "sub_menu_name": order.sub_menu.name,
+                    "sub_menu_price": order.sub_menu.price,
+                    "sub_menu_additives": _get_additives_by_order(order),
+                },
+                "quantity": order.quantity,
+            },
+        )
 
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
@@ -220,6 +227,30 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     queryset = CustomerDishPayment.objects.all()
     serializer_class = CustomerDishPaymentSerializer
     authentication_classes = [TokenAuthentication]
+
+    def list(self, request, *args, **kwargs):
+        response: list = []
+        for qs in self.queryset:
+            response.append(
+                {
+                    "id": qs.id,
+                    "payment_status": qs.payment_status,
+                    "payment_method": qs.payment_method,
+                    "amount_paid": float(qs.amount_paid),
+                    "date_paid": qs.date_paid,
+                    # "date_updated": qs.date_updated,
+                    "customer_dish": {
+                        "dish_id": qs.customer_dish.id,
+                        "customer_name": qs.customer_dish.customer_name,
+                        "customer_phone": qs.customer_dish.customer_phone,
+                        "dish_number": qs.customer_dish.dish_number,
+                        "total_price": qs.customer_dish.get_total_price,
+                        "orders": CustomerDishViewSet().get_orders(qs),
+                    },
+                    "created_by": qs.created_by.username,
+                }
+            )
+        return Response(response, status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -234,7 +265,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                     "dish_number": ordr.customer_dish.dish_number,
                     "dish_detail": ordr.customer_dish.get_dish_detail,
                     "total_payable_amount": ordr.get_total_amount_to_pay,
-                    "total_paid_amount": ordr.amount_paid,
+                    "total_paid_amount": float(ordr.amount_paid),
                     "payment_status": ordr.payment_status,
                     "payment_method": ordr.payment_method,
                 }
