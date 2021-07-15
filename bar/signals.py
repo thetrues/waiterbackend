@@ -36,7 +36,7 @@ def alter_inventory_record(sender, instance, created, **kwargs):
 def set_tekila_available_quantity(sender, instance, created, **kwargs):
     # sourcery skip: last-if-guard
     if created:
-        instance.available_quantity = instance.quantity
+        instance.available_quantity = instance.total_shots_per_tekila
         instance.save()
 
 
@@ -44,5 +44,5 @@ def set_tekila_available_quantity(sender, instance, created, **kwargs):
 def set_regular_available_quantity(sender, instance, created, **kwargs):
     # sourcery skip: last-if-guard
     if created:
-        instance.available_quantity = instance.quantity
+        instance.available_quantity = instance.total_items
         instance.save()

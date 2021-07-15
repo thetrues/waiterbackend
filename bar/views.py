@@ -1,13 +1,17 @@
-from bar.models import RegularInventoryRecord, TekilaInventoryRecord
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from bar.serializers import (
     RegularInventoryRecordSerializer,
     TekilaInventoryRecordSerializer,
 )
-from itertools import chain
+from bar.models import (
+    CustomerOrderRecord,
+    RegularInventoryRecord,
+    TekilaInventoryRecord,
+)
 
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
@@ -23,6 +27,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         return Response(data=response, status=status.HTTP_200_OK)
 
     def get_res(self, instance):
+
         return {
             "id": instance.id,
             "quantity": instance.quantity,
@@ -40,6 +45,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         response: list = []
         for record in self.queryset:
             response.append(self.get_res(record))
+
         return Response(data=response, status=status.HTTP_200_OK)
 
     @action(
@@ -47,6 +53,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_total_cash_after_sale(self, request, pk=None):
+
         return Response(
             {
                 "estimated_total_cash_after_sale": float(
@@ -61,6 +68,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_profit_after_sale(self, request, pk=None):
+
         return Response(
             {"estimated_profit_after_sale": float(self.get_object().estimate_profit())},
             status.HTTP_200_OK,
@@ -98,6 +106,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         response: list = []
         for record in self.queryset:
             response.append(self.get_res(record))
+
         return Response(data=response, status=status.HTTP_200_OK)
 
     @action(
@@ -105,6 +114,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_total_cash_after_sale(self, request, pk=None):
+
         return Response(
             {"estimated_total_cash_after_sale": self.get_object().estimate_sales()},
             status.HTTP_200_OK,
@@ -115,6 +125,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_profit_after_sale(self, request, pk=None):
+
         return Response(
             {"estimated_profit_after_sale": self.get_object().estimate_profit()},
             status.HTTP_200_OK,
@@ -138,37 +149,31 @@ class BarItemViewSet(viewsets.ModelViewSet):
         return Response(data=response, status=status.HTTP_200_OK)
 
     def append_regular(self, response):
-        for item in self.regular_items:
+        [
             response.append(
                 {
                     # "id": item.id,
                     "name": item.item.name,
-                    # "total_items": item.total_items,
-                    "selling_price_per_item": item.selling_price_per_item,
-                    # "threshold": item.threshold,
-                    # "purchased_quantity": item.quantity,
+                    "selling_price_per_item": float(item.selling_price_per_item),
                     "items_available": item.available_quantity,
-                    # "purchasing_price": item.purchasing_price,
-                    # "date_purchased": item.date_purchased,
                     "stock_status": item.stock_status,
                     "item_type": "Regular",
                 }
             )
+            for item in self.regular_items
+        ]
 
     def append_tekila(self, response):
-        for tk_item in self.tekila_items:
+        [
             response.append(
                 {
                     # "id": tk_item.id,
                     "name": tk_item.item.name,
-                    # "total_shots_per_tekila": tk_item.total_shots_per_tekila,
-                    "selling_price_per_shot": tk_item.selling_price_per_shot,
-                    # "threshold": tk_item.threshold,
-                    # "purchased_quantity": tk_item.quantity,
+                    "selling_price_per_shot": float(tk_item.selling_price_per_shot),
                     "items_available": tk_item.available_quantity,
-                    # "purchasing_price": tk_item.purchasing_price,
-                    # "date_purchased": tk_item.date_purchased,
                     "stock_status": tk_item.stock_status,
                     "item_type": "Tekila",
                 }
             )
+            for tk_item in self.tekila_items
+        ]

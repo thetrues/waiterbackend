@@ -33,9 +33,14 @@ v1.register(
 )
 v1.register("restaurant/additives", restaurant_views.AdditiveViewSet)
 v1.register("restaurant/menus", restaurant_views.MenuViewSet)
-v1.register("restaurant/customer-order", restaurant_views.RestaurantCustomerOrderViewSet)
+v1.register(
+    "restaurant/customer-order", restaurant_views.RestaurantCustomerOrderViewSet
+)
 v1.register("restaurant/customer-order-dish", restaurant_views.CustomerDishViewSet)
-v1.register("restaurant/customer-order-dish-payments", restaurant_views.CustomerDishPaymentViewSet)
+v1.register(
+    "restaurant/customer-order-dish-payments",
+    restaurant_views.CustomerDishPaymentViewSet,
+)
 
 
 urlpatterns = [
