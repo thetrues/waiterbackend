@@ -12,11 +12,16 @@ STOKE_STATUS_CHOICES: set = (
 
 class BaseInventory(models.Model):
     quantity = models.PositiveIntegerField()
+    available_quantity = models.PositiveIntegerField(null=True, blank=True)
     purchasing_price = models.PositiveIntegerField()
     date_purchased = models.DateTimeField()
     date_perished = models.DateTimeField(null=True, blank=True)
     stock_status = models.CharField(
-        max_length=11, choices=STOKE_STATUS_CHOICES, null=True, blank=True
+        max_length=11,
+        choices=STOKE_STATUS_CHOICES,
+        null=True,
+        blank=True,
+        default="available",
     )
     objects = Manager()
 

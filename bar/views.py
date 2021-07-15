@@ -1,11 +1,16 @@
-from bar.models import RegularInventoryRecord, TekilaInventoryRecord
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from bar.serializers import (
     RegularInventoryRecordSerializer,
     TekilaInventoryRecordSerializer,
+)
+from bar.models import (
+    CustomerOrderRecord,
+    RegularInventoryRecord,
+    TekilaInventoryRecord,
 )
 
 
@@ -22,6 +27,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         return Response(data=response, status=status.HTTP_200_OK)
 
     def get_res(self, instance):
+
         return {
             "id": instance.id,
             "quantity": instance.quantity,
@@ -39,6 +45,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         response: list = []
         for record in self.queryset:
             response.append(self.get_res(record))
+
         return Response(data=response, status=status.HTTP_200_OK)
 
     @action(
@@ -46,6 +53,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_total_cash_after_sale(self, request, pk=None):
+
         return Response(
             {
                 "estimated_total_cash_after_sale": float(
@@ -60,6 +68,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_profit_after_sale(self, request, pk=None):
+
         return Response(
             {"estimated_profit_after_sale": float(self.get_object().estimate_profit())},
             status.HTTP_200_OK,
@@ -97,6 +106,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         response: list = []
         for record in self.queryset:
             response.append(self.get_res(record))
+
         return Response(data=response, status=status.HTTP_200_OK)
 
     @action(
@@ -104,6 +114,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_total_cash_after_sale(self, request, pk=None):
+
         return Response(
             {"estimated_total_cash_after_sale": self.get_object().estimate_sales()},
             status.HTTP_200_OK,
@@ -114,6 +125,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_profit_after_sale(self, request, pk=None):
+
         return Response(
             {"estimated_profit_after_sale": self.get_object().estimate_profit()},
             status.HTTP_200_OK,
@@ -122,3 +134,46 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
 
 # Sales Management
 
+
+class BarItemViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    regular_items = RegularInventoryRecord.objects.filter(stock_status="available")
+    tekila_items = TekilaInventoryRecord.objects.filter(stock_status="available")
+    queryset = regular_items
+    authentication_classes = [TokenAuthentication]
+
+    def list(self, request, *args, **kwargs):
+        response: list = []
+        self.append_regular(response)
+        self.append_tekila(response)
+        return Response(data=response, status=status.HTTP_200_OK)
+
+    def append_regular(self, response):
+        [
+            response.append(
+                {
+                    # "id": item.id,
+                    "name": item.item.name,
+                    "selling_price_per_item": float(item.selling_price_per_item),
+                    "items_available": item.available_quantity,
+                    "stock_status": item.stock_status,
+                    "item_type": "Regular",
+                }
+            )
+            for item in self.regular_items
+        ]
+
+    def append_tekila(self, response):
+        [
+            response.append(
+                {
+                    # "id": tk_item.id,
+                    "name": tk_item.item.name,
+                    "selling_price_per_shot": float(tk_item.selling_price_per_shot),
+                    "items_available": tk_item.available_quantity,
+                    "stock_status": tk_item.stock_status,
+                    "item_type": "Tekila",
+                }
+            )
+            for tk_item in self.tekila_items
+        ]

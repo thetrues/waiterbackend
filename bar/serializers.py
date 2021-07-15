@@ -15,7 +15,7 @@ class RegularInventoryRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RegularInventoryRecord
-        exclude = ["date_perished"]
+        exclude = ["date_perished", "available_quantity"]
 
 
 class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
@@ -31,4 +31,4 @@ class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TekilaInventoryRecord
-        exclude = ["date_perished"]
+        exclude = ["date_perished", "available_quantity"]

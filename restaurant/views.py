@@ -238,7 +238,6 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                     "payment_method": qs.payment_method,
                     "amount_paid": float(qs.amount_paid),
                     "date_paid": qs.date_paid,
-                    # "date_updated": qs.date_updated,
                     "customer_dish": {
                         "dish_id": qs.customer_dish.id,
                         "customer_name": qs.customer_dish.customer_name,
