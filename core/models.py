@@ -154,5 +154,3 @@ class BasePayment(models.Model):
     class Meta:
         abstract: bool = True
         ordering: list = ["-id"]
-        verbose_name: str = "Customer Payment"
-        verbose_name_plural: str = "Customer Payments"

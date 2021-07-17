@@ -2,7 +2,6 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from user.models import User
 from restaurant.models import (
     CustomerDish,
     CustomerDishPayment,
@@ -168,11 +167,12 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             "customer_phone": object.customer_phone,
             "dish_number": object.dish_number,
             "orders": self.get_orders(object),
-            "created_by": str(object.created_by),
+            "created_by": object.created_by.username,
             "date_created": object.date_created,
         }
 
-    def add_orders(self, request):
+    def add_orders(self, request):  # Performance Bottleneck 🕵
+        """f(n) = n^2 i.e Quadractic Function."""
         for _ in request.data.get("orders"):
             order = RestaurantCustomerOrder.objects.create(
                 sub_menu=Menu.objects.get(id=int(_["menu_id"])),
@@ -198,7 +198,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
                 )
             return temp
 
-        try:
+        try:  # Performance Bottleneck 🕵
             for order in object.orders.all():
                 self.append_orders(orders, _get_additives_by_order, order)
         except AttributeError:
@@ -348,7 +348,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                 id=request.data.get("customer_dish")
             ),
             amount_paid=request.data.get("amount_paid"),
-            created_by=User.objects.get(id=request.data.get("created_by")),
+            created_by=request.user,
         )
         self.save_payment_status(request, object)
         object.save()
