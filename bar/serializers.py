@@ -1,4 +1,10 @@
-from bar.models import RegularInventoryRecord, TekilaInventoryRecord
+from bar.models import (
+    CustomerRegularOrderRecord,
+    CustomerRegularOrderRecordPayment,
+    RegularOrderRecord,
+    RegularInventoryRecord,
+    TekilaInventoryRecord,
+)
 from rest_framework import serializers
 
 
@@ -32,3 +38,21 @@ class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = TekilaInventoryRecord
         exclude = ["date_perished", "available_quantity"]
+
+
+class OrderRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegularOrderRecord
+        exclude = ["order_number", "created_by", "date_created"]
+
+
+class CustomerOrderRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerRegularOrderRecord
+        fields = ["customer_name", "customer_phone"]
+
+
+class CustomerOrderRecordPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerRegularOrderRecordPayment
+        exclude = ["payment_status", "date_paid", "date_updated", "created_by"]

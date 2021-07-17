@@ -66,4 +66,4 @@ class CustomerDishSerializer(serializers.ModelSerializer):
 class CustomerDishPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerDishPayment
-        fields = "__all__"
+        fields = ["payment_method", "amount_paid"]
