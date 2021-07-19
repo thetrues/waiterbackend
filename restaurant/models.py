@@ -37,8 +37,17 @@ class MainInventoryItemRecord(BaseInventory):
         """
         return self.main_inventory_item.item.name
 
-    def reduce_stock(self):
-        """Reduce Stock"""
+    @property
+    def estimate_sales(self):
+        return float(
+            self.main_inventory_item.amount_per_unit
+            * self.main_inventory_item.price_per_unit
+            * self.quantity
+        )
+
+    @property
+    def estimate_profit(self):
+        return float(self.estimate_sales - self.purchasing_price)
 
     @property
     def stock_out_history(self):
