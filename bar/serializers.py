@@ -11,11 +11,11 @@ from rest_framework import serializers
 class RegularInventoryRecordSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """
-        Check if item quantity is not less than threshold.
+        Check if item total_items is not less than threshold.
         """
-        if data["quantity"] <= data["threshold"]:
+        if data["total_items"] <= data["threshold"]:
             raise serializers.ValidationError(
-                "Item threshold must be less than quantity"
+                "Item threshold must be less than total items"
             )
         return data
 
