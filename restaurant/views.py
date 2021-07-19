@@ -269,12 +269,8 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
         return res
 
     def create(self, request, *args, **kwargs):
-        try:
-            data = self.perform_create(request)
-
-            return Response(data, status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({"message": str(e)}, status.HTTP_400_BAD_REQUEST)
+        data = self.perform_create(request)
+        return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request) -> dict():
         object = CustomerDish.objects.create(
@@ -283,29 +279,31 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             dish_number=str(uuid.uuid4())[:8],
             created_by=request.user,
         )
-        self.add_orders(request)
-        object.save()
+        self.add_orders(request, object)
         return {
             "customer_name": object.customer_name,
             "customer_phone": object.customer_phone,
             "dish_number": object.dish_number,
+            "total_price": object.get_total_price,
             "orders": self.get_orders(object),
             "created_by": object.created_by.username,
             "date_created": object.date_created,
         }
 
-    def add_orders(self, request):  # Performance Bottleneck 🕵
+    def add_orders(self, request, object):  # Performance Bottleneck 🕵
         """f(n) = n^2 i.e Quadractic Function."""
         for _ in request.data.get("orders"):
             order = RestaurantCustomerOrder.objects.create(
                 sub_menu=Menu.objects.get(id=int(_["menu_id"])),
-                quantity=_["quantity"],
+                quantity=int(_["quantity"]),
                 order_number=str(uuid.uuid4())[:7],
                 created_by=request.user,
             )
             for ad_id in _["additives"]:
-                order.additives.add(Additive.objects.get(id=int(ad_id)))
+                order.additives.add(Additive.objects.get(id=int(ad_id["id"])))
             order.save()
+            object.orders.add(order)
+            object.save()
 
     def get_orders(self, object):
         orders: list = []
