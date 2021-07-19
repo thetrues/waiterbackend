@@ -4,6 +4,7 @@ from restaurant.models import *
 models: list = [
     MainInventoryItem,
     MainInventoryItemRecord,
+    MainInventoryItemRecordStockOut,
     MiscellaneousInventoryRecord,
     Menu,
     Additive,

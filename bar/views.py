@@ -1,4 +1,3 @@
-import datetime
 import uuid
 from core.models import Item
 from rest_framework.authentication import TokenAuthentication
@@ -21,6 +20,7 @@ from bar.models import (
     RegularInventoryRecord,
     TekilaInventoryRecord,
 )
+from core.utils import get_date_objects, validate_dates
 
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
@@ -346,9 +346,53 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         detail=False,
         methods=["GET"],
     )
-    def get_today_sales(self, request, *args, **kwargs):
-        qs = self.queryset.filter(date_created=timezone.now()).values()
-        return Response(qs, status.HTTP_200_OK)
+    def get_today_orders(self, request, *args, **kwargs):
+        today_date = timezone.localdate()
+        qs = self.queryset.filter(date_created__date=today_date)
+        response = self.append_orders(qs)
+        return Response(response, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_orders_by_dates(self, request, *args, **kwargs):
+        try:
+            # Convert dates strings to dates objects
+            from_date, to_date = get_date_objects(
+                request.data["from_date"], request.data["to_date"]
+            )
+            # Validation: Check if the from_date is less than or equal to the to_date otherwise rise an error
+            if validate_dates(from_date, to_date):
+                return Response(
+                    {"message": "from_date must be less than or equal to to_date"},
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+            qs = self.queryset.filter(date_created__date__range=[from_date, to_date])
+            response = self.append_orders(qs)
+            return Response(response, status.HTTP_200_OK)
+        except KeyError:
+            return Response(
+                {"message": "Invalid dates."}, status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def append_orders(self, qs):
+        response: list = []
+        [
+            response.append(
+                {
+                    "id": order.id,
+                    "customer_name": order.customer_name,
+                    "customer_phone": order.customer_phone,
+                    "customer_orders_number": order.customer_orders_number,
+                    "total_price": order.get_total_price,
+                    "orders": order.get_orders_detail,
+                }
+            )
+            for order in qs
+        ]
+
+        return response
 
 
 class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):

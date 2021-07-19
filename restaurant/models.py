@@ -37,6 +37,44 @@ class MainInventoryItemRecord(BaseInventory):
         """
         return self.main_inventory_item.item.name
 
+    def reduce_stock(self):
+        """Reduce Stock"""
+
+    @property
+    def stock_out_history(self):
+        response: list = []
+        [
+            response.append(
+                {
+                    "history_id": _.id,
+                    "quantity_out": _.quantity_out,
+                    "date_out": _.date_out,
+                    "created_by": str(_.created_by),
+                }
+            )
+            for _ in self.maininventoryitemrecordstockout_set.all()
+        ]
+
+        return response
+
+
+class MainInventoryItemRecordStockOut(models.Model):
+    item_record = models.ForeignKey(MainInventoryItemRecord, on_delete=models.CASCADE)
+    quantity_out = models.PositiveIntegerField()
+    date_out = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    objects = Manager()
+
+    def __str__(self):
+        return (
+            f"{self.item_record.main_inventory_item.item.name}: {self.quantity_out} Out"
+        )
+
+    class Meta:
+        ordering = ["-id"]
+        verbose_name = "Main Inventory Item Record Stock Out"
+        verbose_name_plural = "Main Inventory Item Records Stock Out"
+
 
 class MiscellaneousInventoryRecord(BaseInventory):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)

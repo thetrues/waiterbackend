@@ -1,3 +1,5 @@
+from django.db.models.aggregates import Sum
+from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -7,6 +9,7 @@ from restaurant.models import (
     CustomerDishPayment,
     MainInventoryItem,
     MainInventoryItemRecord,
+    MainInventoryItemRecordStockOut,
     MiscellaneousInventoryRecord,
     Additive,
     Menu,
@@ -51,6 +54,124 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     queryset = MainInventoryItemRecord.objects.all()
     serializer_class = MainInventoryItemRecordSerializer
     authentication_classes = [TokenAuthentication]
+
+    def list(self, request, *args, **kwargs):
+        response: list = []
+        [
+            response.append(
+                {
+                    "id": obj.id,
+                    "quantity": obj.quantity,
+                    "available_quantity": obj.available_quantity,
+                    "purchasing_price": float(obj.purchasing_price),
+                    "date_purchased": obj.date_purchased,
+                    "date_perished": obj.date_perished,
+                    "stock_status": obj.stock_status,
+                    "threshold": obj.threshold,
+                    "main_inventory_item": str(obj.main_inventory_item),
+                    "stock_out_history": obj.stock_out_history,
+                }
+            )
+            for obj in self.queryset
+        ]
+
+        return Response(response, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["POST"],
+    )
+    def stock_out(self, request, *args, **kwargs):
+        item_record_name = request.data.get("item_record_name")
+        quantity_out = int(request.data.get("quantity_out"))
+        if quantity_out == 0:
+            return Response(
+                {"message": "Quantity out must be greater than 0"},
+                status.HTTP_200_OK,
+            )
+        items = MainInventoryItemRecord.objects.filter(
+            main_inventory_item__item__name=item_record_name, stock_status="available"
+        )
+        if len(items) == 0:
+            return Response(
+                {"message": f"{item_record_name} stock is not available"},
+                status.HTTP_200_OK,
+            )
+        elif len(items) == 1:
+            item = items[0]
+            available_quantity = item.available_quantity
+            if available_quantity < quantity_out:
+                return Response(
+                    {"message": f"{quantity_out} items are not available"},
+                    status.HTTP_200_OK,
+                )
+            self.create_stock_out(request, quantity_out, item)
+            self.reduce_availability(quantity_out, item, available_quantity)
+            if item.available_quantity <= item.threshold:
+                self.send_notification()
+            if item.available_quantity == 0:
+                self.set_unavailable(item)
+                self.send_notification()
+            return Response(
+                {
+                    "item": str(item),
+                    "quantity_out": quantity_out,
+                },
+                status.HTTP_200_OK,
+            )
+        else:
+            total_available_quantities = items.aggregate(
+                total=Sum("available_quantity")
+            )["total"]
+            if quantity_out > total_available_quantities:
+                return Response(
+                    {
+                        "message": f"Quantity out must not be greater than {total_available_quantities}"
+                    },
+                    status.HTTP_200_OK,
+                )
+            for stock in items[::-1]:
+                if quantity_out == 0:
+                    break
+                if stock.available_quantity > 0:
+                    if stock.available_quantity < quantity_out:
+                        quantity_out -= stock.available_quantity
+                        self.create_stock_out(request, stock.available_quantity, stock)
+                        stock.stock_status = "unavailable"
+                        stock.date_perished = timezone.now()
+                        stock.available_quantity = 0
+                    else:
+                        self.create_stock_out(request, quantity_out, stock)
+                        stock.available_quantity -= quantity_out
+                        quantity_out = 0
+                    stock.save()
+            return Response(status.HTTP_200_OK)
+
+    def get_data(self, request):
+        item_record_id = int(request.data.get("item_record_id"))
+        quantity_out = int(request.data.get("quantity_out"))
+        item = MainInventoryItemRecord.objects.get(id=int(item_record_id))
+        available_quantity = item.available_quantity
+        return quantity_out, item, available_quantity
+
+    def create_stock_out(self, request, quantity_out, item):
+        MainInventoryItemRecordStockOut.objects.create(  # Create Stock out history
+            item_record=item,
+            quantity_out=quantity_out,
+            created_by=request.user,
+        )
+
+    def reduce_availability(self, quantity_out, item, available_quantity):
+        item.available_quantity = available_quantity - quantity_out
+        item.save()
+
+    def set_unavailable(self, item):
+        item.stock_status = "unavailable"
+        item.date_perished = timezone.now()
+        item.save()
+
+    def send_notification(self):
+        print("Sending message notification that stock is nearly out")
 
 
 class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
