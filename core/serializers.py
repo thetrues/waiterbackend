@@ -9,7 +9,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super(ItemSerializer, self).to_representation(instance)
-        rep["name"] = instance.unit.name
+        rep["unit"] = instance.unit.name
         return rep
 
 
