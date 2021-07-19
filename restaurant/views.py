@@ -274,7 +274,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
 
             return Response(data, status.HTTP_201_CREATED)
         except Exception as e:
-            return Response({"message": e}, status.HTTP_400_BAD_REQUEST)
+            return Response({"message": str(e)}, status.HTTP_400_BAD_REQUEST)
 
     def perform_create(self, request) -> dict():
         object = CustomerDish.objects.create(
