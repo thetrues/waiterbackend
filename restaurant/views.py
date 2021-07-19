@@ -69,8 +69,8 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                     "stock_status": obj.stock_status,
                     "threshold": obj.threshold,
                     "main_inventory_item": str(obj.main_inventory_item),
-                    "estimated_sales": str(obj.main_inventory_item),
-                    "estimated_profit": str(obj.main_inventory_item),
+                    "estimated_sales": obj.estimate_sales,
+                    "estimated_profit": obj.estimate_profit,
                     "stock_out_history": obj.stock_out_history,
                 }
             )
