@@ -17,7 +17,7 @@ class MainInventoryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainInventoryItem
         fields = "__all__"
-    
+
     def to_representation(self, instance):
         rep = super(MainInventoryItemSerializer, self).to_representation(instance)
         rep["item"] = instance.item.name
@@ -71,4 +71,4 @@ class CustomerDishSerializer(serializers.ModelSerializer):
 class CustomerDishPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerDishPayment
-        fields = ["payment_method", "amount_paid"]
+        fields = ["customer_dish", "amount_paid", "payment_method"]

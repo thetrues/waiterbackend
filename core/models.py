@@ -133,8 +133,7 @@ class BasePayment(models.Model):
     payment_method = models.CharField(
         max_length=6,
         choices=PAYMENT_METHODS,
-        null=True,
-        blank=True,
+        default="cash",
         help_text="Leave blank",
     )
     amount_paid = models.IntegerField()
