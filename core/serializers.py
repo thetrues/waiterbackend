@@ -7,6 +7,11 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Item
         fields = ["id", "name", "unit"]
 
+    def to_representation(self, instance):
+        rep = super(ItemSerializer, self).to_representation(instance)
+        rep["name"] = instance.unit.name
+        return rep
+
 
 class MeasurementUnitSerializer(serializers.ModelSerializer):
     class Meta:
