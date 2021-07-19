@@ -11,4 +11,3 @@ urlpatterns = [
     path("w/api/accounts/<int:pk>/user/activate-deactivate-account/", views.ActivateDeactivateUserAccountView.as_view()),
 ]
 
-# 81160220127503cbfe9874014a8ac592c02d44d4
