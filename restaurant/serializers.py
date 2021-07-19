@@ -17,6 +17,11 @@ class MainInventoryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainInventoryItem
         fields = "__all__"
+    
+    def to_representation(self, instance):
+        rep = super(MainInventoryItemSerializer, self).to_representation(instance)
+        rep["item"] = instance.item.name
+        return rep
 
 
 class MainInventoryItemRecordSerializer(serializers.ModelSerializer):
