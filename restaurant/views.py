@@ -564,8 +564,13 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
             date_paid__year=today.year,
             date_paid__month=today.month,
         )
+        response: dict = {}
+        response["total_paid_amount"] = payments_this_month.aggregate(
+            total=Sum("amount_paid")
+        )["total"]
+        payments: list = []
         [
-            response.append(
+            payments.append(
                 {
                     "id": payment.id,
                     "payee": payment.restaurant_payee.username,
@@ -577,4 +582,5 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
             )
             for payment in payments_this_month
         ]
+        response["payments"] = payments
         return Response(response, status.HTTP_200_OK)

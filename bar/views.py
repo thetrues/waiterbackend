@@ -1,4 +1,6 @@
 import uuid
+
+from django.db.models.aggregates import Sum
 from core.models import Item
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
@@ -591,9 +593,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
     )
     def get_payees(self, request, *args, **kwargs):
         response: list = []
-        users = User.objects.filter(
-            user_type__in=["bar_waiter", "bar_cashier"]
-        )
+        users = User.objects.filter(user_type__in=["bar_waiter", "bar_cashier"])
         [
             response.append(
                 {
@@ -612,14 +612,18 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def get_monthly_payments(self, request, *args, **kwargs):
-        response: list = []
         today = datetime.date.today()
         payments_this_month = BarPayrol.objects.filter(
             date_paid__year=today.year,
             date_paid__month=today.month,
         )
+        response: dict = {}
+        response["total_paid_amount"] = payments_this_month.aggregate(
+            total=Sum("amount_paid")
+        )["total"]
+        payments: list = []
         [
-            response.append(
+            payments.append(
                 {
                     "id": payment.id,
                     "payee": payment.bar_payee.username,
@@ -631,4 +635,5 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
             )
             for payment in payments_this_month
         ]
+        response["payments"] = payments
         return Response(response, status.HTTP_200_OK)
