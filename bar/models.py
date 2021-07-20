@@ -1,4 +1,4 @@
-from core.models import BaseInventory, BasePayment, Item
+from core.models import BaseInventory, BasePayment, BasePayrol, Item
 from django.db.models.manager import Manager
 from user.models import User
 from django.db import models
@@ -151,3 +151,21 @@ class CustomerRegularOrderRecordPayment(BasePayment):
         ordering: list = ["-id"]
         verbose_name: str = "Customer Regular Order Record Payment"
         verbose_name_plural: str = "Customer Regular Order Record Payments"
+
+
+# Payrolling Management
+
+
+class RestaurantPayrol(BasePayrol):
+    """Restaurant Payrol"""
+
+    restaurant_payee = models.ForeignKey(
+        User, related_name="restaurant_payee", on_delete=models.CASCADE
+    )
+    restaurant_payer = models.ForeignKey(
+        User, related_name="restaurant_payer", on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+
+        return f"{self.restaurant_payee.username} Paid: {self.amount_paid}"

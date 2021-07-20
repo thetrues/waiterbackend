@@ -153,3 +153,25 @@ class BasePayment(models.Model):
     class Meta:
         abstract: bool = True
         ordering: list = ["-id"]
+
+
+class BasePayrol(models.Model):
+    """Base Payrol Class"""
+
+    payment_method = models.CharField(
+        max_length=6,
+        choices=PAYMENT_METHODS,
+        default="cash",
+        help_text="Leave blank",
+    )
+    amount_paid = models.FloatField()
+    date_paid = models.DateTimeField(auto_now_add=True)
+    objects = Manager()
+
+    @abstractmethod
+    def __str__(self) -> str():
+        """Returns the string representation of this object"""
+
+    class Meta:
+        abstract: bool = True
+        ordering: list = ["-id"]

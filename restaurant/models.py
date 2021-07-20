@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from core.models import BaseConfig, BaseInventory, BasePayment, Item
+from core.models import BaseConfig, BaseInventory, BasePayment, BasePayrol, Item
 from django.db.models.manager import Manager
 from user.models import User
 from django.db import models
@@ -222,3 +222,21 @@ class CustomerDishPayment(BasePayment):
     @property
     def get_remaining_amount(self) -> float():
         return self.get_total_amount_to_pay - self.amount_paid
+
+
+# Payrolling Management
+
+
+class BarPayrol(BasePayrol):
+    """Bar Payrol"""
+
+    bar_payee = models.ForeignKey(
+        User, related_name="bar_payee", on_delete=models.CASCADE
+    )
+    bar_payer = models.ForeignKey(
+        User, related_name="bar_payer", on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+
+        return f"{self.bar_payee.username} Paid: {self.amount_paid}"
