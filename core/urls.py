@@ -25,6 +25,10 @@ v1.register(
     "bar/sales/regular/customer-order-payments",
     bar_views.CustomerRegularOrderRecordPaymentViewSet,
 )
+v1.register(
+    "bar/payrol",
+    bar_views.BarPayrolViewSet,
+)
 
 
 # restaurant endpoints

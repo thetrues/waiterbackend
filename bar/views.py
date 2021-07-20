@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from bar.serializers import (
+    BarPayrolSerializer,
     CustomerOrderRecordPaymentSerializer,
     CustomerOrderRecordSerializer,
     OrderRecordSerializer,
@@ -13,6 +14,7 @@ from bar.serializers import (
     TekilaInventoryRecordSerializer,
 )
 from bar.models import (
+    BarPayrol,
     CustomerRegularOrderRecordPayment,
     CustomerRegularOrderRecord,
     CustomerRegularOrderRecordPayment,
@@ -21,6 +23,8 @@ from bar.models import (
     TekilaInventoryRecord,
 )
 from core.utils import get_date_objects, validate_dates
+from user.models import User
+import datetime
 
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
@@ -543,3 +547,88 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             for qs in filtered_qs
         ]
         return Response(res, status.HTTP_200_OK)
+
+
+class BarPayrolViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = BarPayrol.objects.all()
+    serializer_class = BarPayrolSerializer
+    authentication_classes = [TokenAuthentication]
+
+    def update(self, request, pk=None):
+        instance = self.get_object()
+        bar_payee = request.data.get("bar_payee")
+        amount_paid = request.data.get("amount_paid")
+        payment_method = request.data.get("payment_method")
+        if bar_payee:
+            instance.bar_payee = User.objects.get(id=int(bar_payee))
+        if amount_paid:
+            instance.amount_paid = amount_paid
+        if payment_method:
+            instance.payment_method = payment_method
+        instance.save()
+
+        return Response({"message": "Operation success"}, status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            object = serializer.save(bar_payer=request.user)
+            data = {
+                "payee": object.bar_payee.username,
+                "payer": object.bar_payer.username,
+                "amount_paid": object.amount_paid,
+                "date_paid": object.date_paid,
+                "payment_method": object.payment_method,
+            }
+        else:
+            data = {"message": serializer.errors}
+        return Response(data, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_payees(self, request, *args, **kwargs):
+        response: list = []
+        users = User.objects.filter(
+            user_type__in=["bar_waiter", "bar_cashier"]
+        )
+        [
+            response.append(
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "phone_number": user.mobile_phone,
+                    "user_type": user.user_type,
+                }
+            )
+            for user in users
+        ]
+        return Response(response, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_monthly_payments(self, request, *args, **kwargs):
+        response: list = []
+        today = datetime.date.today()
+        payments_this_month = BarPayrol.objects.filter(
+            date_paid__year=today.year,
+            date_paid__month=today.month,
+        )
+        [
+            response.append(
+                {
+                    "id": payment.id,
+                    "payee": payment.bar_payee.username,
+                    "payer": payment.bar_payer.username,
+                    "amount_paid": payment.amount_paid,
+                    "date_paid": payment.date_paid,
+                    "payment_method": payment.payment_method,
+                }
+            )
+            for payment in payments_this_month
+        ]
+        return Response(response, status.HTTP_200_OK)
