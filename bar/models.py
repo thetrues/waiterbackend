@@ -156,16 +156,20 @@ class CustomerRegularOrderRecordPayment(BasePayment):
 # Payrolling Management
 
 
-class RestaurantPayrol(BasePayrol):
+class BarPayrol(BasePayrol):
     """Restaurant Payrol"""
 
-    restaurant_payee = models.ForeignKey(
-        User, related_name="restaurant_payee", on_delete=models.CASCADE
+    bar_payee = models.ForeignKey(
+        User, related_name="bar_payee", on_delete=models.CASCADE
     )
-    restaurant_payer = models.ForeignKey(
-        User, related_name="restaurant_payer", on_delete=models.CASCADE
+    bar_payer = models.ForeignKey(
+        User, related_name="bar_payer", on_delete=models.CASCADE
     )
 
     def __str__(self):
 
-        return f"{self.restaurant_payee.username} Paid: {self.amount_paid}"
+        return f"{self.bar_payee.username} Paid: {self.amount_paid}"
+
+    # def get_monthly_payrolls(self):
+        
+    #     return

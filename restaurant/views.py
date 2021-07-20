@@ -1,3 +1,5 @@
+import datetime
+from user.models import User
 from django.db.models.aggregates import Sum
 from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
@@ -14,6 +16,7 @@ from restaurant.models import (
     Additive,
     Menu,
     RestaurantCustomerOrder,
+    RestaurantPayrol,
 )
 from restaurant.serializers import (
     CustomerDishPaymentSerializer,
@@ -24,6 +27,7 @@ from restaurant.serializers import (
     AdditiveSerializer,
     MenuSerializer,
     RestaurantCustomerOrderSerializer,
+    RestaurantPayrolSerializer,
 )
 import uuid
 
@@ -489,3 +493,88 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             object.payment_status = "paid"
         else:
             object.payment_status = "partial"
+
+
+class RestaurantPayrolViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = RestaurantPayrol.objects.all()
+    serializer_class = RestaurantPayrolSerializer
+    authentication_classes = [TokenAuthentication]
+
+    def update(self, request, pk=None):
+        instance = self.get_object()
+        restaurant_payee = request.data.get("restaurant_payee")
+        amount_paid = request.data.get("amount_paid")
+        payment_method = request.data.get("payment_method")
+        if restaurant_payee:
+            instance.restaurant_payee = User.objects.get(id=int(restaurant_payee))
+        if amount_paid:
+            instance.amount_paid = amount_paid
+        if payment_method:
+            instance.payment_method = payment_method
+        instance.save()
+
+        return Response({"message": "Operation success"}, status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            object = serializer.save(restaurant_payer=request.user)
+            data = {
+                "payee": object.restaurant_payee.username,
+                "payer": object.restaurant_payer.username,
+                "amount_paid": object.amount_paid,
+                "date_paid": object.date_paid,
+                "payment_method": object.payment_method,
+            }
+        else:
+            data = {"message": serializer.errors}
+        return Response(data, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_payees(self, request, *args, **kwargs):
+        response: list = []
+        users = User.objects.filter(
+            user_type__in=["restaurant_waiter", "restaurant_cashier"]
+        )
+        [
+            response.append(
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "phone_number": user.mobile_phone,
+                    "user_type": user.user_type,
+                }
+            )
+            for user in users
+        ]
+        return Response(response, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_monthly_payments(self, request, *args, **kwargs):
+        response: list = []
+        today = datetime.date.today()
+        payments_this_month = RestaurantPayrol.objects.filter(
+            date_paid__year=today.year,
+            date_paid__month=today.month,
+        )
+        [
+            response.append(
+                {
+                    "id": payment.id,
+                    "payee": payment.restaurant_payee.username,
+                    "payer": payment.restaurant_payer.username,
+                    "amount_paid": payment.amount_paid,
+                    "date_paid": payment.date_paid,
+                    "payment_method": payment.payment_method,
+                }
+            )
+            for payment in payments_this_month
+        ]
+        return Response(response, status.HTTP_200_OK)

@@ -1,9 +1,11 @@
+from user.models import User
 from restaurant.models import (
     Additive,
     CustomerDish,
     CustomerDishPayment,
     Menu,
     RestaurantCustomerOrder,
+    RestaurantPayrol,
 )
 from restaurant.models import (
     MainInventoryItem,
@@ -72,3 +74,21 @@ class CustomerDishPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerDishPayment
         fields = ["customer_dish", "amount_paid", "payment_method"]
+
+
+class RestaurantPayrolSerializer(serializers.ModelSerializer):
+    def validate_restaurant_payee(self, user):
+        if user.user_type not in ["restaurant_waiter", "restaurant_cashier"]:
+            raise serializers.ValidationError(
+                f"{user.username} is a {user.get_user_type_display()}. Choose restaurant worker"
+            )
+        return user
+
+    class Meta:
+        model = RestaurantPayrol
+        exclude = ["restaurant_payer"]
+
+    def to_representation(self, instance):
+        rep = super(RestaurantPayrolSerializer, self).to_representation(instance)
+        rep["restaurant_payee"] = instance.restaurant_payee.username
+        return rep

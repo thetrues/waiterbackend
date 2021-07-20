@@ -50,6 +50,10 @@ v1.register(
     "restaurant/customer-order-dish-payments",
     restaurant_views.CustomerDishPaymentViewSet,
 )
+v1.register(
+    "restaurant/payrol",
+    restaurant_views.RestaurantPayrolViewSet,
+)
 
 
 urlpatterns = [

@@ -1,8 +1,9 @@
-from abc import abstractmethod
 from core.models import BaseConfig, BaseInventory, BasePayment, BasePayrol, Item
 from django.db.models.manager import Manager
+from abc import abstractmethod
 from user.models import User
 from django.db import models
+import datetime
 
 # Inventory
 
@@ -227,16 +228,23 @@ class CustomerDishPayment(BasePayment):
 # Payrolling Management
 
 
-class BarPayrol(BasePayrol):
-    """Bar Payrol"""
+class RestaurantPayrol(BasePayrol):
+    """Restaurant Payrol"""
 
-    bar_payee = models.ForeignKey(
-        User, related_name="bar_payee", on_delete=models.CASCADE
+    restaurant_payee = models.ForeignKey(
+        User, related_name="restaurant_payee", on_delete=models.CASCADE
     )
-    bar_payer = models.ForeignKey(
-        User, related_name="bar_payer", on_delete=models.CASCADE
+    restaurant_payer = models.ForeignKey(
+        User, related_name="restaurant_payer", on_delete=models.CASCADE
     )
 
     def __str__(self):
 
-        return f"{self.bar_payee.username} Paid: {self.amount_paid}"
+        return f"{self.restaurant_payee.username} Paid: {self.amount_paid}"
+
+    # def get_monthly_payrolls(self):
+    #     start_of_month = datetime.date.today().replace(
+    #         day=1
+    #     )  # Getting the current month
+    #     payemnts_this_month = self.objects.filter(date_paid__gte=start_of_month)
+    #     return

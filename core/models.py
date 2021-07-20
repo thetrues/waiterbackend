@@ -165,12 +165,16 @@ class BasePayrol(models.Model):
         help_text="Leave blank",
     )
     amount_paid = models.FloatField()
-    date_paid = models.DateTimeField(auto_now_add=True)
+    date_paid = models.DateField(auto_now_add=True)
     objects = Manager()
 
     @abstractmethod
     def __str__(self) -> str():
         """Returns the string representation of this object"""
+
+    @abstractmethod
+    def get_monthly_payrolls(self) -> float():
+        """Returns all payrolls of this month"""
 
     class Meta:
         abstract: bool = True

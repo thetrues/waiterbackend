@@ -1,4 +1,6 @@
+from user.models import User
 from bar.models import (
+    BarPayrol,
     CustomerRegularOrderRecord,
     CustomerRegularOrderRecordPayment,
     RegularOrderRecord,
@@ -56,3 +58,14 @@ class CustomerOrderRecordPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerRegularOrderRecordPayment
         exclude = ["payment_status", "date_paid", "date_updated", "created_by"]
+
+
+class BarPayrolSerializer(serializers.ModelSerializer):
+
+    bar_payee = serializers.ChoiceField(
+        User.objects.filter(user_type__in=["bar_waiter", "bar_cashier"])
+    )
+
+    class Meta:
+        model = BarPayrol
+        exclude = ["bar_payer", "date_paid"]
