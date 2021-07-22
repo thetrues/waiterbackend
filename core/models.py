@@ -191,6 +191,7 @@ class CreditCustomer(models.Model):
         return self.name
 
     class Meta:
+        unique_together = ('phone', 'name')
         ordering = ["-id"]
         verbose_name = "Credit Customer"
         verbose_name_plural = "Credit Customers"
