@@ -1,6 +1,7 @@
 from rest_framework.authentication import TokenAuthentication
-from core.models import Item, MeasurementUnit
+from core.models import CreditCustomer, Item, MeasurementUnit
 from core.serializers import (
+    CreditCustomerSerializer,
     ItemSerializer,
     MeasurementUnitSerializer,
 )
@@ -20,4 +21,11 @@ class ItemViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
+    authentication_classes = [TokenAuthentication]
+
+
+class CreditCustomerViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = CreditCustomer.objects.all()
+    serializer_class = CreditCustomerSerializer
     authentication_classes = [TokenAuthentication]
