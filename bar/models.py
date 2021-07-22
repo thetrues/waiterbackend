@@ -94,7 +94,7 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
                     "order_id": order.id,
                     "item_name": order.item.item.name,
                     "ordered_quantity": order.quantity,
-                    "price_per_item": float(order.item.selling_price_per_item),
+                    "price_per_shot": float(order.item.selling_price_per_shot),
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
