@@ -24,22 +24,6 @@ def alter_regular_inventory_record(sender, instance, created, **kwargs):
             regular_item_record.save()
 
 
-# @receiver(post_save, sender=RegularOrderRecord)
-# def alter_tequila_inventory_record(sender, instance, created, **kwargs):
-#     # sourcery skip: last-if-guard
-#     if created:
-#         ordered_item = instance.item
-#         ordered_quantity = instance.quantity
-#         tekila_item_record = TekilaInventoryRecord.objects.get(item=ordered_item)
-#         tekila_item_record.available_quantity = (
-#             tekila_item_record.available_quantity - int(ordered_quantity)
-#         )
-#         if tekila_item_record.available_quantity == 0:
-#             tekila_item_record.stock_status = "unavailable"
-#             tekila_item_record.date_perished = timezone.now()
-#         tekila_item_record.save()
-
-
 @receiver(post_save, sender=TekilaInventoryRecord)
 def set_tekila_available_quantity(sender, instance, created, **kwargs):
     # sourcery skip: last-if-guard
