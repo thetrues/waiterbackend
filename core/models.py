@@ -179,3 +179,18 @@ class BasePayrol(models.Model):
     class Meta:
         abstract: bool = True
         ordering: list = ["-id"]
+
+
+class CreditCustomer(models.Model):
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=14)
+    address = models.CharField(max_length=255)
+
+    def __str__(self):
+
+        return self.name
+
+    class Meta:
+        ordering = ["-id"]
+        verbose_name = "Credit Customer"
+        verbose_name_plural = "Credit Customers"
