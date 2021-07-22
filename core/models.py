@@ -181,6 +181,53 @@ class BasePayrol(models.Model):
         ordering: list = ["-id"]
 
 
+class BaseOrderRecord(models.Model):
+    quantity = models.PositiveIntegerField()
+    order_number = models.CharField(max_length=8, null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+    objects = Manager()
+
+    class Meta:
+        abstract: bool = True
+        ordering: list = ["-id"]
+        indexes: list = [
+            models.Index(fields=["item", "order_number"]),
+        ]
+
+
+class BaseCustomerOrderRecord(models.Model):
+    customer_name = models.CharField(max_length=255)
+    customer_phone = models.CharField(max_length=14, null=True, blank=True)
+    customer_orders_number = models.CharField(max_length=8, null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+    objects = Manager()
+
+    @property
+    @abstractmethod
+    def get_total_price(self) -> float():
+        """get total price of all ordered items"""
+
+    @property
+    @abstractmethod
+    def get_orders_detail(self):
+        """get details of all ordered items"""
+    
+    def __str__(self):
+        """f(n) = c; c=1 Constant Function"""
+        return (
+            f"{self.customer_name}: CustomerOrderRecord#{self.customer_orders_number}"
+        )
+
+    class Meta:
+        abstract: bool = True
+        ordering = ["-id"]
+        indexes: list = [
+            models.Index(fields=["customer_name", "created_by"]),
+        ]
+
+
 class CreditCustomer(models.Model):
     name = models.CharField(max_length=255)
     phone = models.CharField(max_length=14)
@@ -191,7 +238,7 @@ class CreditCustomer(models.Model):
         return self.name
 
     class Meta:
-        unique_together = ('phone', 'name')
+        unique_together = ("phone", "name")
         ordering = ["-id"]
         verbose_name = "Credit Customer"
         verbose_name_plural = "Credit Customers"
