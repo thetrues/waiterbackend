@@ -188,7 +188,7 @@ class CustomerDish(models.Model):
         return res_
 
     @property
-    def get_dish_detail(self) -> float():
+    def get_dish_detail(self) -> list():
         res: list = []
         [
             res.append(
