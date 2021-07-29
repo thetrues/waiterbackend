@@ -1,6 +1,6 @@
-from user.models import User
 from restaurant.models import (
     Additive,
+    CreditCustomerDishPaymentHistory,
     CustomerDish,
     CustomerDishPayment,
     Menu,
@@ -74,6 +74,23 @@ class CustomerDishPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerDishPayment
         fields = ["customer_dish", "amount_paid", "payment_method"]
+
+
+class CreditCustomerDishPaymentHistorySerializer(serializers.ModelSerializer):
+    def validate_credit_customer_dish_payment(self, credit_customer_dish_payment):
+        if (
+            credit_customer_dish_payment.by_credit is False
+            and credit_customer_dish_payment.payment_status == "paid"
+        ):
+            raise serializers.ValidationError(
+                "This order was not taken by credit or is already paid."
+            )
+
+        return credit_customer_dish_payment
+
+    class Meta:
+        model = CreditCustomerDishPaymentHistory
+        fields = "__all__"
 
 
 class RestaurantPayrolSerializer(serializers.ModelSerializer):

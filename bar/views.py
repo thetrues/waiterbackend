@@ -1,12 +1,9 @@
-import uuid
-
-from django.db.models.aggregates import Sum
-from core.models import Item
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
+from core.utils import get_date_objects, validate_dates
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.utils import timezone
+from django.db.models.aggregates import Sum
 from bar.serializers import (
     BarPayrolSerializer,
     CustomerOrderRecordPaymentSerializer,
@@ -15,6 +12,7 @@ from bar.serializers import (
     RegularInventoryRecordSerializer,
     TekilaInventoryRecordSerializer,
 )
+from django.utils import timezone
 from bar.models import (
     BarPayrol,
     CustomerRegularOrderRecordPayment,
@@ -24,9 +22,10 @@ from bar.models import (
     RegularInventoryRecord,
     TekilaInventoryRecord,
 )
-from core.utils import get_date_objects, validate_dates
+from core.models import Item
 from user.models import User
 import datetime
+import uuid
 
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
@@ -175,21 +174,6 @@ class BarRegularItemViewSet(viewsets.ModelViewSet):
             for item in self.queryset
         ]
 
-    # def append_tekila(self, response):
-    #     [
-    #         response.append(
-    #             {
-    #                 # "id": tk_item.id,
-    #                 "name": tk_item.item.name,
-    #                 "selling_price_per_shot": float(tk_item.selling_price_per_shot),
-    #                 "items_available": tk_item.available_quantity,
-    #                 "stock_status": tk_item.stock_status,
-    #                 "item_type": "Tekila",
-    #             }
-    #         )
-    #         for tk_item in self.queryset
-    #     ]
-
 
 class RegularOrderRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
@@ -268,7 +252,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             "id": instance.id,
             "customer_name": instance.customer_name,
             "customer_phone": instance.customer_phone,
-            "customer_orders_number": instance.customer_orders_number,
+            "dish_number": instance.customer_orders_number,
             "total_price": instance.get_total_price,
             "orders": instance.get_orders_detail,
         }
@@ -295,7 +279,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         return {
             "customer_name": object.customer_name,
             "customer_phone": object.customer_phone,
-            "dish_number": object.dish_number,
+            "customer_orders_number": object.customer_orders_number,
             "orders": object.get_orders_detail,
             "created_by": object.created_by.username,
             "date_created": object.date_created,
@@ -376,12 +360,12 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         [
             res.append(
                 {
-                    'id': _.id,
-                    'customer_name': _.customer_name,
-                    'customer_phone': _.customer_phone,
-                    'customer_orders_number': _.customer_orders_number,
-                    'total_price': _.get_total_price,
-                    'orders': _.get_orders_detail,
+                    "id": _.id,
+                    "customer_name": _.customer_name,
+                    "customer_phone": _.customer_phone,
+                    "dish_number": _.customer_orders_number,
+                    "total_price": _.get_total_price,
+                    "orders": _.get_orders_detail,
                 }
             )
             for _ in objects
@@ -449,10 +433,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request):
-        by_credit = request.data.get('by_credit')
-        if by_credit:
-            customer = request.data.get("customer")
-            # Check if customer is valid to borrow for today
+        # Check if customer is valid to borrow for today
         object = CustomerRegularOrderRecordPayment.objects.create(
             customer_order_record=CustomerRegularOrderRecord.objects.get(
                 id=request.data.get("customer_order_record")
