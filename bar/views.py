@@ -248,7 +248,7 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
         )
         return {
             "id": object.id,
-            "item": object.item.name,
+            "item": object.item.item.name,
             "quantity": object.quantity,
             "order_number": object.order_number,
             "created_by": object.created_by.username,
