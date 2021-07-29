@@ -1,3 +1,4 @@
+from core.models import CreditCustomer
 import datetime
 from user.models import User
 from django.db.models.aggregates import Sum
@@ -7,6 +8,8 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from restaurant.models import (
+    CreditCustomerDishPayment,
+    CreditCustomerDishPaymentHistory,
     CustomerDish,
     CustomerDishPayment,
     MainInventoryItem,
@@ -19,6 +22,7 @@ from restaurant.models import (
     RestaurantPayrol,
 )
 from restaurant.serializers import (
+    CreditCustomerDishPaymentHistorySerializer,
     CustomerDishPaymentSerializer,
     CustomerDishSerializer,
     MainInventoryItemRecordSerializer,
@@ -352,6 +356,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     queryset = CustomerDishPayment.objects.all()
     serializer_class = CustomerDishPaymentSerializer
     authentication_classes = [TokenAuthentication]
+    today = datetime.datetime.today()
 
     def list(self, request, *args, **kwargs):
         response: list = []
@@ -468,6 +473,16 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request):
+        by_credit = request.data.get("by_credit")
+        customer = self.get_customer(request)
+        if (
+            by_credit and customer and self.get_total_per_day(customer) > 5000
+        ):  # 5000 can be changed to any value.
+            return Response(
+                {
+                    "message": f"Can't perform this action. {customer.name} reached credit limit for today."
+                }
+            )
         object = CustomerDishPayment.objects.create(
             customer_dish=CustomerDish.objects.get(
                 id=request.data.get("customer_dish")
@@ -475,6 +490,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             amount_paid=request.data.get("amount_paid"),
             created_by=request.user,
         )
+        self.pay_by_credit(request, by_credit, object)
         self.save_payment_status(request, object)
         object.save()
         return {
@@ -485,6 +501,33 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             "created_by": str(object.created_by),
         }
 
+    def get_total_per_day(self, customer):
+        qs = CreditCustomerDishPayment.objects.filter(
+            customer=customer, date_created=self.today
+        )
+        return qs.aggregate(
+            Sum("customer_dish_payment__customer_dish__get_total_price")
+        )
+
+    def pay_by_credit(self, request, by_credit, object):
+        customer = self.get_customer(request)
+        if by_credit and customer:
+            object.by_credit = True
+            object.save()
+            CreditCustomerDishPayment.objects.create(
+                customer_dish_payment=object,
+                customer=customer,
+            )
+
+    def get_customer(self, request):
+        try:
+            customer = CreditCustomer.objects.get(
+                name=request.data.get("customer_name")
+            )
+        except CreditCustomer.DoesNotExist:
+            customer = None
+        return customer
+
     def save_payment_status(self, request, object):
         amount_paid = float(request.data.get("amount_paid"))
         if amount_paid == 0:
@@ -493,6 +536,42 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             object.payment_status = "paid"
         else:
             object.payment_status = "partial"
+
+
+class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = CreditCustomerDishPaymentHistory.objects.all()
+    serializer_class = CreditCustomerDishPaymentHistorySerializer
+    authentication_classes = [TokenAuthentication]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"message": f"{serializer.errors}"}, status.HTTP_400_BAD_REQUEST
+            )
+        credit_customer_dish_payment = request.data.get("credit_customer_dish_payment")
+        try:
+            object = CreditCustomerDishPayment.objects.get(
+                id=credit_customer_dish_payment
+            )
+            if object.payment_status == "paid" and object.by_credit is False:
+                return Response(
+                    {
+                        "message": "This order was not taken by credit or is already paid."
+                    },
+                    status.HTTP_400_BAD_REQUEST,
+                )
+            serializer.save()
+            return Response(
+                {"message": "Operation succeed"},
+                status.HTTP_400_BAD_REQUEST,
+            )
+        except CreditCustomerDishPayment.DoesNotExist:
+            return Response(
+                {"message": "Credit Dish Chosen does not exists."},
+                status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class RestaurantPayrolViewSet(viewsets.ModelViewSet):

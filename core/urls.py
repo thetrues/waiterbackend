@@ -56,6 +56,10 @@ v1.register(
     restaurant_views.CustomerDishPaymentViewSet,
 )
 v1.register(
+    "restaurant/credit-customer/payment-history",
+    restaurant_views.CreditCustomerDishPaymentHistoryViewSet,
+)
+v1.register(
     "restaurant/payrol",
     restaurant_views.RestaurantPayrolViewSet,
 )

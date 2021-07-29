@@ -1,4 +1,8 @@
+from django.db.models.manager import Manager
+from user.models import User
+from django.db import models
 from core.models import (
+    BaseCreditCustomerPayment,
     BaseCustomerOrderRecord,
     BaseInventory,
     BaseOrderRecord,
@@ -6,9 +10,6 @@ from core.models import (
     BasePayrol,
     Item,
 )
-from django.db.models.manager import Manager
-from user.models import User
-from django.db import models
 
 # Inventory Management
 
@@ -210,7 +211,65 @@ class CustomerRegularOrderRecordPayment(BasePayment):
         verbose_name_plural: str = "Customer Regular Order Record Payments"
 
 
-# Payrolling Management
+class CreditCustomerRegularOrderRecordPayment(BaseCreditCustomerPayment):
+    record_order_payment_record = models.ForeignKey(
+        CustomerRegularOrderRecordPayment, on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name: str = "Credit Customer Regular Order Record Payment"
+        verbose_name_plural: str = "Credit Customer Regular Order Record Payments"
+
+
+class CreditCustomerRegularOrderRecordPaymentHistory(models.Model):
+    credit_customer_payment = models.ForeignKey(
+        CreditCustomerRegularOrderRecordPayment, on_delete=models.CASCADE
+    )  # Filter all dishes with 'by_credit'=True and 'customer_dish_payment__payment_status' !="paid"
+    amount_paid = models.PositiveIntegerField()
+    date_paid = models.DateField()
+    objects = Manager()
+
+    def __str__(self):
+        return self.credit_customer_payment.customer.customer_name
+
+    class Meta:
+        ordering: list = ["-id"]
+        verbose_name: str = "Credit Customer Regular Order Record Payment History"
+        verbose_name_plural: str = (
+            "Credit Customer Regular Order Record Payment Histories"
+        )
+
+
+class CreditCustomerTequilaOrderRecordPayment(BaseCreditCustomerPayment):
+    record_order_payment_record = models.ForeignKey(
+        CustomerTequilaOrderRecordPayment, on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name: str = "Credit Customer Tequila Order Record Payment"
+        verbose_name_plural: str = "Credit Customer Tequila Order Record Payments"
+
+
+class CreditCustomerTequilaOrderRecordPaymentHistory(models.Model):
+    credit_customer_payment = models.ForeignKey(
+        CreditCustomerTequilaOrderRecordPayment, on_delete=models.CASCADE
+    )  # Filter all dishes with 'by_credit'=True and 'customer_dish_payment__payment_status' !="paid"
+    amount_paid = models.PositiveIntegerField()
+    date_paid = models.DateField()
+    objects = Manager()
+
+    def __str__(self):
+        return self.credit_customer_payment.customer.customer_name
+
+    class Meta:
+        ordering: list = ["-id"]
+        verbose_name: str = "Credit Customer Tequila Order Record Payment History"
+        verbose_name_plural: str = (
+            "Credit Customer Tequila Order Record Payment Histories"
+        )
+
+
+# Payrol Management
 
 
 class BarPayrol(BasePayrol):

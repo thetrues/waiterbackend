@@ -123,6 +123,7 @@ PAYMENT_METHODS: set = (
 
 
 class BasePayment(models.Model):
+    by_credit = models.BooleanField(default=False)
     payment_status = models.CharField(
         max_length=7,
         choices=PAYMENT_STATUS_CHOICES,
@@ -149,6 +150,35 @@ class BasePayment(models.Model):
     @abstractmethod
     def __str__(self) -> str():
         """Returns the string representation of this object"""
+
+    class Meta:
+        abstract: bool = True
+        ordering: list = ["-id"]
+
+
+class CreditCustomer(models.Model):
+    name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=14)
+    address = models.CharField(max_length=255)
+
+    def __str__(self):
+
+        return self.name
+
+    class Meta:
+        unique_together = ("phone", "name")
+        ordering = ["-id"]
+        verbose_name = "Credit Customer"
+        verbose_name_plural = "Credit Customers"
+
+
+class BaseCreditCustomerPayment(models.Model):
+    customer = models.ForeignKey(CreditCustomer, on_delete=models.CASCADE)
+    date_created = models.DateField(auto_now_add=True)
+    objects = Manager()
+
+    def __str__(self):
+        return self.customer.customer_name
 
     class Meta:
         abstract: bool = True
@@ -213,7 +243,7 @@ class BaseCustomerOrderRecord(models.Model):
     @abstractmethod
     def get_orders_detail(self):
         """get details of all ordered items"""
-    
+
     def __str__(self):
         """f(n) = c; c=1 Constant Function"""
         return (
@@ -226,19 +256,3 @@ class BaseCustomerOrderRecord(models.Model):
         indexes: list = [
             models.Index(fields=["customer_name", "created_by"]),
         ]
-
-
-class CreditCustomer(models.Model):
-    name = models.CharField(max_length=255)
-    phone = models.CharField(max_length=14)
-    address = models.CharField(max_length=255)
-
-    def __str__(self):
-
-        return self.name
-
-    class Meta:
-        unique_together = ("phone", "name")
-        ordering = ["-id"]
-        verbose_name = "Credit Customer"
-        verbose_name_plural = "Credit Customers"
