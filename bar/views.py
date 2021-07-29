@@ -240,7 +240,7 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, request):
         object = RegularOrderRecord.objects.create(
-            item=Item.objects.get(id=request.data.get("item")),
+            item=RegularInventoryRecord.objects.get(id=request.data.get("item")),
             quantity=request.data.get("quantity"),
             order_number=str(uuid.uuid4())[:8],
             created_by=request.user,
@@ -316,21 +316,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         return Response(self.get_list(self.queryset), status.HTTP_200_OK)
 
     def get_list(self, objects):
-        res: list = []
-        [
-            res.append(
-                {
-                    "id": _.id,
-                    "customer_name": _.customer_name,
-                    "customer_phone": _.customer_phone,
-                    "customer_orders_number": _.customer_orders_number,
-                    "total_price": _.get_total_price,
-                    "orders": _.get_orders_detail,
-                }
-            )
-            for _ in objects
-        ]
-        return res
+        return self.appending(objects)
 
     @action(
         detail=False,
@@ -383,22 +369,25 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             )
 
     def append_orders(self, qs):
-        response: list = []
+        return self.appending(qs)
+
+    def appending(self, objects):
+        res: list = []
         [
-            response.append(
+            res.append(
                 {
-                    "id": order.id,
-                    "customer_name": order.customer_name,
-                    "customer_phone": order.customer_phone,
-                    "customer_orders_number": order.customer_orders_number,
-                    "total_price": order.get_total_price,
-                    "orders": order.get_orders_detail,
+                    'id': _.id,
+                    'customer_name': _.customer_name,
+                    'customer_phone': _.customer_phone,
+                    'customer_orders_number': _.customer_orders_number,
+                    'total_price': _.get_total_price,
+                    'orders': _.get_orders_detail,
                 }
             )
-            for order in qs
+            for _ in objects
         ]
 
-        return response
+        return res
 
 
 class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
@@ -460,6 +449,10 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request):
+        by_credit = request.data.get('by_credit')
+        if by_credit:
+            customer = request.data.get("customer")
+            # Check if customer is valid to borrow for today
         object = CustomerRegularOrderRecordPayment.objects.create(
             customer_order_record=CustomerRegularOrderRecord.objects.get(
                 id=request.data.get("customer_order_record")
@@ -618,7 +611,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
             date_paid__month=today.month,
         )
         response: dict = {}
-        response["total_paid_amount"] = payments_this_month.aggregate(
+        response["total_amount_paid"] = payments_this_month.aggregate(
             total=Sum("amount_paid")
         )["total"]
         payments: list = []
