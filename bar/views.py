@@ -304,7 +304,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
     def add_orders(self, request):
         for _ in request.data.get("orders"):
             order = RegularOrderRecord.objects.create(
-                item=RegularInventoryRecord.objects.get(id=int(_["item_id"])),
+                item=RegularInventoryRecord.objects.get(id=int(_["menu_id"])),
                 quantity=_["quantity"],
                 order_number=str(uuid.uuid4())[:8],
                 created_by=request.user,
