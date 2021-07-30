@@ -1,12 +1,9 @@
-import uuid
-
-from django.db.models.aggregates import Sum
-from core.models import Item
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
+from core.utils import get_date_objects, validate_dates
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.utils import timezone
+from django.db.models.aggregates import Sum
 from bar.serializers import (
     BarPayrolSerializer,
     CustomerOrderRecordPaymentSerializer,
@@ -15,6 +12,7 @@ from bar.serializers import (
     RegularInventoryRecordSerializer,
     TekilaInventoryRecordSerializer,
 )
+from django.utils import timezone
 from bar.models import (
     BarPayrol,
     CustomerRegularOrderRecordPayment,
@@ -24,9 +22,10 @@ from bar.models import (
     RegularInventoryRecord,
     TekilaInventoryRecord,
 )
-from core.utils import get_date_objects, validate_dates
+from core.models import Item
 from user.models import User
 import datetime
+import uuid
 
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
@@ -175,21 +174,6 @@ class BarRegularItemViewSet(viewsets.ModelViewSet):
             for item in self.queryset
         ]
 
-    # def append_tekila(self, response):
-    #     [
-    #         response.append(
-    #             {
-    #                 # "id": tk_item.id,
-    #                 "name": tk_item.item.name,
-    #                 "selling_price_per_shot": float(tk_item.selling_price_per_shot),
-    #                 "items_available": tk_item.available_quantity,
-    #                 "stock_status": tk_item.stock_status,
-    #                 "item_type": "Tekila",
-    #             }
-    #         )
-    #         for tk_item in self.queryset
-    #     ]
-
 
 class RegularOrderRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
@@ -240,7 +224,7 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, request):
         object = RegularOrderRecord.objects.create(
-            item=Item.objects.get(id=request.data.get("item")),
+            item=RegularInventoryRecord.objects.get(id=request.data.get("item")),
             quantity=request.data.get("quantity"),
             order_number=str(uuid.uuid4())[:8],
             created_by=request.user,
@@ -248,7 +232,7 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
         )
         return {
             "id": object.id,
-            "item": object.item.name,
+            "item": object.item.item.name,
             "quantity": object.quantity,
             "order_number": object.order_number,
             "created_by": object.created_by.username,
@@ -268,7 +252,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             "id": instance.id,
             "customer_name": instance.customer_name,
             "customer_phone": instance.customer_phone,
-            "customer_orders_number": instance.customer_orders_number,
+            "dish_number": instance.customer_orders_number,
             "total_price": instance.get_total_price,
             "orders": instance.get_orders_detail,
         }
@@ -295,7 +279,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         return {
             "customer_name": object.customer_name,
             "customer_phone": object.customer_phone,
-            "dish_number": object.dish_number,
+            "customer_orders_number": object.customer_orders_number,
             "orders": object.get_orders_detail,
             "created_by": object.created_by.username,
             "date_created": object.date_created,
@@ -304,7 +288,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
     def add_orders(self, request):
         for _ in request.data.get("orders"):
             order = RegularOrderRecord.objects.create(
-                item=RegularInventoryRecord.objects.get(id=int(_["item_id"])),
+                item=RegularInventoryRecord.objects.get(id=int(_["menu_id"])),
                 quantity=_["quantity"],
                 order_number=str(uuid.uuid4())[:8],
                 created_by=request.user,
@@ -316,21 +300,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         return Response(self.get_list(self.queryset), status.HTTP_200_OK)
 
     def get_list(self, objects):
-        res: list = []
-        [
-            res.append(
-                {
-                    "id": _.id,
-                    "customer_name": _.customer_name,
-                    "customer_phone": _.customer_phone,
-                    "customer_orders_number": _.customer_orders_number,
-                    "total_price": _.get_total_price,
-                    "orders": _.get_orders_detail,
-                }
-            )
-            for _ in objects
-        ]
-        return res
+        return self.appending(objects)
 
     @action(
         detail=False,
@@ -383,22 +353,25 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             )
 
     def append_orders(self, qs):
-        response: list = []
+        return self.appending(qs)
+
+    def appending(self, objects):
+        res: list = []
         [
-            response.append(
+            res.append(
                 {
-                    "id": order.id,
-                    "customer_name": order.customer_name,
-                    "customer_phone": order.customer_phone,
-                    "customer_orders_number": order.customer_orders_number,
-                    "total_price": order.get_total_price,
-                    "orders": order.get_orders_detail,
+                    "id": _.id,
+                    "customer_name": _.customer_name,
+                    "customer_phone": _.customer_phone,
+                    "dish_number": _.customer_orders_number,
+                    "total_price": _.get_total_price,
+                    "orders": _.get_orders_detail,
                 }
             )
-            for order in qs
+            for _ in objects
         ]
 
-        return response
+        return res
 
 
 class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
@@ -460,6 +433,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request):
+        # Check if customer is valid to borrow for today
         object = CustomerRegularOrderRecordPayment.objects.create(
             customer_order_record=CustomerRegularOrderRecord.objects.get(
                 id=request.data.get("customer_order_record")
@@ -618,7 +592,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
             date_paid__month=today.month,
         )
         response: dict = {}
-        response["total_paid_amount"] = payments_this_month.aggregate(
+        response["total_amount_paid"] = payments_this_month.aggregate(
             total=Sum("amount_paid")
         )["total"]
         payments: list = []

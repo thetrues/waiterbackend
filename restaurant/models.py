@@ -1,4 +1,12 @@
-from core.models import BaseConfig, BaseInventory, BasePayment, BasePayrol, Item
+from core.models import (
+    BaseConfig,
+    BaseCreditCustomerPayment,
+    BaseInventory,
+    BasePayment,
+    BasePayrol,
+    CreditCustomer,
+    Item,
+)
 from django.db.models.manager import Manager
 from abc import abstractmethod
 from user.models import User
@@ -188,7 +196,7 @@ class CustomerDish(models.Model):
         return res_
 
     @property
-    def get_dish_detail(self) -> float():
+    def get_dish_detail(self) -> list():
         res: list = []
         [
             res.append(
@@ -223,6 +231,33 @@ class CustomerDishPayment(BasePayment):
     @property
     def get_remaining_amount(self) -> float():
         return self.get_total_amount_to_pay - self.amount_paid
+
+
+class CreditCustomerDishPayment(BaseCreditCustomerPayment):
+    customer_dish_payment = models.ForeignKey(
+        CustomerDishPayment, on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name: str = "Credit Customer Dish Payment"
+        verbose_name_plural: str = "Credit Customer Dish Payments"
+
+
+class CreditCustomerDishPaymentHistory(models.Model):
+    credit_customer_dish_payment = models.ForeignKey(
+        CreditCustomerDishPayment, on_delete=models.CASCADE
+    )  # Filter all dishes with 'by_credit'=True and 'customer_dish_payment__payment_status' !="paid"
+    amount_paid = models.PositiveIntegerField()
+    date_paid = models.DateField()
+    objects = Manager()
+
+    def __str__(self):
+        return self.credit_customer_dish_payment.customer.customer_name
+
+    class Meta:
+        ordering: list = ["-id"]
+        verbose_name: str = "Credit Customer Dish Payment History"
+        verbose_name_plural: str = "Credit Customer Dish Payment Histories"
 
 
 # Payrolling Management
