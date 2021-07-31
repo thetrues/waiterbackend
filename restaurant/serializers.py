@@ -22,7 +22,9 @@ class MainInventoryItemSerializer(serializers.ModelSerializer):
 
     def validate_item(self, item):
         if item.item_for != "restaurant":
-            raise serializers.ValidationError("Choose restaurant item.")
+            raise serializers.ValidationError(
+                f"Choose a restaurant item. {item.name} is for bar"
+            )
 
         return item
 
