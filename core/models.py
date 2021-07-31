@@ -14,8 +14,8 @@ class BaseInventory(models.Model):
     quantity = models.PositiveIntegerField()
     available_quantity = models.PositiveIntegerField(null=True, blank=True)
     purchasing_price = models.PositiveIntegerField()
-    date_purchased = models.DateTimeField()
-    date_perished = models.DateTimeField(null=True, blank=True)
+    date_purchased = models.DateField()
+    date_perished = models.DateField(null=True, blank=True)
     stock_status = models.CharField(
         max_length=11,
         choices=STOKE_STATUS_CHOICES,
