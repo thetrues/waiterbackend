@@ -28,10 +28,12 @@ class RegistrationView(APIView):
         user = serializer.save()
         return {
             "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "mobile_phone": user.mobile_phone,
             "username": user.username,
             "user_type": user.user_type,
             "token": Token.objects.get(user=user).key,
-            "message": "User account created.",
         }
 
 
@@ -42,12 +44,12 @@ class LoginView(APIView):
         username = request.data.get("username")
         password = request.data.get("password")
         user = authenticate(request, username=username, password=password)
-        if user is not None:
+        if user:
             login(request, user)
-            data = {"message": "Login success"}
+            data: dict = {"message": "Login success"}
         else:
-            data = {"message": "Invalid credentials"}
-        return Response(data=data, status=status.HTTP_200_OK)
+            data: dict = {"message": "Invalid credentials"}
+        return Response(data, status.HTTP_200_OK)
 
 
 class GetAllUsersView(APIView):

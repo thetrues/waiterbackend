@@ -3,17 +3,22 @@ from user.models import User
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, max_length=128, min_length=6)
+    first_name = serializers.CharField(max_length=255, min_length=1, required=True)
+    last_name = serializers.CharField(max_length=255, min_length=1, required=True)
+    mobile_phone = serializers.CharField(max_length=15, min_length=10, required=True)
+    password = serializers.CharField(write_only=True, max_length=128, min_length=6)
     confirm_password = serializers.CharField(
-        style={"input_type": "password"}, write_only=True
+        write_only=True, max_length=128, min_length=6
     )
 
     def save(self):
         user = User(
-            first_name=self.validated_data["first_name"],
-            last_name=self.validated_data["last_name"],
-            mobile_phone=self.validated_data["mobile_phone"],
-            username=self.validated_data["username"],
-            user_type=self.validated_data["user_type"],
+            first_name=self.validated_data.get("first_name"),
+            last_name=self.validated_data.get("last_name"),
+            mobile_phone=self.validated_data.get("mobile_phone"),
+            username=self.validated_data.get("username"),
+            user_type=self.validated_data.get("user_type"),
         )
         password = self.validated_data["password"]
         confirm_password = self.validated_data["confirm_password"]
