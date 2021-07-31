@@ -20,6 +20,12 @@ class MainInventoryItemSerializer(serializers.ModelSerializer):
         model = MainInventoryItem
         fields = "__all__"
 
+    def validate_item(self, item):
+        if item.item_for != "restaurant":
+            raise serializers.ValidationError("Choose restaurant item.")
+
+        return item
+
     def to_representation(self, instance):
         rep = super(MainInventoryItemSerializer, self).to_representation(instance)
         rep["item"] = instance.item.name
