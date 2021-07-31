@@ -33,7 +33,6 @@ class RegistrationView(APIView):
             "mobile_phone": user.mobile_phone,
             "username": user.username,
             "user_type": user.user_type,
-            "token": Token.objects.get(user=user).key,
         }
 
 
