@@ -5,11 +5,12 @@ from rest_framework import serializers
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ["id", "name", "unit"]
+        fields = ["id", "name", "unit", "item_for"]
 
     def to_representation(self, instance):
         rep = super(ItemSerializer, self).to_representation(instance)
         rep["unit"] = instance.unit.name
+        rep["item_for"] = instance.item_for.title()
         return rep
 
 

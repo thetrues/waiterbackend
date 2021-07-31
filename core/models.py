@@ -99,6 +99,12 @@ class BaseConfig(models.Model):
         ]
 
 
+ITEM_FOR_TYPE: set = (
+    ("bar", "Bar"),
+    ("restaurant", "Restaurant"),
+)
+
+
 class Item(BaseConfig):
     """[summary]
 
@@ -107,6 +113,7 @@ class Item(BaseConfig):
     """
 
     unit = models.ForeignKey(MeasurementUnit, on_delete=models.CASCADE)
+    item_for = models.CharField(max_length=10, choices=ITEM_FOR_TYPE)
 
 
 PAYMENT_STATUS_CHOICES: set = (
