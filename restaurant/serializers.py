@@ -45,6 +45,19 @@ class MiscellaneousInventoryRecordSerializer(serializers.ModelSerializer):
         model = MiscellaneousInventoryRecord
         fields = "__all__"
 
+    def validate_item(self, item):
+        if item.item_for != "restaurant":
+            raise serializers.ValidationError(
+                f"Choose a restaurant item. {item.name} is for bar"
+            )
+
+        return item
+
+    def to_representation(self, instance):
+        rep = super(MiscellaneousInventoryRecordSerializer, self).to_representation(instance)
+        rep["item"] = instance.item.name
+        return rep
+
 
 class MenuSerializer(serializers.ModelSerializer):
     image = serializers.ImageField()
