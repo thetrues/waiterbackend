@@ -21,7 +21,7 @@ class MainInventoryItemSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate_item(self, item):
-        if item.item_for != "restaurant":
+        if item.item_for not in ["restaurant", "both"]:
             raise serializers.ValidationError(
                 f"Choose a restaurant item. {item.name} is for bar"
             )
@@ -46,7 +46,7 @@ class MiscellaneousInventoryRecordSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate_item(self, item):
-        if item.item_for != "restaurant":
+        if item.item_for not in ["restaurant", "both"]:
             raise serializers.ValidationError(
                 f"Choose a restaurant item. {item.name} is for bar"
             )

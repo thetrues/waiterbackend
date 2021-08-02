@@ -102,6 +102,7 @@ class BaseConfig(models.Model):
 ITEM_FOR_TYPE: set = (
     ("bar", "Bar"),
     ("restaurant", "Restaurant"),
+    ("both", "Both"),
 )
 
 
