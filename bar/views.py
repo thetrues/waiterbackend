@@ -1,5 +1,7 @@
+from core.serializers import ItemSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
+from rest_framework.generics import ListAPIView
 from core.utils import get_date_objects, validate_dates
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -26,6 +28,13 @@ from core.models import Item
 from user.models import User
 import datetime
 import uuid
+
+
+class BarInventoryItemView(ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Item.objects.filter(item_for__in=["bar", "both"])
+    serializer_class = ItemSerializer
+    authentication_classes = [TokenAuthentication]
 
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
