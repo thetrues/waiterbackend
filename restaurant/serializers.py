@@ -58,6 +58,7 @@ class MiscellaneousInventoryRecordSerializer(serializers.ModelSerializer):
             instance
         )
         rep["item"] = instance.item.name
+        rep["purchasing_price"] = f"TShs {instance.purchasing_price}"
         rep["quantity"] = f"{instance.quantity} {instance.item.unit.name}"
         rep["stock_status"] = instance.stock_status.title()
         rep[
