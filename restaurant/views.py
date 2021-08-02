@@ -1,10 +1,12 @@
-from core.models import CreditCustomer
+from core.serializers import ItemSerializer
+from core.models import CreditCustomer, Item
 import datetime
 from user.models import User
 from django.db.models.aggregates import Sum
 from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
+from rest_framework.generics import ListAPIView
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from restaurant.models import (
@@ -47,6 +49,13 @@ class AdditiveViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Additive.objects.all()
     serializer_class = AdditiveSerializer
+    authentication_classes = [TokenAuthentication]
+
+
+class RestaurantInventoryItemView(ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Item.objects.filter(item_for__in=["restaurant", "both"])
+    serializer_class = ItemSerializer
     authentication_classes = [TokenAuthentication]
 
 
