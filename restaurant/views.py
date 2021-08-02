@@ -74,7 +74,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                     "purchasing_price": float(obj.purchasing_price),
                     "date_purchased": obj.date_purchased,
                     "date_perished": obj.date_perished,
-                    "stock_status": obj.stock_status,
+                    "stock_status": obj.stock_status.title(),
                     "threshold": f"{obj.threshold} {obj.main_inventory_item.item.unit.name}",
                     "main_inventory_item": str(obj.main_inventory_item),
                     "estimated_sales": f"TShs {obj.estimate_sales}",
