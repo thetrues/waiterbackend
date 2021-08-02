@@ -1,4 +1,4 @@
-from core.serializers import ItemSerializer
+from core.serializers import InventoryItemSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
 from rest_framework.generics import ListAPIView
@@ -33,7 +33,7 @@ import uuid
 class BarInventoryItemView(ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Item.objects.filter(item_for__in=["bar", "both"])
-    serializer_class = ItemSerializer
+    serializer_class = InventoryItemSerializer
     authentication_classes = [TokenAuthentication]
 
 

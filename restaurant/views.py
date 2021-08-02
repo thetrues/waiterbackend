@@ -1,4 +1,4 @@
-from core.serializers import ItemSerializer
+from core.serializers import InventoryItemSerializer
 from core.models import CreditCustomer, Item
 import datetime
 from user.models import User
@@ -55,7 +55,7 @@ class AdditiveViewSet(viewsets.ModelViewSet):
 class RestaurantInventoryItemView(ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Item.objects.filter(item_for__in=["restaurant", "both"])
-    serializer_class = ItemSerializer
+    serializer_class = InventoryItemSerializer
     authentication_classes = [TokenAuthentication]
 
 
