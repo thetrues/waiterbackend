@@ -1,4 +1,5 @@
 """waiterbackend URL Configuration"""
+from restaurant import views as restaurant_views
 from django.conf.urls.static import static
 from django.conf.urls import include
 from django.conf import settings
@@ -12,6 +13,10 @@ urlpatterns = (
         path("admin/", admin.site.urls),
         path("", include("user.urls")),
         path("w/api/", include("core.urls")),
+        path(
+            "w/api/restaurant/inventory/get-items",
+            restaurant_views.RestaurantInventoryItemView.as_view(),
+        ),
     ]
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
