@@ -14,6 +14,12 @@ class ItemSerializer(serializers.ModelSerializer):
         return rep
 
 
+class InventoryItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ["id", "name"]
+
+
 class MeasurementUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = MeasurementUnit
