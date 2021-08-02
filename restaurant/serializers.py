@@ -54,8 +54,14 @@ class MiscellaneousInventoryRecordSerializer(serializers.ModelSerializer):
         return item
 
     def to_representation(self, instance):
-        rep = super(MiscellaneousInventoryRecordSerializer, self).to_representation(instance)
+        rep = super(MiscellaneousInventoryRecordSerializer, self).to_representation(
+            instance
+        )
         rep["item"] = instance.item.name
+        rep["quantity"] = f"{instance.quantity} {instance.item.unit.name}"
+        rep[
+            "available_quantity"
+        ] = f"{instance.available_quantity} {instance.item.unit.name}"
         return rep
 
 

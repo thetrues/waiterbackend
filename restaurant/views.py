@@ -69,16 +69,16 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             response.append(
                 {
                     "id": obj.id,
-                    "quantity": obj.quantity,
-                    "available_quantity": obj.available_quantity,
+                    "quantity": f"{obj.quantity} {obj.main_inventory_item.item.unit.name}",
+                    "available_quantity": f"{obj.available_quantity} {obj.main_inventory_item.item.unit.name}",
                     "purchasing_price": float(obj.purchasing_price),
                     "date_purchased": obj.date_purchased,
                     "date_perished": obj.date_perished,
                     "stock_status": obj.stock_status,
-                    "threshold": obj.threshold,
+                    "threshold": f"{obj.threshold} {obj.main_inventory_item.item.unit.name}",
                     "main_inventory_item": str(obj.main_inventory_item),
-                    "estimated_sales": obj.estimate_sales,
-                    "estimated_profit": obj.estimate_profit,
+                    "estimated_sales": f"TShs {obj.estimate_sales}",
+                    "estimated_profit": f"TShs {obj.estimate_profit}",
                     "stock_out_history": obj.stock_out_history,
                 }
             )
