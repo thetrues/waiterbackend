@@ -65,7 +65,7 @@ class MainInventoryItemRecord(BaseInventory):
             response.append(
                 {
                     "history_id": _.id,
-                    "quantity_out": _.quantity_out,
+                    "quantity_out": f"{_.quantity_out} {_.item_record.main_inventory_item.item.unit.name}",
                     "date_out": _.date_out,
                     "created_by": str(_.created_by),
                 }
@@ -79,7 +79,7 @@ class MainInventoryItemRecord(BaseInventory):
 class MainInventoryItemRecordStockOut(models.Model):
     item_record = models.ForeignKey(MainInventoryItemRecord, on_delete=models.CASCADE)
     quantity_out = models.PositiveIntegerField()
-    date_out = models.DateTimeField(auto_now_add=True)
+    date_out = models.DateField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     objects = Manager()
 
