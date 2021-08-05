@@ -375,7 +375,9 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = CustomerDishPayment.objects.select_related("customer_dish")
+    queryset = CustomerDishPayment.objects.select_related(
+        "customer_dish__created_by"
+    ).prefetch_related("orders__sub_menu")
     serializer_class = CustomerDishPaymentSerializer
     authentication_classes = [TokenAuthentication]
     today = datetime.datetime.today()
@@ -386,10 +388,12 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             response.append(
                 {
                     "id": qs.id,
+                    "by_credit": qs.by_credit,
                     "payment_status": qs.payment_status,
                     "payment_method": qs.payment_method,
                     "amount_paid": float(qs.amount_paid),
-                    "date_paid": qs.date_paid,
+                    "date_paid": str(qs.date_paid).split(" ")[0],
+                    "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
                     "customer_dish": {
                         "dish_id": qs.customer_dish.id,
                         "customer_name": qs.customer_dish.customer_name,
