@@ -377,7 +377,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     queryset = CustomerDishPayment.objects.select_related(
         "customer_dish__created_by"
-    ).prefetch_related("orders__sub_menu")
+    ).prefetch_related("customer_dish__orders__sub_menu")
     serializer_class = CustomerDishPaymentSerializer
     authentication_classes = [TokenAuthentication]
     today = datetime.datetime.today()
