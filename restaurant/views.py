@@ -220,11 +220,12 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
         [
             res.append(
                 {
-                    "sub_menu": order.sub_menu.id,
+                    "sub_menu": order.sub_menu.name,
                     "quantity": order.quantity,
                     "order_number": order.order_number,
-                    "created_by": order.created_by.id,
-                    "date_created": order.date_created,
+                    "created_by": order.created_by.username,
+                    "date_created": str(order.date_created).split("T")[0],
+                    "time_created": str(order.date_created).split("T")[1].split(".")[0],
                 }
             )
             for order in self.queryset
@@ -243,7 +244,7 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
         object = RestaurantCustomerOrder.objects.create(
             sub_menu=Menu.objects.get(id=request.data.get("sub_menu")),
             quantity=request.data.get("quantity"),
-            order_number=str(uuid.uuid4())[:7],
+            order_number=str(uuid.uuid4)[:7],
             created_by=request.user,
         )
         return {
@@ -251,8 +252,9 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
             "sub_menu": object.sub_menu.name,
             "quantity": object.quantity,
             "order_number": object.order_number,
-            "date_created": object.date_created,
             "created_by": object.created_by.username,
+            "date_created": str(object.date_created).split("T")[0],
+            "time_created": str(object.date_created).split("T")[1].split(".")[0],
         }
 
 
@@ -302,7 +304,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
         object = CustomerDish.objects.create(
             customer_name=request.data.get("customer_name"),
             customer_phone=request.data.get("customer_phone"),
-            dish_number=str(uuid.uuid4())[:8],
+            dish_number=str(uuid.uuid4)[:8],
             created_by=request.user,
         )
         self.add_orders(request, object)
