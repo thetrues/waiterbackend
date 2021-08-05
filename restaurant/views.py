@@ -252,8 +252,9 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
             "sub_menu": object.sub_menu.name,
             "quantity": object.quantity,
             "order_number": object.order_number,
-            "date_created": object.date_created,
             "created_by": object.created_by.username,
+            "date_created": str(object.date_created).split("T")[0],
+            "time_created": str(object.date_created).split("T")[1].split(".")[0],
         }
 
 
