@@ -220,11 +220,12 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
         [
             res.append(
                 {
-                    "sub_menu": order.sub_menu.id,
+                    "sub_menu": order.sub_menu.name,
                     "quantity": order.quantity,
                     "order_number": order.order_number,
-                    "created_by": order.created_by.id,
-                    "date_created": order.date_created,
+                    "created_by": order.created_by.username,
+                    "date_created": str(order.date_created).split("T")[0],
+                    "time_created": str(order.date_created).split("T")[1].split(".")[0],
                 }
             )
             for order in self.queryset
