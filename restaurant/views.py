@@ -108,9 +108,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                 {"message": "Quantity out must be greater than 0"},
                 status.HTTP_200_OK,
             )
-        items = MainInventoryItemRecord.objects.filter(
-            main_inventory_item__item__name=item_record_name, stock_status="available"
-        )
+        items = self.filter_items(item_record_name)
         if len(items) == 0:
             return Response(
                 {"message": f"{item_record_name} stock is not available"},
@@ -127,10 +125,10 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             self.create_stock_out(request, quantity_out, item)
             self.reduce_availability(quantity_out, item, available_quantity)
             if item.available_quantity <= item.threshold:
-                self.send_notification()
+                self.send_notification() # mzigo unakaribia kuisha
             if item.available_quantity == 0:
                 self.set_unavailable(item)
-                self.send_notification()
+                self.send_notification() # mzigo umeisha
             return Response(
                 {
                     "item": str(item),
@@ -139,9 +137,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                 status.HTTP_200_OK,
             )
         else:
-            total_available_quantities = items.aggregate(
-                total=Sum("available_quantity")
-            )["total"]
+            total_available_quantities = self.get_total_available_quantities_for_all_items(items)
             if quantity_out > total_available_quantities:
                 return Response(
                     {
@@ -149,22 +145,35 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                     },
                     status.HTTP_200_OK,
                 )
-            for stock in items[::-1]:
-                if quantity_out == 0:
-                    break
-                if stock.available_quantity > 0:
-                    if stock.available_quantity < quantity_out:
-                        quantity_out -= stock.available_quantity
-                        self.create_stock_out(request, stock.available_quantity, stock)
-                        stock.stock_status = "unavailable"
-                        stock.date_perished = timezone.now()
-                        stock.available_quantity = 0
-                    else:
-                        self.create_stock_out(request, quantity_out, stock)
-                        stock.available_quantity -= quantity_out
-                        quantity_out = 0
-                    stock.save()
+            self.issueing_stock(request, quantity_out, items)
             return Response(status.HTTP_200_OK)
+
+    def issueing_stock(self, request, quantity_out, items):
+        for stock in items[::-1]:
+            if quantity_out == 0:
+                break
+            if stock.available_quantity > 0:
+                if stock.available_quantity < quantity_out:
+                    quantity_out -= stock.available_quantity
+                    self.create_stock_out(request, stock.available_quantity, stock)
+                    stock.stock_status = "unavailable"
+                    stock.date_perished = timezone.now()
+                    stock.available_quantity = 0
+                else:
+                    self.create_stock_out(request, quantity_out, stock)
+                    stock.available_quantity -= quantity_out
+                    quantity_out = 0
+                stock.save()
+
+    def get_total_available_quantities_for_all_items(self, items):
+        return items.aggregate(
+                total=Sum("available_quantity")
+            )["total"]
+
+    def filter_items(self, item_record_name):
+        return MainInventoryItemRecord.objects.filter(
+            main_inventory_item__item__name=item_record_name, stock_status="available"
+        )
 
     def get_data(self, request):
         item_record_id = int(request.data.get("item_record_id"))
@@ -202,7 +211,7 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
 class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = RestaurantCustomerOrder.objects.all()
+    queryset = RestaurantCustomerOrder.objects.select_related("sub_menu", "created_by")
     serializer_class = RestaurantCustomerOrderSerializer
     authentication_classes = [TokenAuthentication]
 
@@ -249,7 +258,7 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
 
 class CustomerDishViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = CustomerDish.objects.all()
+    queryset = CustomerDish.objects.prefetch_related("orders")
     serializer_class = CustomerDishSerializer
     authentication_classes = [TokenAuthentication]
 
@@ -313,7 +322,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             order = RestaurantCustomerOrder.objects.create(
                 sub_menu=Menu.objects.get(id=int(_["menu_id"])),
                 quantity=int(_["quantity"]),
-                order_number=str(uuid.uuid4())[:7],
+                order_number=str(uuid.uuid4)[:7],
                 created_by=request.user,
             )
             for ad_id in _["additives"]:
@@ -362,7 +371,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = CustomerDishPayment.objects.all()
+    queryset = CustomerDishPayment.objects.select_related("customer_dish")
     serializer_class = CustomerDishPaymentSerializer
     authentication_classes = [TokenAuthentication]
     today = datetime.datetime.today()
@@ -574,7 +583,7 @@ class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(
                 {"message": "Operation succeed"},
-                status.HTTP_400_BAD_REQUEST,
+                status.HTTP_201_CREATED,
             )
         except CreditCustomerDishPayment.DoesNotExist:
             return Response(
@@ -651,7 +660,7 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
         payments_this_month = RestaurantPayrol.objects.filter(
             date_paid__year=today.year,
             date_paid__month=today.month,
-        )
+        ).select_related("restaurant_payee", "restaurant_payer")
         response: dict = {}
         response["total_paid_amount"] = payments_this_month.aggregate(
             total=Sum("amount_paid")
