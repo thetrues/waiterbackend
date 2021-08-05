@@ -68,7 +68,9 @@ class MainInventoryItemViewSet(viewsets.ModelViewSet):
 
 class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = MainInventoryItemRecord.objects.select_related("main_inventory_item")
+    queryset = MainInventoryItemRecord.objects.select_related(
+        "main_inventory_item__item__unit"
+    )
     serializer_class = MainInventoryItemRecordSerializer
     authentication_classes = [TokenAuthentication]
 
@@ -125,10 +127,10 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             self.create_stock_out(request, quantity_out, item)
             self.reduce_availability(quantity_out, item, available_quantity)
             if item.available_quantity <= item.threshold:
-                self.send_notification() # mzigo unakaribia kuisha
+                self.send_notification()  # mzigo unakaribia kuisha
             if item.available_quantity == 0:
                 self.set_unavailable(item)
-                self.send_notification() # mzigo umeisha
+                self.send_notification()  # mzigo umeisha
             return Response(
                 {
                     "item": str(item),
@@ -137,7 +139,9 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                 status.HTTP_200_OK,
             )
         else:
-            total_available_quantities = self.get_total_available_quantities_for_all_items(items)
+            total_available_quantities = (
+                self.get_total_available_quantities_for_all_items(items)
+            )
             if quantity_out > total_available_quantities:
                 return Response(
                     {
@@ -166,9 +170,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                 stock.save()
 
     def get_total_available_quantities_for_all_items(self, items):
-        return items.aggregate(
-                total=Sum("available_quantity")
-            )["total"]
+        return items.aggregate(total=Sum("available_quantity"))["total"]
 
     def filter_items(self, item_record_name):
         return MainInventoryItemRecord.objects.filter(
