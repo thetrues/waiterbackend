@@ -1,3 +1,4 @@
+from typing import List
 from core.serializers import InventoryItemSerializer
 from core.models import CreditCustomer, Item
 import datetime
@@ -127,10 +128,24 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             self.create_stock_out(request, quantity_out, item)
             self.reduce_availability(quantity_out, item, available_quantity)
             if item.available_quantity <= item.threshold:
-                self.send_notification()  # mzigo unakaribia kuisha
+                item.send_notification(
+                    message="{} is nearly out of stock. The remained quantity is {} {}".format(
+                        item.main_inventory_item.item.name,
+                        item.available_quantity,
+                        item.main_inventory_item.item.unit.name,
+                    ),
+                    recipients=self.get_recipients(),
+                )  # mzigo unakaribia kuisha
             if item.available_quantity == 0:
                 self.set_unavailable(item)
-                self.send_notification()  # mzigo umeisha
+                item.send_notification(
+                    message="{} is out of stock. The remained quantity is {} {}".format(
+                        item.main_inventory_item.item.name,
+                        item.available_quantity,
+                        item.main_inventory_item.item.unit.name,
+                    ),
+                    recipients=self.get_recipients(),
+                )  # mzigo umeisha
             return Response(
                 {
                     "item": str(item),
@@ -200,8 +215,12 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         item.date_perished = timezone.now()
         item.save()
 
-    def send_notification(self):
-        print("Sending message notification that stock is nearly out")
+    def get_recipients(self):
+        response: List[str] = []
+        qs = User.objects.filter(user_type="manager")
+        [response.append(user.mobile_phone) for user in qs]
+
+        return response
 
 
 class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
