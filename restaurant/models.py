@@ -1,3 +1,4 @@
+from typing import List
 from core.models import (
     BaseConfig,
     BaseCreditCustomerPayment,
@@ -58,9 +59,28 @@ class MainInventoryItemRecord(BaseInventory):
     def estimate_profit(self):
         return float(self.estimate_sales - self.purchasing_price)
 
+    def send_notification(self, message: str, recipients: List[str]):
+        from BeemAfrica import Authorize, SMS
+        import requests
+        import json
+
+        api_key = "945c064a2f78eaea"
+        secret_key = "YmU3ZDJlNzVhMGE3MTE3NDQ3NTJhNTQwN2ZkNWFkMDFiNWQ0ZmRjYjk4ZWU3YjE4MTBmYjdmYjlhYjE0NDdiYw=="
+
+        Authorize(api_key, secret_key)
+
+        try:
+            SMS.send_sms(message, recipients)
+        except Exception as e:
+            errorName = str(e)
+            return requests.models.Response(
+                json.dumps(errorName),
+                status=500,
+            )
+
     @property
     def stock_out_history(self):
-        response: list = []
+        response: List[dict] = []
         [
             response.append(
                 {
