@@ -244,7 +244,7 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
         object = RestaurantCustomerOrder.objects.create(
             sub_menu=Menu.objects.get(id=request.data.get("sub_menu")),
             quantity=request.data.get("quantity"),
-            order_number=str(uuid.uuid4())[:7],
+            order_number=str(uuid.uuid4)[:7],
             created_by=request.user,
         )
         return {
@@ -304,7 +304,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
         object = CustomerDish.objects.create(
             customer_name=request.data.get("customer_name"),
             customer_phone=request.data.get("customer_phone"),
-            dish_number=str(uuid.uuid4())[:8],
+            dish_number=str(uuid.uuid4)[:8],
             created_by=request.user,
         )
         self.add_orders(request, object)
