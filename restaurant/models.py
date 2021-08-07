@@ -1,18 +1,16 @@
-from typing import List
+from django.db.models.manager import Manager
+from abc import abstractmethod
 from core.models import (
-    BaseConfig,
     BaseCreditCustomerPayment,
     BaseInventory,
     BasePayment,
+    BaseConfig,
     BasePayrol,
-    CreditCustomer,
     Item,
 )
-from django.db.models.manager import Manager
-from abc import abstractmethod
-from user.models import User
 from django.db import models
-import datetime
+from user.models import User
+from typing import List
 
 # Inventory
 
