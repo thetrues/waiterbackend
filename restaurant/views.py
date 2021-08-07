@@ -79,7 +79,13 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             if request.data.get("threshold") >= request.data.get("quantity"):
-                raise ValueError("Threshold should be less than quantity")
+                return (
+                    Response(
+                        {"message": "Threshold should be less than quantity"},
+                        status.HTTP_400_BAD_REQUEST,
+                    ),
+                )
+
             data = self.perform_create(request)
             return Response(data, status.HTTP_201_CREATED)
 
