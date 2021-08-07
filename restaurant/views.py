@@ -157,7 +157,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                 )
             self.create_stock_out(request, quantity_out, item)
             self.reduce_availability(quantity_out, item, available_quantity)
-            if item.available_quantity <= item.threshold:
+            if item.available_quantity <= item.threshold and item.available_quantity > 0:
                 item.send_notification(
                     message="{} is nearly out of stock. The remained quantity is {} {}".format(
                         item.main_inventory_item.item.name,
