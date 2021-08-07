@@ -75,6 +75,14 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     serializer_class = MainInventoryItemRecordSerializer
     authentication_classes = [TokenAuthentication]
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(request.data)
+        if serializer.is_valid():
+            if request.data.get("threshold") >= request.data.get("quantity"):
+                raise ValueError("Threshold should be less than quantity")
+            else:
+                serializer.save()
+
     def list(self, request, *args, **kwargs):
         response: list = []
         [
@@ -187,7 +195,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     def get_total_available_quantities_for_all_items(self, items):
         return items.aggregate(total=Sum("available_quantity"))["total"]
 
-    def filter_items(self, item_record_name): # select_related
+    def filter_items(self, item_record_name):  # select_related
         return MainInventoryItemRecord.objects.filter(
             main_inventory_item__item__name=item_record_name, stock_status="available"
         )
