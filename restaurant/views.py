@@ -1,41 +1,41 @@
-from typing import List
-from core.serializers import InventoryItemSerializer
-from core.models import CreditCustomer, Item
-import datetime
-from user.models import User
-from django.db.models.aggregates import Sum
-from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
+from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
-from rest_framework.decorators import action
 from rest_framework.response import Response
+from core.models import CreditCustomer, Item
+from rest_framework.decorators import action
+from restaurant.utils import get_recipients
+from django.db.models.aggregates import Sum
 from restaurant.models import (
-    CreditCustomerDishPayment,
     CreditCustomerDishPaymentHistory,
-    CustomerDish,
-    CustomerDishPayment,
-    MainInventoryItem,
-    MainInventoryItemRecord,
     MainInventoryItemRecordStockOut,
     MiscellaneousInventoryRecord,
+    CreditCustomerDishPayment,
+    MainInventoryItemRecord,
+    RestaurantCustomerOrder,
+    CustomerDishPayment,
+    MainInventoryItem,
+    RestaurantPayrol,
+    CustomerDish,
     Additive,
     Menu,
-    RestaurantCustomerOrder,
-    RestaurantPayrol,
 )
 from restaurant.serializers import (
     CreditCustomerDishPaymentHistorySerializer,
-    CustomerDishPaymentSerializer,
-    CustomerDishSerializer,
-    MainInventoryItemRecordSerializer,
-    MainInventoryItemSerializer,
     MiscellaneousInventoryRecordSerializer,
+    MainInventoryItemRecordSerializer,
+    RestaurantCustomerOrderSerializer,
+    CustomerDishPaymentSerializer,
+    MainInventoryItemSerializer,
+    RestaurantPayrolSerializer,
+    CustomerDishSerializer,
     AdditiveSerializer,
     MenuSerializer,
-    RestaurantCustomerOrderSerializer,
-    RestaurantPayrolSerializer,
 )
+from django.utils import timezone
+from user.models import User
+import datetime
 import uuid
 
 
@@ -134,7 +134,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                         item.available_quantity,
                         item.main_inventory_item.item.unit.name,
                     ),
-                    recipients=self.get_recipients(),
+                    recipients=get_recipients(),
                 )  # mzigo unakaribia kuisha
             if item.available_quantity == 0:
                 self.set_unavailable(item)
@@ -144,7 +144,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                         item.available_quantity,
                         item.main_inventory_item.item.unit.name,
                     ),
-                    recipients=self.get_recipients(),
+                    recipients=get_recipients(),
                 )  # mzigo umeisha
             return Response(
                 {
@@ -214,13 +214,6 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         item.stock_status = "unavailable"
         item.date_perished = timezone.now()
         item.save()
-
-    def get_recipients(self):
-        response: List[str] = []
-        qs = User.objects.filter(user_type="manager")
-        [response.append(user.mobile_phone) for user in qs]
-
-        return response
 
 
 class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
