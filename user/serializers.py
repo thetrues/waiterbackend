@@ -54,3 +54,8 @@ class UserSerializer(serializers.ModelSerializer):
             "is_active",
             "is_staff",
         ]
+    
+    def to_representation(self, instance):
+        rep = super(UserSerializer, self).to_representation(instance)
+        rep["user_type"] = instance.get_user_type_display()
+        return rep
