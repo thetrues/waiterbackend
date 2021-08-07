@@ -77,17 +77,14 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            if request.data.get("threshold") >= request.data.get("quantity"):
-                return (
-                    Response(
-                        {"message": "Threshold should be less than quantity"},
-                        status.HTTP_400_BAD_REQUEST,
-                    ),
-                )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        if request.data.get("threshold") >= request.data.get("quantity"):
+            message: str = "Threshold should be less than quantity"
+            return Response({"message": message}, status.HTTP_400_BAD_REQUEST)
 
-            data = self.perform_create(request)
-            return Response(data, status.HTTP_201_CREATED)
+        data = self.perform_create(request)
+        return Response(data=data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, request):
         object = MainInventoryItemRecord.objects.create(
