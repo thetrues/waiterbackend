@@ -187,7 +187,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     def get_total_available_quantities_for_all_items(self, items):
         return items.aggregate(total=Sum("available_quantity"))["total"]
 
-    def filter_items(self, item_record_name):
+    def filter_items(self, item_record_name): # select_related
         return MainInventoryItemRecord.objects.filter(
             main_inventory_item__item__name=item_record_name, stock_status="available"
         )
