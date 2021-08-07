@@ -68,7 +68,7 @@ class MainInventoryItemRecord(BaseInventory):
         Authorize(api_key, secret_key)
 
         try:
-            SMS.send_sms(message, recipients)
+            SMS.send_sms(message, recipients, source_addr="RESTAURANT")
         except Exception as e:
             errorName = str(e)
             return requests.models.Response(
