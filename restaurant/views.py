@@ -76,12 +76,37 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             if request.data.get("threshold") >= request.data.get("quantity"):
-                raise ValueError("Threshold should be less than quantity")
-            else:
-                serializer.save()
+                return (
+                    Response(
+                        {"message": "Threshold should be less than quantity"},
+                        status.HTTP_400_BAD_REQUEST,
+                    ),
+                )
+
+            data = self.perform_create(request)
+            return Response(data, status.HTTP_201_CREATED)
+
+    def perform_create(self, request):
+        object = MainInventoryItemRecord.objects.create(
+            quantity=request.data.get("quantity"),
+            purchasing_price=request.data.get("purchasing_price"),
+            date_purchased=request.data.get("date_purchased"),
+            threshold=request.data.get("threshold"),
+            main_inventory_item=MainInventoryItem.objects.get(
+                id=request.data.get("main_inventory_item")
+            ),
+        )
+        return {
+            "id": object.id,
+            "item": object.main_inventory_item.item.name,
+            "quantity": object.quantity,
+            "threshold": object.threshold,
+            "purchasing_price": object.purchasing_price,
+            "date_purchased": object.date_purchased,
+        }
 
     def list(self, request, *args, **kwargs):
         response: list = []
