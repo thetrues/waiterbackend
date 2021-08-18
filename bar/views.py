@@ -128,6 +128,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
             "estimated_profit_after_sale": float(instance.estimate_profit()),
             "item": instance.item.name,
             "measurement_unit": instance.item.unit.name,
+            "orders_history": instance.get_orders_history(),
         }
 
     def list(self, request, *args, **kwargs):
