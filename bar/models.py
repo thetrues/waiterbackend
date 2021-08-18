@@ -53,15 +53,6 @@ class TekilaInventoryRecord(BaseInventory):
     def estimate_profit(self) -> float():
         return self.estimate_sales() - self.purchasing_price
 
-    def get_orders_history(self) -> dict():
-        orders_history: dict = {}
-        qs = self.tequilaorderrecord_set.select_related("created_by")
-        self._get_total_ordered_items(orders_history, qs)
-        self._get_total_income(orders_history, qs)
-        self._get_orders_structure(orders_history, qs)
-
-        return orders_history
-
     class Meta:
         ordering: list = ["-id"]
         verbose_name: str = "Tequila Inventory Record"
