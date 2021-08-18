@@ -1,3 +1,5 @@
+from typing import List
+from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
 from user.models import User
 from django.db import models
@@ -29,10 +31,40 @@ class RegularInventoryRecord(BaseInventory):
     def estimate_profit(self):
         return self.estimate_sales() - self.purchasing_price
 
+    def get_orders_history(self) -> dict():
+        orders_history: dict = {}
+        qs = self.regularorderrecord__set.select_related("created_by")
+        self._get_total_ordered_items(orders_history, qs)
+        self._get_total_income(orders_history, qs)
+        self._get_orders_structure(orders_history, qs)
+
+        return orders_history
+
+    def _get_orders_structure(self, orders_history, qs):
+        orders_structure: dict = {}
+        for ord in qs:
+            splited_date = str(ord.date_created).split("T")
+            orders_structure["order_number"] = ord.order_number
+            orders_structure["quantity"] = ord.quantity
+            orders_structure["total_price"] = ord.total
+            orders_structure["date"] = splited_date[0]
+            orders_structure["time"] = splited_date[1].split(".")[0]
+            orders_structure["created_by"] = ord.created_by.username
+
+        orders_history["orders_structure"] = orders_structure
+
+    def _get_total_income(self, orders_history, qs):
+        orders_history["total_income"] = qs.aggregate(Sum("total"))["total"]
+
+    def _get_total_ordered_items(self, orders_history, qs):
+        orders_history["total_ordered_items"] = qs.aggregate(Sum("quantity"))[
+            "quantity"
+        ]
+
     class Meta:
-        ordering: list = ["-id"]
-        verbose_name = "Regular Inventory Record"
-        verbose_name_plural = "Regular Inventory Records"
+        ordering: List = ["-id"]
+        verbose_name: str = "Regular Inventory Record"
+        verbose_name_plural: str = "Regular Inventory Records"
 
 
 class TekilaInventoryRecord(BaseInventory):
@@ -164,7 +196,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
     @property
     def get_orders_detail(self):
         """f(n) = n . Linear Function"""
-        res: list = []
+        res: List = []
         [
             res.append(
                 {

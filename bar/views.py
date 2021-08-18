@@ -39,7 +39,7 @@ class BarInventoryItemView(ListAPIView):
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = RegularInventoryRecord.objects.all()
+    queryset = RegularInventoryRecord.objects.select_related("item", "item__unit")
     serializer_class = RegularInventoryRecordSerializer
     authentication_classes = [TokenAuthentication]
 
@@ -53,15 +53,18 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
 
         return {
             "id": instance.id,
-            "quantity": instance.quantity,
+            "quantity": f"{instance.quantity} {instance.item.unit.name}",
+            "available_quantity": f"{instance.available_quantity} {instance.item.unit.name}",
             "purchasing_price": float(instance.purchasing_price),
             "date_purchased": instance.date_purchased,
             "total_items": instance.total_items,
+            "threshold": f"{instance.threshold} {instance.item.unit.name}",
             "selling_price_per_item": instance.selling_price_per_item,
             "estimated_total_cash_after_sale": float(instance.estimate_sales()),
             "estimated_profit_after_sale": float(instance.estimate_profit()),
             "item": instance.item.name,
             "measurement_unit": instance.item.unit.name,
+            "orders_history": instance.get_orders_history(),
         }
 
     def list(self, request, *args, **kwargs):
@@ -100,7 +103,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
 
 class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    queryset = TekilaInventoryRecord.objects.all()
+    queryset = TekilaInventoryRecord.objects.select_related("item", "item__unit")
     serializer_class = TekilaInventoryRecordSerializer
     authentication_classes = [TokenAuthentication]
 
@@ -110,10 +113,12 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
 
         return Response(data=response, status=status.HTTP_200_OK)
 
-    def get_res(self, instance) -> dict():
+    def get_res(self, instance: TekilaInventoryRecord) -> dict():
         return {
             "id": instance.id,
-            "quantity": instance.quantity,
+            "quantity": f"{instance.quantity} {instance.item.unit.name}",
+            "available_quantity": f"{instance.available_quantity} {instance.item.unit.name}",
+            "threshold": f"{instance.threshold} {instance.item.unit.name}",
             "purchasing_price": float(instance.purchasing_price),
             "date_purchased": instance.date_purchased,
             "date_perished": instance.date_perished,
