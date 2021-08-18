@@ -1,3 +1,4 @@
+from typing import List
 from django.db.models.manager import Manager
 from abc import abstractmethod
 from user.models import User
@@ -228,8 +229,8 @@ class BaseOrderRecord(models.Model):
 
     class Meta:
         abstract: bool = True
-        ordering: list = ["-id"]
-        indexes: list = [
+        ordering: List = ["-id"]
+        indexes: List = [
             models.Index(fields=["item", "order_number"]),
         ]
 
@@ -260,7 +261,7 @@ class BaseCustomerOrderRecord(models.Model):
 
     class Meta:
         abstract: bool = True
-        ordering = ["-id"]
-        indexes: list = [
+        ordering: List[str] = ["-id"]
+        indexes: List = [
             models.Index(fields=["customer_name", "created_by"]),
         ]
