@@ -60,7 +60,7 @@ class RegularInventoryRecord(BaseInventory):
     def _get_total_income(self, orders_history, qs):
         total_income: int = 0
         for _ in qs:
-            total_income = +_.total
+            total_income += _.total
         orders_history["total_income"] = total_income
 
         # orders_history["total_income"] = qs.annotate(
