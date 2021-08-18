@@ -53,7 +53,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
 
         return {
             "id": instance.id,
-            "quantity": f"{instance.quantity} {instance.item.unit.name}",
+            "quantity": instance.quantity,
             "purchasing_price": float(instance.purchasing_price),
             "date_purchased": instance.date_purchased,
             "total_items": instance.total_items,
