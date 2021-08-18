@@ -36,7 +36,7 @@ class RegularInventoryRecord(BaseInventory):
         orders_history: dict = {}
         qs = self.regularorderrecord_set.select_related("created_by")
         self._get_total_ordered_items(orders_history, qs)
-        self._get_total_income(qs)
+        self._get_total_income(orders_history, qs)
         self._get_orders_structure(orders_history, qs)
 
         return orders_history
@@ -44,33 +44,32 @@ class RegularInventoryRecord(BaseInventory):
     def _get_orders_structure(self, orders_history, qs):
         orders_structure: dict = {}
         temp: List = []
-        for ord in qs:
-            splited_date = str(ord.date_created).split(" ")
-            orders_structure["order_id"] = ord.id
-            orders_structure["order_number"] = ord.order_number
-            orders_structure["quantity"] = ord.quantity
-            orders_structure["total_price"] = ord.total
+        for item in qs:
+            splited_date = str(item.date_created).split(" ")
+            orders_structure["order_id"] = item.id
+            orders_structure["order_number"] = item.order_number
+            orders_structure["quantity"] = item.quantity
+            orders_structure["total_price"] = item.total
             orders_structure["date"] = splited_date[0]
             orders_structure["time"] = splited_date[1].split(".")[0]
-            orders_structure["created_by"] = ord.created_by.username
+            orders_structure["created_by"] = item.created_by.username
             temp.append(orders_structure)
 
         orders_history["orders_structure"] = temp
 
-    def _get_total_income(self, qs):
+    def _get_total_income(self, orders_history, qs):
         total_income: int = 0
         for _ in qs:
             total_income = +_.total
-        return total_income
+        orders_history["total_income"] = total_income
 
         # orders_history["total_income"] = qs.annotate(
         #     multiple=F("item__selling_price_per_item") * F("item__quantity")
         # ).aggregate(Sum("multiple"))["multiple__sum"]
 
     def _get_total_ordered_items(self, orders_history, qs):
-        orders_history["total_ordered_items"] = qs.aggregate(quantity=Sum("quantity"))[
-            "quantity"
-        ]
+        res = qs.aggregate(quantity=Sum("quantity"))["quantity"]
+        orders_history["total_ordered_items"] = res or 0
 
     class Meta:
         ordering: List = ["-id"]
