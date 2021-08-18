@@ -54,10 +54,10 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         return {
             "id": instance.id,
             "quantity": f"{instance.quantity} {instance.item.unit.name}",
-            "available_quantity": f"{instance.available_quantity} {instance.item.unit.name}",
             "purchasing_price": float(instance.purchasing_price),
             "date_purchased": instance.date_purchased,
             "total_items": instance.total_items,
+            "available_items": instance.available_quantity,
             "threshold": f"{instance.threshold} {instance.item.unit.name}",
             "selling_price_per_item": instance.selling_price_per_item,
             "estimated_total_cash_after_sale": float(instance.estimate_sales()),
