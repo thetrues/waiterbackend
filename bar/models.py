@@ -36,7 +36,7 @@ class RegularInventoryRecord(BaseInventory):
         orders_history: dict = {}
         qs = self.regularorderrecord_set.select_related("created_by")
         self._get_total_ordered_items(orders_history, qs)
-        self._get_total_income(qs)
+        self._get_total_income(orders_history, qs)
         self._get_orders_structure(orders_history, qs)
 
         return orders_history
@@ -57,11 +57,11 @@ class RegularInventoryRecord(BaseInventory):
 
         orders_history["orders_structure"] = temp
 
-    def _get_total_income(self, qs):
+    def _get_total_income(self, orders_history, qs):
         total_income: int = 0
         for _ in qs:
             total_income = +_.total
-        return total_income
+        orders_history["total_income"] = total_income
 
         # orders_history["total_income"] = qs.annotate(
         #     multiple=F("item__selling_price_per_item") * F("item__quantity")
