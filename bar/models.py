@@ -33,7 +33,7 @@ class RegularInventoryRecord(BaseInventory):
 
     def get_orders_history(self) -> dict():
         orders_history: dict = {}
-        qs = self.regularorderrecord__set.select_related("created_by")
+        qs = self.regularorderrecord_set.select_related("created_by")
         self._get_total_ordered_items(orders_history, qs)
         self._get_total_income(orders_history, qs)
         self._get_orders_structure(orders_history, qs)
