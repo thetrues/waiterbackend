@@ -53,7 +53,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
 
         return {
             "id": instance.id,
-            "quantity": f"{instance.quantity} {instance.item.unit.name}",
+            "quantity": instance.quantity,
             "purchasing_price": float(instance.purchasing_price),
             "date_purchased": instance.date_purchased,
             "total_items": instance.total_items,
@@ -116,9 +116,9 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
     def get_res(self, instance: TekilaInventoryRecord) -> dict():
         return {
             "id": instance.id,
-            "quantity": f"{instance.quantity} {instance.item.unit.name}",
-            "available_quantity": f"{instance.available_quantity} {instance.item.unit.name}",
-            "threshold": f"{instance.threshold} {instance.item.unit.name}",
+            "quantity": instance.quantity,
+            "available_quantity": instance.available_quantity,
+            "threshold": instance.threshold,
             "purchasing_price": float(instance.purchasing_price),
             "date_purchased": instance.date_purchased,
             "date_perished": instance.date_perished,
