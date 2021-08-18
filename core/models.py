@@ -1,4 +1,5 @@
 from typing import List
+from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
 from abc import abstractmethod
 from user.models import User
@@ -33,6 +34,41 @@ class BaseInventory(models.Model):
     @abstractmethod
     def estimate_profit(self) -> int():
         """calculations for profit estimation"""
+
+    def get_orders_history(self, qs) -> dict():
+        orders_history: dict = {}
+        self._get_total_ordered_items(orders_history, qs)
+        self._get_total_income(orders_history, qs)
+        self._get_orders_structure(orders_history, qs)
+
+        return orders_history
+
+    def _get_orders_structure(self, orders_history, qs):
+        orders_structure: dict = {}
+        temp: List = []
+        for item in qs:
+            splited_date = str(item.date_created).split(" ")
+            orders_structure["order_id"] = item.id
+            orders_structure["order_number"] = item.order_number
+            orders_structure["quantity"] = item.quantity
+            orders_structure["total_price"] = item.total
+            orders_structure["date"] = splited_date[0]
+            orders_structure["time"] = splited_date[1].split(".")[0]
+            orders_structure["created_by"] = item.created_by.username
+            temp.append(orders_structure)
+            orders_structure: dict = {}
+
+        orders_history["orders_structure"] = temp
+
+    def _get_total_income(self, orders_history, qs):
+        total_income: int = 0
+        for _ in qs:
+            total_income += _.total
+        orders_history["total_income"] = total_income
+
+    def _get_total_ordered_items(self, orders_history, qs):
+        res = qs.aggregate(quantity=Sum("quantity"))["quantity"]
+        orders_history["total_ordered_items"] = res or 0
 
     class Meta:
         abstract: bool = True

@@ -64,7 +64,9 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
             "estimated_profit_after_sale": float(instance.estimate_profit()),
             "item": instance.item.name,
             "measurement_unit": instance.item.unit.name,
-            "orders_history": instance.get_orders_history(),
+            "orders_history": instance.get_orders_history(
+                qs=instance.regularorderrecord_set.select_related("created_by")
+            ),
         }
 
     def list(self, request, *args, **kwargs):
@@ -128,7 +130,9 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
             "estimated_profit_after_sale": float(instance.estimate_profit()),
             "item": instance.item.name,
             "measurement_unit": instance.item.unit.name,
-            "orders_history": instance.get_orders_history(),
+            "orders_history": instance.get_orders_history(
+                qs=instance.tequilaorderrecord_set.select_related("created_by")
+            ),
         }
 
     def list(self, request, *args, **kwargs):
