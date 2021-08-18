@@ -44,6 +44,7 @@ class RegularInventoryRecord(BaseInventory):
         orders_structure: dict = {}
         for ord in qs:
             splited_date = str(ord.date_created).split("T")
+            orders_structure["id"] = ord.id
             orders_structure["order_number"] = ord.order_number
             orders_structure["quantity"] = ord.quantity
             orders_structure["total_price"] = ord.total
