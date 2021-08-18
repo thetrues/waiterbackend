@@ -55,10 +55,10 @@ class RegularInventoryRecord(BaseInventory):
         orders_history["orders_structure"] = orders_structure
 
     def _get_total_income(self, orders_history, qs):
-        orders_history["total_income"] = qs.aggregate(Sum("total"))["total"]
+        orders_history["total_income"] = qs.aggregate(total=Sum("total"))["total"]
 
     def _get_total_ordered_items(self, orders_history, qs):
-        orders_history["total_ordered_items"] = qs.aggregate(Sum("quantity"))[
+        orders_history["total_ordered_items"] = qs.aggregate(quantity=Sum("quantity"))[
             "quantity"
         ]
 
