@@ -1,6 +1,6 @@
-from typing import List
 from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
+from django.db.models import F
 from user.models import User
 from django.db import models
 from core.models import (
@@ -12,6 +12,7 @@ from core.models import (
     BasePayrol,
     Item,
 )
+from typing import List
 
 # Inventory Management
 
@@ -55,7 +56,9 @@ class RegularInventoryRecord(BaseInventory):
         orders_history["orders_structure"] = orders_structure
 
     def _get_total_income(self, orders_history, qs):
-        orders_history["total_income"] = qs.aggregate(total=Sum("total"))["total"]
+        orders_history["total_income"] = qs.annotate(
+            multiple=F("item__selling_price_per_item") * F("item__quantity")
+        ).aggregate(Sum("multiple"))["multiple__sum"]
 
     def _get_total_ordered_items(self, orders_history, qs):
         orders_history["total_ordered_items"] = qs.aggregate(quantity=Sum("quantity"))[
