@@ -43,6 +43,7 @@ class RegularInventoryRecord(BaseInventory):
 
     def _get_orders_structure(self, orders_history, qs):
         orders_structure: dict = {}
+        temp: List = []
         for ord in qs:
             splited_date = str(ord.date_created).split(" ")
             orders_structure["order_id"] = ord.id
@@ -52,8 +53,9 @@ class RegularInventoryRecord(BaseInventory):
             orders_structure["date"] = splited_date[0]
             orders_structure["time"] = splited_date[1].split(".")[0]
             orders_structure["created_by"] = ord.created_by.username
+            temp.append(orders_structure)
 
-        orders_history["orders_structure"] = orders_structure
+        orders_history["orders_structure"] = temp
 
     def _get_total_income(self, orders_history, qs):
         orders_history["total_income"] = qs.annotate(
