@@ -52,7 +52,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
     def get_res(self, instance):
 
         return {
-            "id": instance.id,
+            "order_id": instance.id,
             "quantity": f"{instance.quantity} {instance.item.unit.name}",
             "purchasing_price": float(instance.purchasing_price),
             "date_purchased": instance.date_purchased,
