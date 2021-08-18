@@ -54,6 +54,7 @@ class RegularInventoryRecord(BaseInventory):
             orders_structure["time"] = splited_date[1].split(".")[0]
             orders_structure["created_by"] = item.created_by.username
             temp.append(orders_structure)
+            orders_structure: dict = {}
 
         orders_history["orders_structure"] = temp
 
@@ -62,10 +63,6 @@ class RegularInventoryRecord(BaseInventory):
         for _ in qs:
             total_income += _.total
         orders_history["total_income"] = total_income
-
-        # orders_history["total_income"] = qs.annotate(
-        #     multiple=F("item__selling_price_per_item") * F("item__quantity")
-        # ).aggregate(Sum("multiple"))["multiple__sum"]
 
     def _get_total_ordered_items(self, orders_history, qs):
         res = qs.aggregate(quantity=Sum("quantity"))["quantity"]
