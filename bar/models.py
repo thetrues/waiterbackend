@@ -68,9 +68,8 @@ class RegularInventoryRecord(BaseInventory):
         # ).aggregate(Sum("multiple"))["multiple__sum"]
 
     def _get_total_ordered_items(self, orders_history, qs):
-        orders_history["total_ordered_items"] = qs.aggregate(quantity=Sum("quantity"))[
-            "quantity"
-        ]
+        res = qs.aggregate(quantity=Sum("quantity"))["quantity"]
+        orders_history["total_ordered_items"] = res or 0
 
     class Meta:
         ordering: List = ["-id"]
