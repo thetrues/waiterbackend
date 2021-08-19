@@ -544,7 +544,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
 
 class BarPayrolViewSet(viewsets.ModelViewSet):
-    queryset = BarPayrol.objects.all()
+    queryset = BarPayrol.objects.select_related("bar_payer", "bar_payee")
     serializer_class = BarPayrolSerializer
 
     def update(self, request, pk=None):
