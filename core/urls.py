@@ -18,6 +18,10 @@ v1.register("bar/regular-inventory-record", bar_views.RegularInventoryRecordView
 v1.register("bar/tekila-inventory-record", bar_views.TekilaInventoryRecordViewSet)
 v1.register("bar/sales/regular/items", bar_views.BarRegularItemViewSet)
 v1.register("bar/sales/regular/order-records", bar_views.RegularOrderRecordViewSet)
+
+v1.register("bar/sales/tequila/items", bar_views.BarTequilaItemViewSet)
+v1.register("bar/sales/tequila/order-records", bar_views.TequilaOrderRecordViewSet)
+
 v1.register(
     "bar/sales/regular/customer-order-records",
     bar_views.CustomerRegularOrderRecordViewSet,
@@ -26,6 +30,18 @@ v1.register(
     "bar/sales/regular/customer-order-payments",
     bar_views.CustomerRegularOrderRecordPaymentViewSet,
 )
+
+
+v1.register(
+    "bar/sales/tequila/customer-order-records",
+    bar_views.CustomerTequilaOrderRecordViewSet,
+)
+v1.register(
+    "bar/sales/tequila/customer-order-payments",
+    bar_views.CustomerTequilaOrderRecordPaymentViewSet,
+)
+
+
 v1.register(
     "bar/payrol",
     bar_views.BarPayrolViewSet,
