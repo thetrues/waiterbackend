@@ -3,9 +3,12 @@ from bar.models import (
     BarPayrol,
     CustomerRegularOrderRecord,
     CustomerRegularOrderRecordPayment,
+    CustomerTequilaOrderRecord,
+    CustomerTequilaOrderRecordPayment,
     RegularOrderRecord,
     RegularInventoryRecord,
     TekilaInventoryRecord,
+    TequilaOrderRecord,
 )
 from rest_framework import serializers
 
@@ -76,3 +79,21 @@ class BarPayrolSerializer(serializers.ModelSerializer):
         rep = super(BarPayrolSerializer, self).to_representation(instance)
         rep["bar_payee"] = instance.bar_payee.username
         return rep
+
+
+class TequilaOrderRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TequilaOrderRecord
+        exclude = ["order_number", "created_by", "date_created"]
+
+
+class TequilaCustomerOrderRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerTequilaOrderRecord
+        fields = ["customer_name", "customer_phone"]
+
+
+class TequilaCustomerOrderRecordPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerTequilaOrderRecordPayment
+        exclude = ["payment_status", "date_paid", "date_updated", "created_by"]
