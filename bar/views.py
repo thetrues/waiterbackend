@@ -648,8 +648,9 @@ class BarTequilaItemViewSet(viewsets.ModelViewSet):
                 {
                     "id": item.id,
                     "name": item.item.name,
-                    "selling_price_per_item": float(item.selling_price_per_item),
                     "items_available": item.available_quantity,
+                    "total_shots_per_tekila": item.total_shots_per_tekila,
+                    "selling_price_per_shot": float(item.selling_price_per_shot),
                     "stock_status": item.stock_status,
                     "item_type": "Tequila",
                 }
