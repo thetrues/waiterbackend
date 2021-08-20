@@ -227,7 +227,7 @@ class BaseCreditCustomerPayment(models.Model):
 
     class Meta:
         abstract: bool = True
-        ordering: list = ["-id"]
+        ordering: List = ["-id"]
 
 
 class BasePayrol(models.Model):
