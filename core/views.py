@@ -5,7 +5,6 @@ from core.serializers import (
     MeasurementUnitSerializer,
     ItemSerializer,
 )
-from icecream import ic
 
 
 class MeasurementUnitViewSet(viewsets.ModelViewSet):
