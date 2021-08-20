@@ -10,7 +10,7 @@ from core.models import (
 )
 from django.db import models
 from user.models import User
-from typing import List
+from typing import List, Set
 
 # Inventory
 
@@ -207,15 +207,15 @@ class CustomerDish(models.Model):
         return f"{self.customer_name}: Dish#{self.dish_number}"
 
     @property
-    def get_total_price(self) -> float():
-        res_: int = 0
+    def get_total_price(self) -> float:
+        res_: float = 0.0
         for order in self.orders.all():
             res_ += order.total
         return res_
 
     @property
-    def get_dish_detail(self) -> list():
-        res: list = []
+    def get_dish_detail(self) -> List:
+        res: List = []
         [
             res.append(
                 {
@@ -228,10 +228,10 @@ class CustomerDish(models.Model):
         return res
 
     class Meta:
-        ordering: list = ["-id"]
-        verbose_name = "Customer Dish"
-        verbose_name_plural = "Customer Dishes"
-        unique_together = (("customer_name", "dish_number"),)
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Customer Dish"
+        verbose_name_plural: str = "Customer Dishes"
+        unique_together: Set[set] = (("customer_name", "dish_number"),)
 
 
 class CustomerDishPayment(BasePayment):

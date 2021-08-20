@@ -353,7 +353,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
         """f(n) = n^2 i.e Quadractic Function."""
         for _ in request.data.get("orders"):
             order = RestaurantCustomerOrder.objects.create(
-                sub_menu=Menu.objects.get(id=int(_["menu_id"])),
+                sub_menu=Menu.objects.get(id=int(_["sub_menu"])),
                 quantity=int(_["quantity"]),
                 order_number=str(uuid.uuid4())[:7],
                 created_by=request.user,
