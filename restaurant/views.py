@@ -157,7 +157,10 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                 )
             self.create_stock_out(request, quantity_out, item)
             self.reduce_availability(quantity_out, item, available_quantity)
-            if item.available_quantity <= item.threshold and item.available_quantity > 0:
+            if (
+                item.available_quantity <= item.threshold
+                and item.available_quantity > 0
+            ):
                 item.send_notification(
                     message="{} is nearly out of stock. The remained quantity is {} {}".format(
                         item.main_inventory_item.item.name,
@@ -220,7 +223,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     def filter_items(self, item_record_name):  # select_related
         return MainInventoryItemRecord.objects.filter(
             main_inventory_item__item__name=item_record_name, stock_status="available"
-        )
+        ).select_related("main_inventory_item", "main_inventory_item__item")
 
     def get_data(self, request):
         item_record_id = int(request.data.get("item_record_id"))
