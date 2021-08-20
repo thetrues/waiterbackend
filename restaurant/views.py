@@ -40,40 +40,30 @@ import uuid
 
 
 class MenuViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = Menu.objects.all()
     serializer_class = MenuSerializer
-    authentication_classes = [TokenAuthentication]
 
 
 class AdditiveViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = Additive.objects.all()
     serializer_class = AdditiveSerializer
-    authentication_classes = [TokenAuthentication]
 
 
 class RestaurantInventoryItemView(ListAPIView):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = Item.objects.filter(item_for__in=["restaurant", "both"])
     serializer_class = InventoryItemSerializer
-    authentication_classes = [TokenAuthentication]
 
 
 class MainInventoryItemViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = MainInventoryItem.objects.all()
     serializer_class = MainInventoryItemSerializer
-    authentication_classes = [TokenAuthentication]
 
 
 class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = MainInventoryItemRecord.objects.select_related(
         "main_inventory_item__item__unit"
     )
     serializer_class = MainInventoryItemRecordSerializer
-    authentication_classes = [TokenAuthentication]
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -250,17 +240,13 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
 
 class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = MiscellaneousInventoryRecord.objects.all()
     serializer_class = MiscellaneousInventoryRecordSerializer
-    authentication_classes = [TokenAuthentication]
 
 
 class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = RestaurantCustomerOrder.objects.select_related("sub_menu", "created_by")
     serializer_class = RestaurantCustomerOrderSerializer
-    authentication_classes = [TokenAuthentication]
 
     def list(self, request, *args, **kwargs):
         res: dict = []
@@ -306,10 +292,8 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
 
 
 class CustomerDishViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = CustomerDish.objects.prefetch_related("orders")
     serializer_class = CustomerDishSerializer
-    authentication_classes = [TokenAuthentication]
 
     def list(self, request, *args, **kwargs):
 
@@ -419,12 +403,10 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
 
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = CustomerDishPayment.objects.select_related(
         "customer_dish__created_by"
     ).prefetch_related("customer_dish__orders__sub_menu")
     serializer_class = CustomerDishPaymentSerializer
-    authentication_classes = [TokenAuthentication]
     today = datetime.datetime.today()
 
     def list(self, request, *args, **kwargs):
@@ -610,10 +592,10 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
 
 
 class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = CreditCustomerDishPaymentHistory.objects.all()
+    queryset = CreditCustomerDishPaymentHistory.objects.select_related(
+        "credit_customer_dish_payment__customer_dish_payment__customer_dish"
+    )
     serializer_class = CreditCustomerDishPaymentHistorySerializer
-    authentication_classes = [TokenAuthentication]
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -646,10 +628,10 @@ class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):
 
 
 class RestaurantPayrolViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = RestaurantPayrol.objects.all()
+    queryset = RestaurantPayrol.objects.select_related(
+        "restaurant_payee", "restaurant_payer"
+    )
     serializer_class = RestaurantPayrolSerializer
-    authentication_classes = [TokenAuthentication]
 
     def update(self, request, pk=None):
         instance = self.get_object()
