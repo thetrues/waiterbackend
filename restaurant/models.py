@@ -221,6 +221,7 @@ class CustomerDish(models.Model):
                 {
                     "sub_menu": order.sub_menu.name,
                     "price": order.sub_menu.price,
+                    "quantity": order.quantity,
                 },
             )
             for order in self.orders.all()
