@@ -699,7 +699,7 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
         response: dict = {}
         response["total_paid_amount"] = payments_this_month.aggregate(
             total=Sum("amount_paid")
-        )["total"]
+        )["total"] or 0
         payments: list = []
         [
             payments.append(
