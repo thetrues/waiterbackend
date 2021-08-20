@@ -404,14 +404,15 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     queryset = CustomerDishPayment.objects.select_related(
-        "customer_dish__created_by"
-    ).prefetch_related("customer_dish__orders__sub_menu")
+        "customer_dish", "created_by", "customer_dish__created_by"
+    ).prefetch_related("customer_dish__orders")
     serializer_class = CustomerDishPaymentSerializer
     today = datetime.datetime.today()
 
     def list(self, request, *args, **kwargs):
         response: list = []
         for qs in self.queryset:
+            splitted_date = str(qs.date_paid).split(" ")
             response.append(
                 {
                     "id": qs.id,
@@ -419,8 +420,8 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                     "payment_status": qs.payment_status,
                     "payment_method": qs.payment_method,
                     "amount_paid": float(qs.amount_paid),
-                    "date_paid": str(qs.date_paid).split(" ")[0],
-                    "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
+                    "date_paid": splitted_date[0],
+                    "time_paid": splitted_date[1].split(".")[0],
                     "customer_dish": {
                         "dish_id": qs.customer_dish.id,
                         "customer_name": qs.customer_dish.customer_name,
@@ -697,9 +698,9 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
             date_paid__month=today.month,
         ).select_related("restaurant_payee", "restaurant_payer")
         response: dict = {}
-        response["total_paid_amount"] = payments_this_month.aggregate(
-            total=Sum("amount_paid")
-        )["total"] or 0
+        response["total_paid_amount"] = (
+            payments_this_month.aggregate(total=Sum("amount_paid"))["total"] or 0
+        )
         payments: list = []
         [
             payments.append(
