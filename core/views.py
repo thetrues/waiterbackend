@@ -13,7 +13,7 @@ class MeasurementUnitViewSet(viewsets.ModelViewSet):
 
 
 class ItemViewSet(viewsets.ModelViewSet):
-    queryset = Item.objects.all()
+    queryset = Item.objects.select_related("unit")
     serializer_class = ItemSerializer
 
 

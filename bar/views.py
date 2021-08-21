@@ -771,7 +771,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     def add_orders(self, request):
         for _ in request.data.get("orders"):
             order = TequilaOrderRecord.objects.create(
-                item=TekilaInventoryRecord.objects.get(id=int(_["menu_id"])),
+                item=TekilaInventoryRecord.objects.get(id=int(_["order_id"])),
                 quantity=_["quantity"],
                 order_number=str(uuid.uuid4())[:8],
                 created_by=request.user,
