@@ -764,8 +764,8 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             "customer_orders_number": object.customer_orders_number,
             "orders": object.get_orders_detail,
             "created_by": object.created_by.username,
-            "date_created": str(object.date_created).split("T")[0],
-            "time_created": str(object.date_created).split("T")[1].split(".")[0],
+            "date_created": object.date_created,
+            # "time_created": object.date_created).split("T")[1].split(".")[0],
         }
 
     def add_orders(self, request, object):
@@ -777,7 +777,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 created_by=request.user,
             )
             object.orders.add(order)
-            object.save()
+        object.save()
 
     def list(self, request, *args, **kwargs):
 
