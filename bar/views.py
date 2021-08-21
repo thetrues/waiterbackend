@@ -1,3 +1,4 @@
+from typing import List
 from core.utils import get_date_objects, validate_dates
 from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
@@ -764,8 +765,8 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             "customer_orders_number": object.customer_orders_number,
             "orders": object.get_orders_detail,
             "created_by": object.created_by.username,
-            "date_created": object.date_created,
-            # "time_created": object.date_created).split("T")[1].split(".")[0],
+            "date_created": str(object.date_created).split(" ")[0],
+            "time_created": str(object.date_created).split(" ")[1].split(".")[0],
         }
 
     def add_orders(self, request, object):
@@ -842,7 +843,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         return self.appending(qs)
 
     def appending(self, objects):
-        res: list = []
+        res: List = []
         [
             res.append(
                 {
