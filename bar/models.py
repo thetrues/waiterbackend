@@ -69,7 +69,7 @@ class TequilaOrderRecord(BaseOrderRecord):
         return self.item.item.name
 
     @property
-    def total(self):
+    def total(self) -> float():
         return float(self.item.total_shots_per_tekila * self.quantity)
 
     class Meta:
@@ -83,7 +83,7 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
     @property
     def get_total_price(self) -> float():
         """f(n) = n . Linear Function"""
-        res_: int = 0
+        res_: float = 0.0
         for order in self.orders.all():
             res_ += order.total
         return res_
@@ -110,6 +110,7 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
         return res
 
     class Meta:
+        ordering: List[str] = ["-id"]
         verbose_name = "Customer Regular Order Record"
         verbose_name_plural = "Customer Regular Order Records"
 
