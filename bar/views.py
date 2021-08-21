@@ -757,18 +757,18 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             customer_orders_number=str(uuid.uuid4())[:8],
             created_by=request.user,
         )
-        self.add_orders(request)
-        object.save()
+        self.add_orders(request, object)
         return {
             "customer_name": object.customer_name,
             "customer_phone": object.customer_phone,
             "customer_orders_number": object.customer_orders_number,
             "orders": object.get_orders_detail,
             "created_by": object.created_by.username,
-            "date_created": object.date_created,
+            "date_created": str(object.date_created).split("T")[0],
+            "time_created": str(object.date_created).split("T")[1].split(".")[0],
         }
 
-    def add_orders(self, request):
+    def add_orders(self, request, object):
         for _ in request.data.get("orders"):
             order = TequilaOrderRecord.objects.create(
                 item=TekilaInventoryRecord.objects.get(id=int(_["order_id"])),
@@ -776,7 +776,8 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 order_number=str(uuid.uuid4())[:8],
                 created_by=request.user,
             )
-            order.save()
+            object.orders.add(order)
+            object.save()
 
     def list(self, request, *args, **kwargs):
 
