@@ -272,9 +272,11 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
         return response
 
     def append_items(self, temp_resp: dict, qs, temp: dict):
+        counter: int = 0
         for j in qs:
+            counter += 1
             temp: Dict = {}
-            temp["id"] = j.id
+            temp["item_id"] = counter
             temp["purchased_quantity"] = j.quantity
             temp["available_quantity"] = j.available_quantity
             temp["purchasing_price"] = j.purchasing_price
