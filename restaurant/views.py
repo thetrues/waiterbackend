@@ -275,6 +275,7 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
         for j in qs:
             temp: Dict = {}
             temp["id"] = j.id
+            temp["purchased_quantity"] = j.quantity
             temp["available_quantity"] = j.available_quantity
             temp["purchasing_price"] = j.purchasing_price
             temp["date_purchased"] = j.date_purchased
