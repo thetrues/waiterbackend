@@ -161,7 +161,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
     @property
     def get_total_price(self) -> float():
         """f(n) = n . Linear Function"""
-        res_: int = 0
+        res_: float = 0.0
         for order in self.orders.all():
             res_ += order.total
         return res_
