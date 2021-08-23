@@ -273,12 +273,12 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
     def append_items(self, temp_resp, qs, temp):
         for j in qs:
+            temp: Dict = {}
             temp["id"] = j.id
             temp["available_quantity"] = j.available_quantity
             temp["purchasing_price"] = j.purchasing_price
             temp["date_purchased"] = j.date_purchased
             temp_resp["items"].append(temp)
-            temp: Dict = {}
 
     def get_stock_status(self, item_name: str) -> str:
         qs = self.queryset.filter(item__name=item_name, stock_status="available")
