@@ -240,7 +240,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
 
 class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
-    queryset = MiscellaneousInventoryRecord.objects.all()
+    queryset = MiscellaneousInventoryRecord.objects.select_related("item")
     serializer_class = MiscellaneousInventoryRecordSerializer
 
     @action(
