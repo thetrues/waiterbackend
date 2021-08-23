@@ -70,7 +70,7 @@ class TequilaOrderRecord(BaseOrderRecord):
 
     @property
     def total(self) -> float():
-        return float(self.item.total_shots_per_tekila * self.quantity)
+        return float(self.item.selling_price_per_shot * self.quantity)
 
     class Meta:
         verbose_name: str = "Tequila Order Record"
@@ -147,7 +147,7 @@ class RegularOrderRecord(BaseOrderRecord):
         return self.item.item.name
 
     @property
-    def total(self):
+    def total(self) -> float():
         return float(self.item.selling_price_per_item * self.quantity)
 
     class Meta:
