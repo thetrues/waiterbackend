@@ -250,7 +250,7 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
     )
     def list_items(self, request, *args, **kwargs):
         names: List = self.get_items_names(self.queryset)
-        response: Dict = {}
+        response: List = []
 
         data = self.get_response(names, response)
 
@@ -258,26 +258,27 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
     def get_response(self, names, response) -> Dict:
         for i in range(len(names)):
-            response["id"] = i + 1
-            response["name"] = names[i]
-            response["stock_status"] = self.get_stock_status(names[i])
-            response["items"] = []
+            temp_resp: Dict = {}
+            temp_resp["id"] = i + 1
+            temp_resp["name"] = names[i]
+            temp_resp["stock_status"] = self.get_stock_status(names[i])
+            temp_resp["items"] = []
             qs = self.queryset.filter(item__name=names[i])
             temp: Dict = {}
-            self.append_items(response, qs, temp)
+            self.append_items(temp_resp, qs, temp)
+
+            response.append(temp_resp)
 
         return response
 
-    def append_items(self, response, qs, temp):
+    def append_items(self, temp_resp, qs, temp):
         for j in qs:
             temp["id"] = j.id
             temp["available_quantity"] = j.available_quantity
             temp["purchasing_price"] = j.purchasing_price
             temp["date_purchased"] = j.date_purchased
-            response["items"].append(temp)
+            temp_resp["items"].append(temp)
             temp: Dict = {}
-
-        return response
 
     def get_stock_status(self, item_name: str) -> str:
         qs = self.queryset.filter(item__name=item_name, stock_status="available")
