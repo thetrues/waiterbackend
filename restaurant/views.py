@@ -256,7 +256,7 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
         return Response(data, status.HTTP_200_OK)
 
-    def get_response(self, names, response) -> Dict:
+    def get_response(self, names: list, response: list) -> Dict:
         for i in range(len(names)):
             temp_resp: Dict = {}
             temp_resp["id"] = i + 1
@@ -271,7 +271,7 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
         return response
 
-    def append_items(self, temp_resp, qs, temp):
+    def append_items(self, temp_resp: dict, qs, temp: dict):
         for j in qs:
             temp: Dict = {}
             temp["id"] = j.id
