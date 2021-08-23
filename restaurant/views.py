@@ -34,6 +34,7 @@ from restaurant.serializers import (
     MenuSerializer,
 )
 from django.utils import timezone
+from typing import Dict, List
 from user.models import User
 import datetime
 import uuid
@@ -255,7 +256,7 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
         return Response(data, status.HTTP_200_OK)
 
-    def get_response(self, names: List, response: Dict) -> Dict:
+    def get_response(self, names, response) -> Dict:
         for i in range(len(names)):
             response["id"] = i + 1
             response["name"] = names[i]
