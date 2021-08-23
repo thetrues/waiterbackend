@@ -240,52 +240,8 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
 
 class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
-    queryset = MiscellaneousInventoryRecord.objects.all()
+    queryset = MiscellaneousInventoryRecord.objects.select_related("item")
     serializer_class = MiscellaneousInventoryRecordSerializer
-
-    @action(
-        detail=False,
-        methods=["GET"],
-    )
-    def list_items(self, request, *args, **kwargs):
-        names: List = self.get_items_names(self.queryset)
-        response: Dict = {}
-
-        data = self.get_response(names, response)
-
-        return Response(data, status.HTTP_200_OK)
-
-    def get_response(self, names: List, response: Dict) -> Dict:
-        for i in range(len(names)):
-            response["id"] = i + 1
-            response["name"] = names[i]
-            response["stock_status"] = self.get_stock_status(names[i])
-            response["items"] = []
-            qs = self.queryset.filter(item__name=names[i])
-            temp: Dict = {}
-            for j in qs:
-                temp["id"] = j.id
-                temp["available_quantity"] = j.available_quantity
-                temp["purchasing_price"] = j.purchasing_price
-                temp["date_purchased"] = j.date_purchased
-                response["items"].append(temp)
-                temp: Dict = {}
-
-        return response
-
-    def get_stock_status(self, item_name: str) -> str:
-        qs = self.queryset.filter(item__name=item_name, stock_status="available")
-        if qs:
-            return "Available"
-        return "Unavailable"
-
-    def get_items_names(self, queryset) -> List:
-        response: List = []
-        for item in queryset:
-            if item.item.name not in response:
-                response.append(item.item.name)
-
-        return response
 
 
 class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
