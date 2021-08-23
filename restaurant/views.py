@@ -263,13 +263,18 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
             response["items"] = []
             qs = self.queryset.filter(item__name=names[i])
             temp: Dict = {}
-            for j in qs:
-                temp["id"] = j.id
-                temp["available_quantity"] = j.available_quantity
-                temp["purchasing_price"] = j.purchasing_price
-                temp["date_purchased"] = j.date_purchased
-                response["items"].append(temp)
-                temp: Dict = {}
+            self.append_items(response, qs, temp)
+
+        return response
+
+    def append_items(self, response, qs, temp):
+        for j in qs:
+            temp["id"] = j.id
+            temp["available_quantity"] = j.available_quantity
+            temp["purchasing_price"] = j.purchasing_price
+            temp["date_purchased"] = j.date_purchased
+            response["items"].append(temp)
+            temp: Dict = {}
 
         return response
 
