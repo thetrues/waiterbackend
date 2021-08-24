@@ -589,8 +589,10 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
 
     def get_customer_name(self, filtered_qs) -> str:
         first = filtered_qs.first()
-
-        return first.customer_dish.customer_name
+        if first:
+            return first.customer_dish.customer_name
+        else:
+            return ""
 
     @action(
         detail=False,
