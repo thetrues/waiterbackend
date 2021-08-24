@@ -62,7 +62,7 @@ class MainInventoryItemViewSet(viewsets.ModelViewSet):
 
 class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     queryset = MainInventoryItemRecord.objects.select_related(
-        "main_inventory_item__item__unit"
+        "main_inventory_item__item", "main_inventory_item__item__unit"
     )
     serializer_class = MainInventoryItemRecordSerializer
 
@@ -119,6 +119,51 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         ]
 
         return Response(response, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["POST"],
+    )
+    def list_items(self, request, *args, **kwargs):
+        names: List = self.get_items_names(self.queryset)
+        response: List = []
+        for index in range(len(names)):
+            temp_response: Dict = {}
+            temp_response["id"] = index + 1
+            temp_response["item_name"] = names[index]
+            item_qs = self.queryset.filter(main_inventory_item__item__name=names[index])
+            available_quantity = item_qs.aggregate(
+                available_quantity=Sum("available_quantity")
+            )["available_quantity"]
+            temp_response["available_quantity"] = available_quantity
+            if available_quantity > 0:
+                temp_response["stock_status"] = "Available"
+            else:
+                temp_response["stock_status"] = "Unavailable"
+            temp_response["records_items"] = []
+            temp_records: Dict = {}
+            counter: int = 0
+            for item in item_qs:
+                temp_records["record_id"] = counter + 1
+                temp_records["available_quantity"] = item.available_quantity
+                temp_records["received_quantity"] = item.quantity
+                temp_records["estimated_sales"] = item.estimate_sales
+                temp_records["estimated_profit"] = item.estimate_profit
+                temp_records["stock_issued_history"] = item.stock_out_history
+                temp_response["records_items"].append(temp_records)
+                temp_records: Dict = {}
+            response.append(temp_response)
+
+        return Response(response, status.HTTP_200_OK)
+
+    def get_items_names(self, queryset) -> List:
+        names: List = []
+        for item in queryset:
+            name = item.main_inventory_item.item.name
+            if name not in names:
+                names.append(name)
+
+        return names
 
     @action(
         detail=False,
