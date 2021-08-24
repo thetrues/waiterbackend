@@ -127,35 +127,53 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     def list_items(self, request, *args, **kwargs):
         names: List = self.get_items_names(self.queryset)
         response: List = []
+        data = self.get_response(names, response)
+
+        return Response(data, status.HTTP_200_OK)
+
+    def get_response(self, names, response):
         for index in range(len(names)):
             temp_response: Dict = {}
             temp_response["id"] = index + 1
             temp_response["item_name"] = names[index]
-            item_qs = self.queryset.filter(main_inventory_item__item__name=names[index])
-            available_quantity = item_qs.aggregate(
-                available_quantity=Sum("available_quantity")
-            )["available_quantity"]
+            item_qs, available_quantity = self.get_items_and_available_quantity(
+                names, index
+            )
             temp_response["available_quantity"] = available_quantity
-            if available_quantity > 0:
-                temp_response["stock_status"] = "Available"
-            else:
-                temp_response["stock_status"] = "Unavailable"
-            temp_response["records_items"] = []
-            temp_records: Dict = {}
-            counter: int = 0
-            for item in item_qs:
-                temp_records["record_id"] = counter + 1
-                temp_records["available_quantity"] = item.available_quantity
-                temp_records["received_quantity"] = item.quantity
-                temp_records["estimated_sales"] = item.estimate_sales
-                temp_records["estimated_profit"] = item.estimate_profit
-                temp_records["stock_issued_history"] = item.stock_out_history
-                temp_response["records_items"].append(temp_records)
-                temp_records: Dict = {}
-                counter += 1
-            response.append(temp_response)
+            self.get_stock_status(temp_response, available_quantity)
+            self.get_records(response, temp_response, item_qs)
 
-        return Response(response, status.HTTP_200_OK)
+        return response
+
+    def get_records(self, response, temp_response, item_qs):
+        temp_response["records_items"] = []
+        temp_records: Dict = {}
+        counter: int = 0
+        for item in item_qs:
+            temp_records["record_id"] = counter + 1
+            temp_records["available_quantity"] = item.available_quantity
+            temp_records["received_quantity"] = item.quantity
+            temp_records["estimated_sales"] = item.estimate_sales
+            temp_records["estimated_profit"] = item.estimate_profit
+            temp_records["stock_issued_history"] = item.stock_out_history
+            temp_response["records_items"].append(temp_records)
+            temp_records: Dict = {}
+            counter += 1
+        response.append(temp_response)
+
+    def get_stock_status(self, temp_response: dict, available_quantity: int):
+        if available_quantity > 0:
+            temp_response["stock_status"] = "Available"
+        else:
+            temp_response["stock_status"] = "Unavailable"
+
+    def get_items_and_available_quantity(self, names, index):
+        item_qs = self.queryset.filter(main_inventory_item__item__name=names[index])
+        available_quantity = item_qs.aggregate(
+            available_quantity=Sum("available_quantity")
+        )["available_quantity"]
+
+        return item_qs, available_quantity
 
     def get_items_names(self, queryset) -> List:
         names: List = []
