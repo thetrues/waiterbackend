@@ -574,6 +574,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                     "remained_amount": float(ordr.get_remaining_amount),
                     "payment_status": ordr.payment_status,
                     "payment_method": ordr.payment_method,
+                    "dish_detail": ordr.customer_dish.get_dish_detail,
                 }
             )
             for ordr in self.queryset
