@@ -686,7 +686,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         ):  # 5000 can be changed to any value.
             return Response(
                 {
-                    "message": f"Can't perform this action. {customer.name} has reached credit limit for today."
+                    "message": f"Can't perform this operation. {customer.name} has reached credit limit for today."
                 }
             )
         object = CustomerDishPayment.objects.create(
