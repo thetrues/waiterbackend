@@ -1,12 +1,12 @@
-from typing import List
-from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
+from django.db.models.aggregates import Sum
 from abc import abstractmethod
-from user.models import User
 from django.db import models
+from user.models import User
+from typing import List, Set
 
 
-STOKE_STATUS_CHOICES: set = (
+STOKE_STATUS_CHOICES: Set = (
     ("available", "Available"),
     ("unavailable", "Unavailable"),
 )
