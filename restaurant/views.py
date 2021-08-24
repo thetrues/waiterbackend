@@ -136,23 +136,23 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             temp_response: Dict = {}
             temp_response["id"] = index + 1
             temp_response["item_name"] = names[index]
-            item_qs, available_quantity = self.get_items_and_available_quantity(
+            item_qs, available_quantity, unit = self.get_items_available_quantity_unit(
                 names, index
             )
-            temp_response["available_quantity"] = available_quantity
+            temp_response["available_quantity"] = available_quantity + " " + unit
             self.get_stock_status(temp_response, available_quantity)
-            self.get_records(response, temp_response, item_qs)
+            self.get_records(response, temp_response, item_qs, unit)
 
         return response
 
-    def get_records(self, response, temp_response, item_qs):
+    def get_records(self, response, temp_response, item_qs, unit):
         temp_response["records_items"] = []
         temp_records: Dict = {}
         counter: int = 0
         for item in item_qs:
             temp_records["record_id"] = counter + 1
-            temp_records["available_quantity"] = item.available_quantity
-            temp_records["received_quantity"] = item.quantity
+            temp_records["available_quantity"] = item.available_quantity + " " + unit
+            temp_records["received_quantity"] = item.quantity + " " + unit
             temp_records["estimated_sales"] = item.estimate_sales
             temp_records["estimated_profit"] = item.estimate_profit
             temp_records["stock_issued_history"] = item.stock_out_history
@@ -167,13 +167,15 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         else:
             temp_response["stock_status"] = "Unavailable"
 
-    def get_items_and_available_quantity(self, names, index):
+    def get_items_available_quantity_unit(self, names, index):
         item_qs = self.queryset.filter(main_inventory_item__item__name=names[index])
         available_quantity = item_qs.aggregate(
             available_quantity=Sum("available_quantity")
         )["available_quantity"]
+        item = item_qs.first()
+        unit = item.main_inventory_item.item.unit.name
 
-        return item_qs, available_quantity
+        return item_qs, available_quantity, unit
 
     def get_items_names(self, queryset) -> List:
         names: List = []
