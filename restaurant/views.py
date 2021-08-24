@@ -122,7 +122,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
-        methods=["POST"],
+        methods=["GET"],
     )
     def list_items(self, request, *args, **kwargs):
         names: List = self.get_items_names(self.queryset)
