@@ -56,7 +56,7 @@ class RestaurantInventoryItemView(ListAPIView):
 
 
 class MainInventoryItemViewSet(viewsets.ModelViewSet):
-    queryset = MainInventoryItem.objects.all()
+    queryset = MainInventoryItem.objects.select_related("item")
     serializer_class = MainInventoryItemSerializer
 
 
@@ -68,8 +68,8 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+
         if request.data.get("threshold") >= request.data.get("quantity"):
             message: str = "Threshold should be less than quantity"
             return Response({"message": message}, status.HTTP_400_BAD_REQUEST)
@@ -77,7 +77,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         data = self.perform_create(request)
         return Response(data=data, status=status.HTTP_201_CREATED)
 
-    def perform_create(self, request):
+    def perform_create(self, request) -> Dict:
         object = MainInventoryItemRecord.objects.create(
             quantity=request.data.get("quantity"),
             purchasing_price=request.data.get("purchasing_price"),
