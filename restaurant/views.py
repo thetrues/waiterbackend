@@ -600,7 +600,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_paid(self, request, *args, **kwargs):
         res: List = []
-        numbers = self.get_dish_numbers(self.queryset)
+        numbers: List = self.get_dish_numbers(self.queryset)
         f_qs = self.queryset.filter(payment_status="paid", by_credit=True)
         self.get_dishes_structure(res, numbers, f_qs)
 
