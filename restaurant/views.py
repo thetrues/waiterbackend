@@ -56,7 +56,7 @@ class RestaurantInventoryItemView(ListAPIView):
 
 
 class MainInventoryItemViewSet(viewsets.ModelViewSet):
-    queryset = MainInventoryItem.objects.all()
+    queryset = MainInventoryItem.objects.select_related("item")
     serializer_class = MainInventoryItemSerializer
 
 
