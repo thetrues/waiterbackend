@@ -635,6 +635,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         [
             res.append(
                 {
+                    "id": qs.id,
                     "customer_name": qs.customer_dish.customer_name,
                     "dish_number": qs.customer_dish.dish_number,
                     "payable_amount": qs.get_total_amount_to_pay,
