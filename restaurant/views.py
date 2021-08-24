@@ -607,7 +607,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         for number in numbers:
             temp_res: Dict = {}
             filtered_qs = self.queryset.filter(
-                payment_status="paid", customer_dish__dish_number=number
+                payment_status="paid", by_credit=True, customer_dish__dish_number=number
             )
             temp_res["customer_name"], temp_res["dish_number"] = (
                 self.get_customer_name(filtered_qs),
@@ -631,7 +631,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_partial(self, request, *args, **kwargs):
         res: list = []
-        filtered_qs = self.queryset.filter(payment_status="partial")
+        filtered_qs = self.queryset.filter(payment_status="partial", by_credit=True)
         [
             res.append(
                 {
@@ -655,14 +655,15 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def get_all_unpaid(self, request, *args, **kwargs):
-        res: list = []
-        filtered_qs = self.queryset.filter(payment_status="unpaid")
+        res: List = []
+        filtered_qs = self.queryset.filter(payment_status="unpaid", by_credit=True)
         [
             res.append(
                 {
                     "customer_name": qs.customer_dish.customer_name,
                     "dish_number": qs.customer_dish.dish_number,
                     "payable_amount": qs.get_total_amount_to_pay,
+                    "dish_detail": qs.customer_dish.get_dish_detail,
                 }
             )
             for qs in filtered_qs
