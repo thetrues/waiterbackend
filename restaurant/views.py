@@ -617,13 +617,13 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             res.append(temp_res)
 
     def structure_payments(self, temp_res, filtered_qs):
-        temp_res["payments_structure"] = []
+        temp_res["payments_history"] = []
         for qs in filtered_qs:
             temp_pay: Dict = {}
             temp_pay["paid_amount"] = qs.amount_paid
             temp_pay["date_paid"] = str(qs.date_paid).split(" ")[0]
             temp_pay["time_paid"] = str(qs.date_paid).split(" ")[1].split(".")[0]
-            temp_res["payments_structure"].append(temp_pay)
+            temp_res["payments_history"].append(temp_pay)
 
     @action(
         detail=False,
