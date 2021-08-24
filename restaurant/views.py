@@ -151,7 +151,9 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         counter: int = 0
         for item in item_qs:
             temp_records["record_id"] = counter + 1
-            temp_records["available_quantity"] = str(item.available_quantity) + " " + unit
+            temp_records["available_quantity"] = (
+                str(item.available_quantity) + " " + unit
+            )
             temp_records["received_quantity"] = str(item.quantity) + " " + unit
             temp_records["estimated_sales"] = item.estimate_sales
             temp_records["estimated_profit"] = item.estimate_profit
@@ -578,25 +580,50 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         ]
         return Response(res, status.HTTP_200_OK)
 
+    def get_dish_numbers(self, qs) -> List:
+        numbers: List = []
+        for dish in qs:
+            if dish.customer_dish.dish_number not in numbers:
+                numbers.append(dish.customer_dish.dish_number)
+        return numbers
+
+    def get_customer_name(self, filtered_qs) -> str:
+        first = filtered_qs.first()
+
+        return first.customer_name
+
     @action(
         detail=False,
         methods=["GET"],
     )
     def get_all_paid(self, request, *args, **kwargs):
-        res: list = []
-        filtered_qs = self.queryset.filter(payment_status="paid")
-        [
-            res.append(
-                {
-                    "customer_name": qs.customer_dish.customer_name,
-                    "dish_number": qs.customer_dish.dish_number,
-                    "paid_amount": qs.amount_paid,
-                    "date_paid": qs.date_paid,
-                }
-            )
-            for qs in filtered_qs
-        ]
+        res: List = []
+        numbers = self.get_dish_numbers(self.queryset)
+        self.get_dishes_structure(res, numbers)
+
         return Response(res, status.HTTP_200_OK)
+
+    def get_dishes_structure(self, res, numbers):
+        for number in numbers:
+            temp_res: Dict = {}
+            filtered_qs = self.queryset.filter(
+                payment_status="paid", customer_dish__dish_number=number
+            )
+            temp_res["customer_name"], temp_res["dish_number"] = (
+                self.get_customer_name(filtered_qs),
+                number,
+            )
+            self.structure_payments(temp_res, filtered_qs)
+            res.append(temp_res)
+
+    def structure_payments(self, temp_res, filtered_qs):
+        temp_res["payments_structure"] = []
+        for qs in filtered_qs:
+            temp_pay: Dict = {}
+            temp_pay["paid_amount"] = qs.amount_paid
+            temp_pay["date_paid"] = qs.date_paid
+            temp_pay["time_paid"] = qs.date_paid
+            temp_res["payments_structure"].append(temp_pay)
 
     @action(
         detail=False,
