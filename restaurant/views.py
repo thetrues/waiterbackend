@@ -642,6 +642,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                     "remaining_amount": qs.get_remaining_amount,
                     "date_paid": str(qs.date_paid).split(" ")[0],
                     "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
+                    "dish_detail": qs.customer_dish.get_dish_detail,
                 }
             )
             for qs in filtered_qs
