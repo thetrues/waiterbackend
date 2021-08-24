@@ -621,8 +621,8 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         for qs in filtered_qs:
             temp_pay: Dict = {}
             temp_pay["paid_amount"] = qs.amount_paid
-            temp_pay["date_paid"] = qs.date_paid
-            temp_pay["time_paid"] = qs.date_paid
+            temp_pay["date_paid"] = str(qs.date_paid).split("T")[0]
+            temp_pay["time_paid"] = str(qs.date_paid).split("T")[1].split(".")[0]
             temp_res["payments_structure"].append(temp_pay)
 
     @action(
