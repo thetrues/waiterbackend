@@ -568,7 +568,6 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                 {
                     "customer_name": ordr.customer_dish.customer_name,
                     "dish_number": ordr.customer_dish.dish_number,
-                    "dish_detail": ordr.customer_dish.get_dish_detail,
                     "total_payable_amount": ordr.get_total_amount_to_pay,
                     "total_paid_amount": float(ordr.amount_paid),
                     "remained_amount": float(ordr.get_remaining_amount),
