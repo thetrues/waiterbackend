@@ -147,7 +147,7 @@ class RegularOrderRecord(BaseOrderRecord):
         return self.item.item.name
 
     @property
-    def total(self) -> float():
+    def total(self) -> float:
         return float(self.item.selling_price_per_item * self.quantity)
 
     class Meta:
@@ -159,7 +159,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
     orders = models.ManyToManyField(RegularOrderRecord)
 
     @property
-    def get_total_price(self) -> float():
+    def get_total_price(self) -> float:
         """f(n) = n . Linear Function"""
         res_: float = 0.0
         for order in self.orders.all():
