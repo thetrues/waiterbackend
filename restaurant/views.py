@@ -139,7 +139,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             item_qs, available_quantity, unit = self.get_items_available_quantity_unit(
                 names, index
             )
-            temp_response["available_quantity"] = available_quantity + " " + unit
+            temp_response["available_quantity"] = int(available_quantity) + " " + unit
             self.get_stock_status(temp_response, available_quantity)
             self.get_records(response, temp_response, item_qs, unit)
 
@@ -151,8 +151,8 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         counter: int = 0
         for item in item_qs:
             temp_records["record_id"] = counter + 1
-            temp_records["available_quantity"] = item.available_quantity + " " + unit
-            temp_records["received_quantity"] = item.quantity + " " + unit
+            temp_records["available_quantity"] = str(item.available_quantity) + " " + unit
+            temp_records["received_quantity"] = str(item.quantity) + " " + unit
             temp_records["estimated_sales"] = item.estimate_sales
             temp_records["estimated_profit"] = item.estimate_profit
             temp_records["stock_issued_history"] = item.stock_out_history
