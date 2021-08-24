@@ -152,6 +152,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                 temp_records["stock_issued_history"] = item.stock_out_history
                 temp_response["records_items"].append(temp_records)
                 temp_records: Dict = {}
+                counter += 1
             response.append(temp_response)
 
         return Response(response, status.HTTP_200_OK)
