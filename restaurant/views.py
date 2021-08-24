@@ -77,7 +77,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         data = self.perform_create(request)
         return Response(data=data, status=status.HTTP_201_CREATED)
 
-    def perform_create(self, request):
+    def perform_create(self, request) -> Dict:
         object = MainInventoryItemRecord.objects.create(
             quantity=request.data.get("quantity"),
             purchasing_price=request.data.get("purchasing_price"),
