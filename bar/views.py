@@ -841,6 +841,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             )
 
     def append_orders(self, qs):
+
         return self.appending(qs)
 
     def appending(self, objects):
