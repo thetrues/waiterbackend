@@ -10,7 +10,7 @@ from core.models import (
 )
 from django.db import models
 from user.models import User
-from typing import List, Set
+from typing import Dict, List, Set
 
 # Inventory
 
@@ -37,7 +37,7 @@ class MainInventoryItemRecord(BaseInventory):
     main_inventory_item = models.ForeignKey(MainInventoryItem, on_delete=models.CASCADE)
     threshold = models.IntegerField()
 
-    def __str__(self) -> str:
+    def __str__(self) -> str():
         """String representation of object
 
         Returns:
