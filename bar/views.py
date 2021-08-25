@@ -914,7 +914,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
         return response
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs) -> Dict:
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = self.perform_create(request)
