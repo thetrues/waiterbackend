@@ -1,12 +1,12 @@
 from django.db.models.manager import Manager
 from django.db.models.aggregates import Sum
+from typing import Dict, List, Set
 from abc import abstractmethod
 from django.db import models
 from user.models import User
-from typing import List, Set
 
 
-STOKE_STATUS_CHOICES: Set = (
+STOKE_STATUS_CHOICES: Set[Set] = (
     ("available", "Available"),
     ("unavailable", "Unavailable"),
 )
@@ -28,14 +28,14 @@ class BaseInventory(models.Model):
     objects = Manager()
 
     @abstractmethod
-    def estimate_sales(self) -> int():
+    def estimate_sales(self) -> int:
         """calculations for sales estimation"""
 
     @abstractmethod
-    def estimate_profit(self) -> int():
+    def estimate_profit(self) -> int:
         """calculations for profit estimation"""
 
-    def get_orders_history(self, qs) -> dict():
+    def get_orders_history(self, qs) -> Dict:
         orders_history: dict = {}
         self._get_total_ordered_items(orders_history, qs)
         self._get_total_income(orders_history, qs)
@@ -67,13 +67,13 @@ class BaseInventory(models.Model):
         orders_history["total_income"] = total_income
 
     def _get_total_ordered_items(self, orders_history, qs):
-        res = qs.aggregate(quantity=Sum("quantity"))["quantity"]
+        res: int = qs.aggregate(quantity=Sum("quantity"))["quantity"]
         orders_history["total_ordered_items"] = res or 0
 
     class Meta:
         abstract: bool = True
-        ordering: list = ["-id"]
-        indexes: list = [
+        ordering: List[str] = ["-id"]
+        indexes: List = [
             models.Index(
                 fields=[
                     "quantity",
@@ -93,11 +93,11 @@ class MeasurementUnit(models.Model):
     objects = Manager()
 
     class Meta:
-        ordering = ["-id"]
-        verbose_name = "Measurement Unit"
-        verbose_name_plural = "Measurement Units"
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Measurement Unit"
+        verbose_name_plural: str = "Measurement Units"
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         """String representation of object
 
         Returns:
@@ -116,7 +116,7 @@ class BaseConfig(models.Model):
     name = models.CharField(max_length=255, unique=True)
     objects = Manager()
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         """String representation of object
 
         Returns:
@@ -126,7 +126,7 @@ class BaseConfig(models.Model):
 
     class Meta:
         abstract: bool = True
-        ordering: set = ("-id",)
+        ordering: Set[str] = ("-id",)
         indexes: list = [
             models.Index(
                 fields=[
@@ -136,7 +136,7 @@ class BaseConfig(models.Model):
         ]
 
 
-ITEM_FOR_TYPE: set = (
+ITEM_FOR_TYPE: Set[Set] = (
     ("bar", "Bar"),
     ("restaurant", "Restaurant"),
     ("both", "Both"),
@@ -154,13 +154,13 @@ class Item(BaseConfig):
     item_for = models.CharField(max_length=10, choices=ITEM_FOR_TYPE)
 
 
-PAYMENT_STATUS_CHOICES: set = (
+PAYMENT_STATUS_CHOICES: Set[Set] = (
     ("paid", "Fully Paid"),
     ("partial", "Partially Paid"),
     ("unpaid", "Not Paid"),
 )
 
-PAYMENT_METHODS: set = (
+PAYMENT_METHODS: Set[Set] = (
     ("cash", "Cash"),
     ("mobile", "Mobile Money"),
     ("card", "Credit Card"),
@@ -193,12 +193,12 @@ class BasePayment(models.Model):
     objects = Manager()
 
     @abstractmethod
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         """Returns the string representation of this object"""
 
     class Meta:
         abstract: bool = True
-        ordering: list = ["-id"]
+        ordering: List[str] = ["-id"]
 
 
 class CreditCustomer(models.Model):
@@ -211,10 +211,10 @@ class CreditCustomer(models.Model):
         return self.name
 
     class Meta:
-        unique_together = ("phone", "name")
-        ordering = ["-id"]
-        verbose_name = "Credit Customer"
-        verbose_name_plural = "Credit Customers"
+        unique_together: Set[str] = ("phone", "name")
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Credit Customer"
+        verbose_name_plural: str = "Credit Customers"
 
 
 class BaseCreditCustomerPayment(models.Model):
@@ -227,7 +227,7 @@ class BaseCreditCustomerPayment(models.Model):
 
     class Meta:
         abstract: bool = True
-        ordering: List = ["-id"]
+        ordering: List[str] = ["-id"]
 
 
 class BasePayrol(models.Model):
@@ -244,16 +244,16 @@ class BasePayrol(models.Model):
     objects = Manager()
 
     @abstractmethod
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         """Returns the string representation of this object"""
 
     @abstractmethod
-    def get_monthly_payrolls(self) -> float():
+    def get_monthly_payrolls(self) -> float:
         """Returns all payrolls of this month"""
 
     class Meta:
         abstract: bool = True
-        ordering: list = ["-id"]
+        ordering: List[str] = ["-id"]
 
 
 class BaseOrderRecord(models.Model):
@@ -265,7 +265,7 @@ class BaseOrderRecord(models.Model):
 
     class Meta:
         abstract: bool = True
-        ordering: List = ["-id"]
+        ordering: List[str] = ["-id"]
         indexes: List = [
             models.Index(fields=["item", "order_number"]),
         ]
@@ -281,7 +281,7 @@ class BaseCustomerOrderRecord(models.Model):
 
     @property
     @abstractmethod
-    def get_total_price(self) -> float():
+    def get_total_price(self) -> float:
         """get total price of all ordered items"""
 
     @property
