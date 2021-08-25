@@ -1,18 +1,16 @@
-from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
-from django.db.models import F
+from typing import List, Set
 from user.models import User
 from django.db import models
 from core.models import (
     BaseCreditCustomerPayment,
     BaseCustomerOrderRecord,
-    BaseInventory,
     BaseOrderRecord,
+    BaseInventory,
     BasePayment,
     BasePayrol,
     Item,
 )
-from typing import List
 
 # Inventory Management
 
@@ -121,7 +119,7 @@ class CustomerTequilaOrderRecordPayment(BasePayment):
         CustomerTequilaOrderRecord, on_delete=models.CASCADE
     )
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         """f(n) = c; c=1 Constant Function"""
         return "{}: Payment Status: {}".format(
             self.customer_order_record, self.payment_status.title()
@@ -143,7 +141,7 @@ class CustomerTequilaOrderRecordPayment(BasePayment):
 class RegularOrderRecord(BaseOrderRecord):
     item = models.ForeignKey(RegularInventoryRecord, on_delete=models.CASCADE)
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         return self.item.item.name
 
     @property
@@ -188,8 +186,8 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
         return res
 
     class Meta:
-        verbose_name = "Customer Regular Order Record"
-        verbose_name_plural = "Customer Regular Order Records"
+        verbose_name: str = "Customer Regular Order Record"
+        verbose_name_plural: str = "Customer Regular Order Records"
 
 
 class CustomerRegularOrderRecordPayment(BasePayment):
@@ -197,7 +195,7 @@ class CustomerRegularOrderRecordPayment(BasePayment):
         CustomerRegularOrderRecord, on_delete=models.CASCADE
     )
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         """f(n) = c; c=1 Constant Function"""
         return "{}: Payment Status: {}".format(
             self.customer_order_record, self.payment_status.title()
@@ -238,9 +236,9 @@ class CreditCustomerRegularOrderRecordPaymentHistory(models.Model):
         return self.credit_customer_payment.customer.customer_name
 
     class Meta:
-        ordering: list = ["-id"]
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer Regular Order Record Payment History"
-        verbose_name_plural: str = (
+        verbose_name_plural: Set[str] = (
             "Credit Customer Regular Order Record Payment Histories"
         )
 
@@ -267,9 +265,9 @@ class CreditCustomerTequilaOrderRecordPaymentHistory(models.Model):
         return self.credit_customer_payment.customer.customer_name
 
     class Meta:
-        ordering: list = ["-id"]
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer Tequila Order Record Payment History"
-        verbose_name_plural: str = (
+        verbose_name_plural: Set[str] = (
             "Credit Customer Tequila Order Record Payment Histories"
         )
 
