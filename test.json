@@ -2,27 +2,27 @@
 	"todays_date": "2021-08-29",
 	"sales": {
 		"total_sales": 15700,
-		"total_orders": 2,
-		"orders_structure": [
+		"total_dishes": 2,
+		"dishes_structure": [
 			{
-				"order_id": 1,
-				"order_number": "932ad23n",
+				"dish_id": 1,
+				"dish_number": "932ad23n",
 				"payment_status": "partial",
 				"by_credit": true,
 				"payable_amount": 10500,
 				"paid_amount": 8500,
 				"remained_amount": 2000,
-				"order_detail": {}
+				"dish_detail": {}
 			},
 			{
-				"order_id": 2,
-				"order_number": "389dh42j",
+				"dish_id": 2,
+				"dish_number": "389dh42j",
 				"payment_status": "paid",
 				"by_credit": false,
 				"payable_amount": 7200,
 				"paid_amount": 7200,
 				"remained_amount": 0,
-				"order_detail": {}
+				"dish_detail": {}
 			}
 		]
 	},
