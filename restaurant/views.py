@@ -699,6 +699,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         self.pay_by_credit(request, by_credit, object)
         self.save_payment_status(request, object)
         object.save()
+
         return {
             "customer_dish": str(object.customer_dish),
             "payment_status": object.payment_status,
