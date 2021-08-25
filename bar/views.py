@@ -1,4 +1,3 @@
-from typing import Dict, List
 from core.utils import get_date_objects, validate_dates
 from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
@@ -7,30 +6,32 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from django.db.models.aggregates import Sum
 from bar.serializers import (
-    BarPayrolSerializer,
+    TequilaCustomerOrderRecordPaymentSerializer,
     CustomerOrderRecordPaymentSerializer,
-    CustomerOrderRecordSerializer,
-    OrderRecordSerializer,
+    TequilaCustomerOrderRecordSerializer,
     RegularInventoryRecordSerializer,
     TekilaInventoryRecordSerializer,
-    TequilaCustomerOrderRecordPaymentSerializer,
-    TequilaCustomerOrderRecordSerializer,
+    CustomerOrderRecordSerializer,
     TequilaOrderRecordSerializer,
+    OrderRecordSerializer,
+    BarPayrolSerializer,
 )
 from bar.models import (
+    CreditCustomerTequilaOrderRecordPayment,
     CustomerRegularOrderRecordPayment,
     CustomerRegularOrderRecordPayment,
+    CustomerTequilaOrderRecordPayment,
     CustomerRegularOrderRecord,
     CustomerTequilaOrderRecord,
-    CustomerTequilaOrderRecordPayment,
     RegularInventoryRecord,
     TekilaInventoryRecord,
     RegularOrderRecord,
-    BarPayrol,
     TequilaOrderRecord,
+    BarPayrol,
 )
+from core.models import CreditCustomer, Item
 from django.utils import timezone
-from core.models import Item
+from typing import Dict, List
 from user.models import User
 import datetime
 import uuid
