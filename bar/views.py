@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 from core.utils import get_date_objects, validate_dates
 from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
@@ -871,7 +871,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
-        response: dict = {
+        response: Dict = {
             "id": instance.id,
             "customer_name": instance.customer_order_record.customer_name,
             "customer_phone": instance.customer_order_record.customer_phone,
