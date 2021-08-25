@@ -1,4 +1,4 @@
-from restaurant.models import CustomerDishPayment
+from restaurant.models import CustomerDishPayment, MiscellaneousInventoryRecord
 from rest_framework.response import Response
 from django.db.models.aggregates import Sum
 from rest_framework.views import APIView
