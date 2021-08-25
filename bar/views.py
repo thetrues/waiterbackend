@@ -948,7 +948,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             "date_paid": object.date_paid,
             "created_by": str(object.created_by),
         }
-    
+
     def get_customer(self, request):
         try:
             customer = CreditCustomer.objects.get(
