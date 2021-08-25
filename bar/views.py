@@ -869,7 +869,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
     )
     serializer_class = TequilaCustomerOrderRecordPaymentSerializer
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, pk=None) -> Dict:
         instance = self.get_object()
         response: Dict = {
             "id": instance.id,
@@ -886,7 +886,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         }
         return Response(response, status.HTTP_200_OK)
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs) -> List[Dict]:
         response: Dict = self.get_list(self.queryset)
 
         return Response(response, status.HTTP_200_OK)
