@@ -949,6 +949,33 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             "created_by": str(object.created_by),
         }
 
+    def pay_by_credit(self, request, by_credit, object):
+        customer = self.get_customer(request)
+        if by_credit and customer:
+            object.by_credit = True
+            object.save()
+            CreditCustomerTequilaOrderRecordPayment.objects.create(
+                record_order_payment_record=object,
+                customer=customer,
+            )
+            self._change_customer_details(object, customer)
+
+    def _change_customer_details(self, object, customer):
+        customer_order_record = object.customer_order_record
+        customer_order_record.customer_name = customer.name
+        customer_order_record.customer_phone = customer.phone
+        customer_order_record.save()
+
+    def get_total_per_day(self, customer) -> float:
+        qs = CreditCustomerTequilaOrderRecordPayment.objects.filter(
+            customer=customer, date_created=self.today
+        )
+        return qs.aggregate(
+            total=Sum(
+                "record_order_payment_record__customer_order_record__get_total_price"
+            )
+        )["total"]
+
     def get_customer(self, request):
         try:
             customer = CreditCustomer.objects.get(
