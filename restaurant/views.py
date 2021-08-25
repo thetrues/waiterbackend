@@ -1,4 +1,3 @@
-from rest_framework.authentication import TokenAuthentication
 from rest_framework import permissions, status, viewsets
 from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
