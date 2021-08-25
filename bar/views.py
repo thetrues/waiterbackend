@@ -887,7 +887,8 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(response, status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
-        response = self.get_list(self.queryset)
+        response: Dict = self.get_list(self.queryset)
+
         return Response(response, status.HTTP_200_OK)
 
     def get_list(self, objects):
