@@ -236,8 +236,7 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        if not serializer.is_valid():
-            return Response({"message": serializer.errors}, status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         data = self.perform_create(request)
         return Response(data, status.HTTP_201_CREATED)

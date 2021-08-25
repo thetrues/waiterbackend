@@ -1,5 +1,5 @@
 from django.db.models.manager import Manager
-from typing import List, Set
+from typing import Dict, List, Set
 from user.models import User
 from django.db import models
 from core.models import (
@@ -79,7 +79,7 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
     orders = models.ManyToManyField(TequilaOrderRecord)
 
     @property
-    def get_total_price(self) -> float():
+    def get_total_price(self) -> float:
         """f(n) = n . Linear Function"""
         res_: float = 0.0
         for order in self.orders.all():
@@ -87,9 +87,9 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
         return res_
 
     @property
-    def get_orders_detail(self):
+    def get_orders_detail(self) -> List[Dict]:
         """f(n) = n . Linear Function"""
-        res: list = []
+        res: List = []
         [
             res.append(
                 {
@@ -110,8 +110,8 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
 
     class Meta:
         ordering: List[str] = ["-id"]
-        verbose_name = "Customer Regular Order Record"
-        verbose_name_plural = "Customer Regular Order Records"
+        verbose_name: str = "Customer Regular Order Record"
+        verbose_name_plural: str = "Customer Regular Order Records"
 
 
 class CustomerTequilaOrderRecordPayment(BasePayment):
@@ -165,7 +165,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
         return res_
 
     @property
-    def get_orders_detail(self):
+    def get_orders_detail(self) -> List[Dict]:
         """f(n) = n . Linear Function"""
         res: List = []
         [
@@ -183,6 +183,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
             )
             for order in self.orders.all()
         ]
+
         return res
 
     class Meta:
@@ -238,9 +239,9 @@ class CreditCustomerRegularOrderRecordPaymentHistory(models.Model):
     class Meta:
         ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer Regular Order Record Payment History"
-        verbose_name_plural: Set[str] = (
-            "Credit Customer Regular Order Record Payment Histories"
-        )
+        verbose_name_plural: Set[
+            str
+        ] = "Credit Customer Regular Order Record Payment Histories"
 
 
 class CreditCustomerTequilaOrderRecordPayment(BaseCreditCustomerPayment):
@@ -267,9 +268,9 @@ class CreditCustomerTequilaOrderRecordPaymentHistory(models.Model):
     class Meta:
         ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer Tequila Order Record Payment History"
-        verbose_name_plural: Set[str] = (
-            "Credit Customer Tequila Order Record Payment Histories"
-        )
+        verbose_name_plural: Set[
+            str
+        ] = "Credit Customer Tequila Order Record Payment Histories"
 
 
 # Payrol Management
