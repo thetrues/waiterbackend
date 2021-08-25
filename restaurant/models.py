@@ -1,4 +1,5 @@
 from django.db.models.manager import Manager
+from typing import Dict, List, Set
 from abc import abstractmethod
 from core.models import (
     BaseCreditCustomerPayment,
@@ -10,7 +11,7 @@ from core.models import (
 )
 from django.db import models
 from user.models import User
-from typing import Dict, List, Set
+from typing import List, Set
 
 # Inventory
 
