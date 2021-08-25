@@ -126,11 +126,11 @@ class CustomerTequilaOrderRecordPayment(BasePayment):
         )
 
     @property
-    def get_total_amount_to_pay(self):
+    def get_total_amount_to_pay(self) -> float:
         return float(self.customer_order_record.get_total_price)
 
     @property
-    def get_remaining_amount(self):
+    def get_remaining_amount(self) -> float:
         return float(self.get_total_amount_to_pay - self.amount_paid)
 
     class Meta:
