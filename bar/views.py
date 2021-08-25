@@ -939,6 +939,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             amount_paid=request.data.get("amount_paid"),
             created_by=request.user,
         )
+        self.pay_by_credit(request, by_credit, object)
         self.save_payment_status(request, object)
         object.save()
         return {
