@@ -713,8 +713,8 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             customer=customer, date_created=self.today
         )
         return qs.aggregate(
-            Sum("customer_dish_payment__customer_dish__get_total_price")
-        )
+            total=Sum("customer_dish_payment__customer_dish__get_total_price")
+        )["total"]
 
     def pay_by_credit(self, request, by_credit, object):
         customer = self.get_customer(request)
