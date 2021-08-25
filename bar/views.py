@@ -939,6 +939,15 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             "date_paid": object.date_paid,
             "created_by": str(object.created_by),
         }
+    
+    def get_customer(self, request):
+        try:
+            customer = CreditCustomer.objects.get(
+                name=request.data.get("customer_name")
+            )
+        except CreditCustomer.DoesNotExist:
+            customer = None
+        return customer
 
     def save_payment_status(self, request, object):
         amount_paid = float(request.data.get("amount_paid"))
