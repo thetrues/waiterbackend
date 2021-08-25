@@ -725,6 +725,13 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                 customer_dish_payment=object,
                 customer=customer,
             )
+            self._change_customer_details(object, customer)
+
+    def _change_customer_details(self, object, customer):
+        customer_dish = object.customer_dish
+        customer_dish.customer_name = customer.name
+        customer_dish.customer_phone = customer.phone
+        customer_dish.save()
 
     def get_customer(self, request):
         try:
