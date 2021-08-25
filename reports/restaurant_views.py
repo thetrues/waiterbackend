@@ -41,6 +41,6 @@ class DailyReport(APIView):
 
             sales["dishes_structure"].append(temp_dish_structure)
 
-        response["sales"] = sales
-
-        return Response(response, status.HTTP_200_OK)
+    def total_sales_and_dishes(self, qs, sales):
+        sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"]
+        sales["total_dishes"] = len(qs)
