@@ -1,0 +1,67 @@
+{
+	"todays_date": "2021-08-29",
+	"sales": {
+		"total_sales": 15700,
+		"total_orders": 2,
+		"orders_structure": [
+			{
+				"order_id": 1,
+				"order_number": "932ad23n",
+				"payment_status": "partial",
+				"by_credit": true,
+				"payable_amount": 10500,
+				"paid_amount": 8500,
+				"remained_amount": 2000,
+				"order_detail": {}
+			},
+			{
+				"order_id": 2,
+				"order_number": "389dh42j",
+				"payment_status": "paid",
+				"by_credit": false,
+				"payable_amount": 7200,
+				"paid_amount": 7200,
+				"remained_amount": 0,
+				"order_detail": {}
+			}
+		]
+	},
+	"expenses": {
+		"total_expense": 16800,
+		"misc_inventory": {
+			"total_miscellenous_purchases": 4200,
+			"miscellenous_items": [
+				{
+					"item_id": 1,
+					"item_name": "Nyanya",
+					"purchased_quantity": "12 Fungu",
+					"purchasing_price": 3200
+				},
+				{
+					"item_id": 2,
+					"item_name": "Chumvi",
+					"purchased_quantity": "2 Pakiti",
+					"purchasing_price": 1000
+				}
+			]
+		},
+		"main_inventory": {
+			"total_consuption_estimation": 12600,
+			"issued_items": [
+				{
+					"item_id": 1,
+					"item_name": "Mchele",
+					"issued_quantity": "5 Kilo",
+					"estimated_price": 8700
+				},
+				{
+					"item_id": 2,
+					"item_name": "Unga wa ngano",
+					"purchased_quantity": "3 Kilo",
+					"purchasing_price": 3900
+				}
+			]
+		}
+	},
+	"balance": -1100
+}
