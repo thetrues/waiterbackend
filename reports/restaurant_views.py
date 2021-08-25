@@ -4,7 +4,7 @@ from django.db.models.aggregates import Sum
 from rest_framework.views import APIView
 from rest_framework import status
 from django.utils import timezone
-from typing import Dict
+from typing import Dict, List
 
 
 class DailyReport(APIView):
