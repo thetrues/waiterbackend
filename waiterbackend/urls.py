@@ -1,4 +1,5 @@
 """waiterbackend URL Configuration"""
+from reports import restaurant_views as reports_restaurant_views
 from restaurant import views as restaurant_views
 from django.conf.urls.static import static
 from django.conf.urls import include
@@ -21,6 +22,11 @@ urlpatterns = (
         path(
             "w/api/bar/inventory/get-items",
             bar_views.BarInventoryItemView.as_view(),
+        ),
+        # Reports
+        path(
+            "w/api/restaurant/reports/get-daily-report",
+            reports_restaurant_views.DailyReport.as_view(),
         ),
     ]
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
