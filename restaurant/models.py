@@ -37,7 +37,7 @@ class MainInventoryItemRecord(BaseInventory):
     main_inventory_item = models.ForeignKey(MainInventoryItem, on_delete=models.CASCADE)
     threshold = models.IntegerField()
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         """String representation of object
 
         Returns:
@@ -54,7 +54,7 @@ class MainInventoryItemRecord(BaseInventory):
         )
 
     @property
-    def estimate_profit(self) -> float:
+    def estimate_profit(self):
         return float(self.estimate_sales - self.purchasing_price)
 
     def send_notification(self, message: str, recipients: List[str]):
