@@ -922,7 +922,16 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request) -> Dict:
-        # Check if customer is valid to borrow for today
+        by_credit = request.data.get("by_credit")
+        customer = self.get_customer(request)
+        if (
+            by_credit and customer and self.get_total_per_day(customer) > 5000
+        ):  # 5000 can be changed to any value.
+            return Response(
+                {
+                    "message": f"Can't perform this operation. {customer.name} has reached the credit limit for today."
+                }
+            )
         object = CustomerTequilaOrderRecordPayment.objects.create(
             customer_order_record=CustomerTequilaOrderRecord.objects.get(
                 id=request.data.get("customer_order_record")
