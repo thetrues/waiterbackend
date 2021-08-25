@@ -8,25 +8,25 @@ from typing import Dict
 
 
 class DailyReport(APIView):
-    """Get Daily Reports"""
+	"""Get Daily Reports"""
 
-    permission_classes = []
-    authentication_classes = []
+	permission_classes = []
+	authentication_classes = []
 
-    def get(self, request, *args, **kwargs):
-        response: Dict = {}
-        todays_date = timezone.localdate()
+	def get(self, request, *args, **kwargs):
+		response: Dict = {}
+		todays_date = timezone.localdate()
 
-        qs = (
-            CustomerDishPayment.objects.filter(date_paid__date=todays_date)
-            .select_related("customer_dish")
-            .prefetch_related("customer_dish__orders")
-        )
+		qs = (
+			CustomerDishPayment.objects.filter(date_paid__date=todays_date)
+			.select_related("customer_dish")
+			.prefetch_related("customer_dish__orders")
+		)
 
-        response["todays_date"] = todays_date.__str__()
-        sales: Dict = {}
-        sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"]
-        sales["total_dishes"] = len(qs)
-        response["sales"] = sales
+		response["todays_date"] = todays_date.__str__()
+		sales: Dict = {}
+		sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"]
+		sales["total_dishes"] = len(qs)
+		response["sales"] = sales
 
-        return Response(response, status.HTTP_200_OK)
+		return Response(response, status.HTTP_200_OK)
