@@ -1,3 +1,4 @@
+from django.db.models.aggregates import Sum
 from restaurant.models import CustomerDishPayment
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -24,7 +25,7 @@ class DailyReport(APIView):
 
         response["todays_date"] = todays_date.__str__()
         sales: Dict = {}
-        sales["total_sales"]
+        sales["total_sales"] = qs.aggregate(Sum)
         response["sales"] = sales
 
         return Response(response, status.HTTP_200_OK)
