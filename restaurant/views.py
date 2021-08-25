@@ -708,7 +708,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             "created_by": str(object.created_by),
         }
 
-    def get_total_per_day(self, customer):
+    def get_total_per_day(self, customer) -> float:
         qs = CreditCustomerDishPayment.objects.filter(
             customer=customer, date_created=self.today
         )
