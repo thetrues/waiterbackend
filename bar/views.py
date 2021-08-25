@@ -345,6 +345,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         today_date = timezone.localdate()
         qs = self.queryset.filter(date_created__date=today_date)
         response = self.append_orders(qs)
+
         return Response(response, status.HTTP_200_OK)
 
     @action(
