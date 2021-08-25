@@ -137,7 +137,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         }
 
     def list(self, request, *args, **kwargs):
-        response: list = []
+        response: List = []
         for record in self.queryset:
             response.append(self.get_res(record))
 
