@@ -116,7 +116,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
 
         return Response(data=response, status=status.HTTP_200_OK)
 
-    def get_res(self, instance: TekilaInventoryRecord) -> dict():
+    def get_res(self, instance: TekilaInventoryRecord) -> Dict:
         return {
             "id": instance.id,
             "quantity": instance.quantity,
