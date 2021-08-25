@@ -23,10 +23,7 @@ class DailyReport(APIView):
             .prefetch_related("customer_dish__orders")
         )
 
-        response["todays_date"] = todays_date.__str__()
-        sales: Dict = {}
-        sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"]
-        sales["total_dishes"] = len(qs)
+    def structure_dishes(self, qs, sales):
         sales["dishes_structure"] = []
         for q in qs:
             temp_dish_structure: Dict = {}
