@@ -31,7 +31,7 @@ class DailyReport(APIView):
         for q in qs:
             temp_dish_structure: Dict = {}
             temp_dish_structure["dish_id"] = q.id
-            temp_dish_structure["dish_number"] = q.dish_number
+            temp_dish_structure["dish_number"] = q.customer_dish.dish_number
             temp_dish_structure["payment_status"] = q.payment_status
             temp_dish_structure["by_credit"] = q.by_credit
             temp_dish_structure["payable_amount"] = q.get_total_amount_to_pay
