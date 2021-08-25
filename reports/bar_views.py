@@ -1,3 +1,7 @@
-from django.shortcuts import render
+## DAILY REPORTS
 
-# Create your views here.
+
+## MONTHLY REPORTS
+
+
+## CUSTOM DATE RANGE REPORTS

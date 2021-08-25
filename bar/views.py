@@ -813,6 +813,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         todays_date = timezone.localdate()
         qs = self.queryset.filter(date_created__date=todays_date)
         response = self.append_orders(qs)
+
         return Response(response, status.HTTP_200_OK)
 
     @action(
