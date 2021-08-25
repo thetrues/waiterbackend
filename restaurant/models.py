@@ -54,7 +54,7 @@ class MainInventoryItemRecord(BaseInventory):
         )
 
     @property
-    def estimate_profit(self):
+    def estimate_profit(self) -> float:
         return float(self.estimate_sales - self.purchasing_price)
 
     def send_notification(self, message: str, recipients: List[str]):
@@ -77,8 +77,8 @@ class MainInventoryItemRecord(BaseInventory):
             )
 
     @property
-    def stock_out_history(self) -> List[Dict]:
-        response: List[Dict] = []
+    def stock_out_history(self):
+        response: List[dict] = []
         [
             response.append(
                 {
