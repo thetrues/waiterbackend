@@ -37,6 +37,12 @@ class MainInventoryItemRecord(BaseInventory):
     main_inventory_item = models.ForeignKey(MainInventoryItem, on_delete=models.CASCADE)
     threshold = models.IntegerField()
 
+    @property
+    def ppu(self) -> float:
+        """ppu -> price per unit"""
+
+        return float(self.purchasing_price / self.quantity)
+
     def __str__(self) -> str:
         """String representation of object
 
@@ -100,6 +106,11 @@ class MainInventoryItemRecordStockOut(models.Model):
     date_out = models.DateField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     objects = Manager()
+
+    def get_ppu(self) -> float:
+        """get estimatation of selling price per unit of the quantity_out"""
+
+        return float(self.quantity_out * self.item_record.ppu)
 
     def __str__(self):
         return (
