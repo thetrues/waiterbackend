@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "user.apps.UserConfig",
     "bar.apps.BarConfig",
+    "reports.apps.ReportsConfig",
     "restaurant.apps.RestaurantConfig",
     "rest_framework",
     "rest_framework.authtoken",
