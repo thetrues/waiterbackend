@@ -77,8 +77,8 @@ class MainInventoryItemRecord(BaseInventory):
             )
 
     @property
-    def stock_out_history(self):
-        response: List[dict] = []
+    def stock_out_history(self) -> List[Dict]:
+        response: List[Dict] = []
         [
             response.append(
                 {
