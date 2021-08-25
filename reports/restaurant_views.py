@@ -26,6 +26,7 @@ class DailyReport(APIView):
         response["todays_date"] = todays_date.__str__()
         sales: Dict = {}
         sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"]
+        sales["total_dishes"] = len(qs)
         response["sales"] = sales
 
         return Response(response, status.HTTP_200_OK)
