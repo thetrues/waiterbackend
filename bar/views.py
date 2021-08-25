@@ -921,7 +921,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
         return Response(data, status.HTTP_201_CREATED)
 
-    def perform_create(self, request):
+    def perform_create(self, request) -> Dict:
         # Check if customer is valid to borrow for today
         object = CustomerTequilaOrderRecordPayment.objects.create(
             customer_order_record=CustomerTequilaOrderRecord.objects.get(
