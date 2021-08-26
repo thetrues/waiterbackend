@@ -1,3 +1,4 @@
+from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
 from typing import Dict, List, Set
 from abc import abstractmethod
@@ -238,6 +239,27 @@ class CustomerDish(models.Model):
             for order in self.orders.all()
         ]
         return res
+
+    def get_payment_status(self) -> str:
+        total_payment = self.get_paid_amount()
+
+        if self.get_total_price >= total_payment:
+            payment_status: str = "Fully Paid"
+        elif self.get_total_price <= 0:
+            payment_status: str = "Not Paid"
+        else:
+            payment_status: str = "Partially Paid"
+
+        return payment_status
+
+    def get_paid_amount(self) -> float:
+        return self.customerdishpayment_set.all().aggregate(total=Sum("amount_paid"))[
+            "total"
+        ]
+
+    def get_remained_amount(self) -> float:
+
+        return self.get_total_price - self.get_paid_amount()
 
     class Meta:
         ordering: List[str] = ["-id"]

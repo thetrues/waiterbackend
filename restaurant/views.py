@@ -430,6 +430,9 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
                     "customer_phone": _.customer_phone,
                     "dish_number": _.dish_number,
                     "total_price": _.get_total_price,
+                    "payment_status": _.get_payment_status(),
+                    "paid_amount": _.get_paid_amount(),
+                    "remained_amount": _.get_remained_amount(),
                     "orders": self.get_orders(_),
                 }
             )
