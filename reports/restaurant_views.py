@@ -67,7 +67,7 @@ class DailyReport(APIView):
         (
             main_inventory["total_consuption_estimation"],
             main_qs,
-        ) = self.get_total_main_expense_and_main_qs()
+        ) = self.get_total_main_expense_and_main_qs(todays_date)
         temp_issued_items: List = []
         for qs in main_qs:
             temp_issued_items.append(
