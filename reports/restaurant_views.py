@@ -120,7 +120,7 @@ class DailyReport(APIView):
     def get_total_main_expense(self, main_qs) -> float:
         total_main_expense: float = 00
         for qs in main_qs:
-            total_main_expense += qs.get_ppu
+            total_main_expense += qs.get_ppu()
         return total_main_expense
 
     def get_total_misc_expense_and_misc_qs(self, todays_date):
