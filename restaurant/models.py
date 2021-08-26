@@ -215,7 +215,7 @@ class CustomerDish(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     objects = Manager()
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         return f"{self.customer_name}: Dish#{self.dish_number}"
 
     @property
@@ -272,7 +272,7 @@ class CustomerDish(models.Model):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Dish"
         verbose_name_plural: str = "Customer Dishes"
-        unique_together: Set[set] = (("customer_name", "dish_number"),)
+        unique_together: Set[Set[str]] = (("customer_name", "dish_number"),)
 
 
 class CustomerDishPayment(BasePayment):
