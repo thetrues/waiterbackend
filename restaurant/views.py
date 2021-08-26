@@ -420,8 +420,8 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
 
         return Response(self.get_list(), status=status.HTTP_200_OK)
 
-    def get_list(self):
-        res: list = []
+    def get_list(self) -> List[Dict]:
+        res: List[Dict] = []
         [
             res.append(
                 {
@@ -435,6 +435,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             )
             for _ in self.queryset
         ]
+
         return res
 
     def get_additives(self, object):
