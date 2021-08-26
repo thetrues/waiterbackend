@@ -23,9 +23,11 @@ class DailyReport(APIView):
 
         qs = self.get_queryset(todays_date)
 
-        self.get_sales_response(qs)
+        sales: Dict = self.get_sales_response(qs)
+        response["sales"] = sales
 
-        self.get_expenses_response(response, todays_date)
+        expenses: Dict = self.get_expenses_response(response, todays_date)
+        response["expenses"] = expenses
 
         total_sales = response["sales"]["total_sales"]
         total_expenses = response["expenses"]["total_expense"]
@@ -86,7 +88,7 @@ class DailyReport(APIView):
 
         expenses["main_inventory"] = main_inventory
 
-        response["expenses"] = expenses
+        return expenses
 
     def assign_total_expense(self, expenses, total_misc_expense, total_main_expense):
         expenses["total_expense"] = total_misc_expense + total_main_expense
@@ -98,10 +100,12 @@ class DailyReport(APIView):
         response["todays_date"] = todays_date.__str__()
         return todays_date
 
-    def get_sales_response(self, qs):
+    def get_sales_response(self, qs) -> Dict:
         sales: Dict = {}
         self.total_sales_and_dishes(qs, sales)
         self.structure_dishes(qs, sales)
+
+        return sales
 
     def get_total_main_expense_and_main_qs(self, todays_date):
         main_qs = MainInventoryItemRecordStockOut.objects.filter(
