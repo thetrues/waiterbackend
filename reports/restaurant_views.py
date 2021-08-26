@@ -42,7 +42,9 @@ class DailyReport(APIView):
         total_main_expense, gabbage = self.get_total_main_expense_and_main_qs(
             todays_date
         )
-        misc_inventory = self.assign_total_expense(expenses, total_misc_expense, total_main_expense)
+        misc_inventory = self.assign_total_expense(
+            expenses, total_misc_expense, total_main_expense
+        )
 
         misc_inventory["total_miscellenous_purchases"] = total_misc_expense
 
@@ -105,10 +107,17 @@ class DailyReport(APIView):
         main_qs = MainInventoryItemRecordStockOut.objects.filter(
             date_out=todays_date
         ).select_related("item_record")
+        total_main_expense: float = self.get_total_main_expense(main_qs)
 
-        total_main_expense: float = main_qs.aggregate(total=Sum("get_ppu"))["total"]
+        # total_main_expense: float = main_qs.aggregate(total=Sum("get_ppu"))["total"]
 
         return total_main_expense, main_qs
+
+    def get_total_main_expense(self, main_qs) -> float:
+        total_main_expense: float = 00
+        for qs in main_qs:
+            total_main_expense += qs.get_ppu
+        return total_main_expense
 
     def get_total_misc_expense_and_misc_qs(self, todays_date):
         misc_qs = MiscellaneousInventoryRecord.objects.filter(
