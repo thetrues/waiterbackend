@@ -13,6 +13,7 @@ from typing import Dict, List
 
 class DailyReport(APIView):
     """Get Daily Reports"""
+    # REmeber to remove all __lt on dates
 
     permission_classes = []
     authentication_classes = []
