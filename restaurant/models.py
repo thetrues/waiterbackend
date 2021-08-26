@@ -284,11 +284,11 @@ class CustomerDishPayment(BasePayment):
         return f"{self.customer_dish}: Payment Status{self.payment_status}"
 
     @property
-    def get_total_amount_to_pay(self) -> float():
+    def get_total_amount_to_pay(self) -> float:
         return self.customer_dish.get_total_price
 
     @property
-    def get_remaining_amount(self) -> float():
+    def get_remaining_amount(self) -> float:
         return self.get_total_amount_to_pay - self.amount_paid
 
 
@@ -314,7 +314,7 @@ class CreditCustomerDishPaymentHistory(models.Model):
         return self.credit_customer_dish_payment.customer.customer_name
 
     class Meta:
-        ordering: list = ["-id"]
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer Dish Payment History"
         verbose_name_plural: str = "Credit Customer Dish Payment Histories"
 
