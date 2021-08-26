@@ -121,7 +121,7 @@ class DailyReport(APIView):
 
     def get_total_misc_expense_and_misc_qs(self, todays_date):
         misc_qs = MiscellaneousInventoryRecord.objects.filter(
-            date_purchased=todays_date
+            date_purchased__lt=todays_date
         ).select_related("item", "item__unit")
         total_misc_expense = misc_qs.aggregate(total=Sum("purchasing_price"))["total"]
 
