@@ -257,10 +257,11 @@ class CustomerDish(models.Model):
         ]
 
     def get_remained_amount(self) -> float:
-        remained_amount: float = self.get_total_price - self.get_paid_amount()
+        paid_amount: float = self.get_paid_amount()
 
-        if remained_amount:
-            return remained_amount
+        if paid_amount:
+            return self.get_total_price - self.get_paid_amount()
+        return self.get_total_price
 
     class Meta:
         ordering: List[str] = ["-id"]
