@@ -109,7 +109,7 @@ class DailyReport(APIView):
 
     def get_total_main_expense_and_main_qs(self, todays_date):
         main_qs = MainInventoryItemRecordStockOut.objects.filter(
-            date_out=todays_date
+            date_out__lt=todays_date
         ).select_related("item_record")
         total_main_expense: float = self.get_total_main_expense(main_qs)
 
