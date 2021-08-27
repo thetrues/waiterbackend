@@ -205,6 +205,7 @@ class CreditCustomer(models.Model):
     name = models.CharField(max_length=255)
     phone = models.CharField(max_length=14)
     address = models.CharField(max_length=255)
+    credit_limit = models.FloatField()
 
     def __str__(self):
 
