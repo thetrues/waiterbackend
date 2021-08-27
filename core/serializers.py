@@ -32,7 +32,7 @@ class CreditCustomerSerializer(serializers.ModelSerializer):
         fields = "__all__"
     
     def to_representation(self, instance):
-        rep = super(ItemSerializer, self).to_representation(instance)
+        rep = super(CreditCustomerSerializer, self).to_representation(instance)
         credit_limit = instance.credit_limit
         rep["credit_limit"] = credit_limit or 0.0
         return rep
