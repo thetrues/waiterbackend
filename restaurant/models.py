@@ -31,7 +31,7 @@ class MainInventoryItem(models.Model):
         return self.item.name
 
     class Meta:
-        ordering = ["-id"]
+        ordering: List[str] = ["-id"]
 
 
 class MainInventoryItemRecord(BaseInventory):
