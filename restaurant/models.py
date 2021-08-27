@@ -226,8 +226,8 @@ class CustomerDish(models.Model):
         return res_
 
     @property
-    def get_dish_detail(self) -> List:
-        res: List = []
+    def get_dish_detail(self) -> List[Dict]:
+        res: List[Dict] = []
         [
             res.append(
                 {
@@ -238,6 +238,7 @@ class CustomerDish(models.Model):
             )
             for order in self.orders.all()
         ]
+
         return res
 
     def get_payment_status(self) -> str:
