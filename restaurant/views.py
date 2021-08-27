@@ -692,20 +692,13 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             raise ValidationError(
                 "Can't perform this operation. Customer's credit is not enough."
             )
-            # return Response(
-            #     {
-            #         "message": "Can't perform this operation. Customer's credit is not enough."
-            #     },
-            #     status.HTTP_200_OK,
-            # )
         elif by_credit and self.get_advance_amount(
             customer_dish, amount_paid
         ) > self.get_remained_credit_for_today(customer):
-            return Response(
-                {
-                    "message": f"Can't perform this operation. Remained credit for {customer.name} is {self.get_remained_credit_for_today(customer)}"
-                },
-                status.HTTP_200_OK,
+            raise ValidationError(
+                "Can't perform this operation. Remained credit for {} is {self.get_remained_credit_for_today({})}".format(
+                    customer.name, customer
+                )
             )
         object = CustomerDishPayment.objects.create(
             customer_dish=CustomerDish.objects.get(
