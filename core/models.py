@@ -205,7 +205,7 @@ class CreditCustomer(models.Model):
     name = models.CharField(max_length=255)
     phone = models.CharField(max_length=14)
     address = models.CharField(max_length=255)
-    credit_limit = models.FloatField()
+    credit_limit = models.FloatField(null=True, blank=True)
 
     def __str__(self):
 
@@ -221,7 +221,7 @@ class CreditCustomer(models.Model):
 class BaseCreditCustomerPayment(models.Model):
     customer = models.ForeignKey(CreditCustomer, on_delete=models.CASCADE)
     date_created = models.DateField(auto_now_add=True)
-    amount_paid = models.FloatField()
+    amount_paid = models.FloatField(null=True, blank=True)
     objects = Manager()
 
     def __str__(self):
