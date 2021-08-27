@@ -253,7 +253,7 @@ class CustomerDish(models.Model):
         return payment_status
 
     def get_paid_amount(self) -> float:
-        paid_amount: float = self.customerdishpayment_set.all().aggregate(
+        paid_amount: float = self.customerdishpayment_set.aggregate(
             total=Sum("amount_paid")
         )["total"]
 
