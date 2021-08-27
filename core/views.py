@@ -35,15 +35,17 @@ class CreditCustomerViewSet(viewsets.ModelViewSet):
 
     def append_list(self, response):
         for customer in self.queryset:
+            today_spend = customer.creditcustomerdishpayment_set.filter(
+                date_created=timezone.localdate()
+            ).aggregate(total=Sum("amount_paid"))["total"]
+            if not today_spend:
+                today_spend = 0.0
             temp_dict: Dict = {
                 "id": customer.id,
                 "name": customer.name,
                 "phone": customer.phone,
                 "address": customer.address,
                 "credit_limit": customer.credit_limit,
-                "today_balance": customer.credit_limit
-                - customer.creditcustomerdishpayment_set.filter(
-                    date_created=timezone.localdate()
-                ).aggregate(total=Sum("amount_paid"))["total"],
+                "today_balance": customer.credit_limit - today_spend,
             }
             response.append(temp_dict)
