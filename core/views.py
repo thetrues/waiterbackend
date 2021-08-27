@@ -1,8 +1,7 @@
 from typing import Dict, List
 from django.db.models.aggregates import Sum
 from django.utils import timezone
-
-from requests.models import Response
+from rest_framework.response import Response
 from core.models import CreditCustomer, Item, MeasurementUnit
 from rest_framework import status, viewsets
 from core.serializers import (
