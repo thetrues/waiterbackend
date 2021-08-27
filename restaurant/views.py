@@ -891,7 +891,7 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
     )
     def get_monthly_payments(self, request, *args, **kwargs):
         response: list = []
-        today = datetime.date.today()
+        today = timezone.localdate()
         payments_this_month = RestaurantPayrol.objects.filter(
             date_paid__year=today.year,
             date_paid__month=today.month,
