@@ -685,7 +685,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, request):
         by_credit = request.data.get("by_credit")
-        amount_paid = request.data.get("amount_paid")
+        amount_paid = float(request.data.get("amount_paid"))
         customer_dish = CustomerDish.objects.get(id=request.data.get("customer_dish"))
         customer = self.get_customer(request)
         if (
