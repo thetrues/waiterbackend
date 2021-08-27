@@ -533,7 +533,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         "customer_dish", "created_by", "customer_dish__created_by"
     ).prefetch_related("customer_dish__orders")
     serializer_class = CustomerDishPaymentSerializer
-    today = datetime.datetime.today()
+    today = timezone.localdate()
 
     def list(self, request, *args, **kwargs):
         response: list = []
