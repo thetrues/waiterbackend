@@ -1,3 +1,4 @@
+from rest_framework.exceptions import ValidationError
 from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
@@ -688,12 +689,15 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         customer_dish = CustomerDish.objects.get(id=request.data.get("customer_dish"))
         customer = self.get_customer(request)
         if by_credit and customer_dish.get_total_price > customer.credit_limit:
-            return Response(
-                {
-                    "message": f"Can't perform this operation. {customer.name} is not eligible for this purchase."
-                },
-                status.HTTP_200_OK,
+            raise ValidationError(
+                "Can't perform this operation. Customer's credit is not enough."
             )
+            # return Response(
+            #     {
+            #         "message": "Can't perform this operation. Customer's credit is not enough."
+            #     },
+            #     status.HTTP_200_OK,
+            # )
         elif by_credit and self.get_advance_amount(
             customer_dish, amount_paid
         ) > self.get_remained_credit_for_today(customer):
