@@ -31,7 +31,7 @@ class CreditCustomerViewSet(viewsets.ModelViewSet):
 
         self.append_list(response)
 
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(data=response, status=status.HTTP_200_OK)
 
     def append_list(self, response):
         for customer in self.queryset:
