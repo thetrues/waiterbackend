@@ -225,7 +225,7 @@ class BaseCreditCustomerPayment(models.Model):
     objects = Manager()
 
     def __str__(self):
-        return self.customer.customer_name
+        return self.customer.name
 
     class Meta:
         abstract: bool = True
