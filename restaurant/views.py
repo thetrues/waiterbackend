@@ -700,8 +700,8 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             customer_dish, amount_paid
         ) > self.get_remained_credit_for_today(customer):
             raise ValidationError(
-                "Can't perform this operation. Remained credit for {} is {self.get_remained_credit_for_today({})}".format(
-                    customer.name, customer
+                "Can't perform this operation. Remained credit for {} is {}".format(
+                    customer.name, self.get_remained_credit_for_today(customer)
                 )
             )
         object = CustomerDishPayment.objects.create(
