@@ -244,7 +244,7 @@ class CustomerDish(models.Model):
     def get_payment_status(self) -> str:
         total_payment = self.get_paid_amount()
 
-        if total_payment and self.get_total_price >= total_payment:
+        if total_payment and total_payment >= self.get_total_price:
             payment_status: str = "Fully Paid"
         elif total_payment and self.get_total_price <= 0 or not total_payment:
             payment_status: str = "Not Paid"
