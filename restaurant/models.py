@@ -281,7 +281,7 @@ class CustomerDishPayment(BasePayment):
 
     customer_dish = models.ForeignKey(CustomerDish, on_delete=models.CASCADE)
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         return f"{self.customer_dish}: Payment Status{self.payment_status}"
 
     @property
