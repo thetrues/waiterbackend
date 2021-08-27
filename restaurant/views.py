@@ -676,7 +676,8 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer = CustomerDishPaymentSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            return Response({"message": serializer.errors}, status.HTTP_400_BAD_REQUEST)
 
         data = self.perform_create(request)
         return Response(data, status.HTTP_201_CREATED)
@@ -690,7 +691,8 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             return Response(
                 {
                     "message": f"Can't perform this operation. {customer.name} is not eligible for this purchase."
-                }
+                },
+                status.HTTP_200_OK,
             )
         elif by_credit and self.get_advance_amount(
             customer_dish, amount_paid
@@ -698,7 +700,8 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             return Response(
                 {
                     "message": f"Can't perform this operation. Remained credit for {customer.name} is {self.get_remained_credit_for_today(customer)}"
-                }
+                },
+                status.HTTP_200_OK,
             )
         object = CustomerDishPayment.objects.create(
             customer_dish=CustomerDish.objects.get(
