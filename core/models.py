@@ -219,6 +219,7 @@ class CreditCustomer(models.Model):
         total: float = 0.0
         for spend in today_spends:
             total += spend.get_credit_dish_payable_amount()
+        total = self.credit_limit - total
         if total == 0.0:
             total = self.credit_limit
 
