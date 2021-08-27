@@ -221,6 +221,7 @@ class CreditCustomer(models.Model):
 class BaseCreditCustomerPayment(models.Model):
     customer = models.ForeignKey(CreditCustomer, on_delete=models.CASCADE)
     date_created = models.DateField(auto_now_add=True)
+    amount_paid = models.FloatField()
     objects = Manager()
 
     def __str__(self):
