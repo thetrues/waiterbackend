@@ -36,7 +36,6 @@ from restaurant.serializers import (
 from django.utils import timezone
 from typing import Dict, List
 from user.models import User
-import datetime
 import uuid
 
 
