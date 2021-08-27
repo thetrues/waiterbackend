@@ -683,13 +683,21 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, request):
         by_credit = request.data.get("by_credit")
+        amount_paid = request.data.get("amount_paid")
+        customer_dish = CustomerDish.objects.get(id=request.data.get("customer_dish"))
         customer = self.get_customer(request)
-        if (
-            by_credit and customer and self.get_total_per_day(customer) > 5000
-        ):  # 5000 can be changed to any value.
+        if by_credit and customer_dish.get_total_price > customer.credit_limit:
             return Response(
                 {
-                    "message": f"Can't perform this operation. {customer.name} has reached the credit limit for today."
+                    "message": f"Can't perform this operation. {customer.name} is not eligible for this purchase."
+                }
+            )
+        elif by_credit and self.get_advance_amount(
+            customer_dish, amount_paid
+        ) > self.get_remained_credit_for_today(customer):
+            return Response(
+                {
+                    "message": f"Can't perform this operation. Remained credit for {customer.name} is {self.get_remained_credit_for_today(customer)}"
                 }
             )
         object = CustomerDishPayment.objects.create(
@@ -699,8 +707,8 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             amount_paid=request.data.get("amount_paid"),
             created_by=request.user,
         )
-        self.pay_by_credit(request, by_credit, object)
-        self.save_payment_status(request, object)
+        self.pay_by_credit(request, by_credit, amount_paid, object)
+        self.save_payment_status(object, amount_paid)
         object.save()
 
         return {
@@ -711,16 +719,38 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             "created_by": str(object.created_by),
         }
 
+    def get_advance_amount(self, customer_dish, amount_paid) -> float:
+        """This is the amount of money customer wants to pay in advance"""
+
+        return customer_dish.get_total_price - amount_paid
+
+    def get_remained_credit_for_today(self, customer) -> float:
+
+        return customer.credit_limit - self.get_today_spend(
+            customer
+        )  # 20,000 - 15,000 = 5,000
+
+    def get_today_spend(self, customer):
+        total_amount: float = 0.0
+        qs = self.get_credit_qs(customer)
+        for q in qs:
+            total_amount += q.get_credit_dish_payable_amount()
+
+        return total_amount  # 15,000
+
     def get_total_per_day(self, customer) -> float:
-        qs = CreditCustomerDishPayment.objects.filter(
+        qs = self.get_credit_qs(customer)
+
+        amount_paid: float = qs.aggregate(total=Sum("amount_paid"))["total"]
+
+        return amount_paid
+
+    def get_credit_qs(self, customer):
+        return CreditCustomerDishPayment.objects.filter(
             customer=customer, date_created=self.today
         )
 
-        return qs.aggregate(
-            total=Sum("customer_dish_payment__customer_dish__get_total_price")
-        )["total"]
-
-    def pay_by_credit(self, request, by_credit, object):
+    def pay_by_credit(self, request, by_credit, amount_paid, object):
         customer = self.get_customer(request)
         if by_credit and customer:
             object.by_credit = True
@@ -728,6 +758,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             CreditCustomerDishPayment.objects.create(
                 customer_dish_payment=object,
                 customer=customer,
+                amount_paid=amount_paid,
             )
             self._change_customer_details(object, customer)
 
@@ -746,14 +777,14 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             customer = None
         return customer
 
-    def save_payment_status(self, request, object):
-        amount_paid = float(request.data.get("amount_paid"))
+    def save_payment_status(self, object, amount_paid):
         if amount_paid == 0:
             object.payment_status = "unpaid"
         elif amount_paid >= object.get_total_amount_to_pay:
             object.payment_status = "paid"
         else:
             object.payment_status = "partial"
+        object.save()
 
 
 class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):

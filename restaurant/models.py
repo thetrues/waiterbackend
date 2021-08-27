@@ -298,6 +298,13 @@ class CreditCustomerDishPayment(BaseCreditCustomerPayment):
         CustomerDishPayment, on_delete=models.CASCADE
     )
 
+    def get_credit_dish_payable_amount(self) -> float:
+        dish_total_price: float = (
+            self.customer_dish_payment__customer_dish__get_total_price
+        )
+
+        return dish_total_price - self.amount_paid
+
     class Meta:
         verbose_name: str = "Credit Customer Dish Payment"
         verbose_name_plural: str = "Credit Customer Dish Payments"
