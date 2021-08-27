@@ -282,7 +282,7 @@ class CustomerDishPayment(BasePayment):
     customer_dish = models.ForeignKey(CustomerDish, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return f"{self.customer_dish}: Payment Status{self.payment_status}"
+        return f"{self.customer_dish}: Payment Status - {self.payment_status}"
 
     @property
     def get_total_amount_to_pay(self) -> float:
@@ -300,7 +300,7 @@ class CreditCustomerDishPayment(BaseCreditCustomerPayment):
 
     def get_credit_dish_payable_amount(self) -> float:
         dish_total_price: float = (
-            self.customer_dish_payment__customer_dish__get_total_price
+            self.customer_dish_payment.customer_dish.get_total_price
         )
 
         return dish_total_price - self.amount_paid
