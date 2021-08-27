@@ -688,7 +688,11 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         amount_paid = request.data.get("amount_paid")
         customer_dish = CustomerDish.objects.get(id=request.data.get("customer_dish"))
         customer = self.get_customer(request)
-        if by_credit and customer_dish.get_total_price > customer.credit_limit:
+        if (
+            by_credit
+            and self.get_advance_amount(customer_dish, amount_paid)
+            > customer.credit_limit
+        ):
             raise ValidationError(
                 "Can't perform this operation. Customer's credit is not enough."
             )
