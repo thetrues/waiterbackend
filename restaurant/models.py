@@ -17,12 +17,12 @@ from user.models import User
 
 
 class MainInventoryItem(models.Model):
-    item = models.OneToOneField(Item, on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
     amount_per_unit = models.PositiveIntegerField(help_text="e.g 4 Plates per 1 Kg")
     price_per_unit = models.PositiveIntegerField(help_text="e.g 1200 per 1 plate")
     objects = Manager()
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         """String representation of object
 
         Returns:
