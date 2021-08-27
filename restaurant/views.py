@@ -715,6 +715,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         qs = CreditCustomerDishPayment.objects.filter(
             customer=customer, date_created=self.today
         )
+
         return qs.aggregate(
             total=Sum("customer_dish_payment__customer_dish__get_total_price")
         )["total"]
