@@ -3,6 +3,7 @@ from django.db.models.aggregates import Sum
 from typing import Dict, List, Set
 from abc import abstractmethod
 from django.db import models
+from django.utils import timezone
 from user.models import User
 
 
@@ -210,6 +211,16 @@ class CreditCustomer(models.Model):
     def __str__(self):
 
         return self.name
+
+    def get_today_balance(self) -> float:
+        today_spends = self.creditcustomerdishpayment_set.filter(
+            date_created=timezone.localdate()
+        )
+        total: float = 0.0
+        for spend in today_spends:
+            total += spend.get_credit_dish_payable_amount()
+
+        return total
 
     class Meta:
         unique_together: Set[str] = ("phone", "name")
