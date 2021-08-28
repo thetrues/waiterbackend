@@ -216,7 +216,7 @@ class CustomerDish(models.Model):
     objects = Manager()
 
     def __str__(self) -> str:
-        return f"{self.customer_name}: Dish#{self.dish_number}"
+        return f"{self.customer_name}: Dish #{self.dish_number}"
 
     @property
     def get_total_price(self) -> float:
