@@ -1,4 +1,5 @@
 from django.db.models.signals import post_save
+from django.db.models.aggregates import Sum
 from restaurant.utils import get_recipients
 from django.dispatch import receiver
 from restaurant.models import (
@@ -67,5 +68,17 @@ def update_payment_amounts(sender, instance, created, **kwargs):
         obj2.amount_paid = obj2.amount_paid + instance.amount_paid
         obj2.date_updated = timezone.now()
         obj2.save()
-        # if obj2.customer_dish.get_total_price == 1:
-        #     pass
+
+        total = CreditCustomerDishPaymentHistory.objects.filter(
+            credit_customer_dish_payment=instance.credit_customer_dish_payment
+        ).aggregate(total=Sum("amount_paid"))["total"]
+
+        # obj3 = obj2.customer_dish
+        if total == 0:
+            obj2.payment_status = "unpaid"
+        elif total >= obj2.get_total_amount_to_pay:
+            obj2.payment_status = "paid"
+        else:
+            obj2.payment_status = "partial"
+
+        obj2.save()
