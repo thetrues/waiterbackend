@@ -298,7 +298,6 @@ class CustomerDishPayment(BasePayment):
             if val.credit_customer_dish_payment.customer_dish_payment == self:
                 histories.append(
                     {
-                        "id": val.id,
                         "amount_paid": float(val.amount_paid),
                         "date_paid": str(val.date_paid),
                     }
