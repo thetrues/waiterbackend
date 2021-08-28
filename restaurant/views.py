@@ -634,7 +634,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def get_all_partial(self, request, *args, **kwargs):
-        res: list = []
+        res: List[Dict] = []
         filtered_qs = self.queryset.filter(payment_status="partial", by_credit=True)
         [
             res.append(
@@ -648,10 +648,12 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                     "date_paid": str(qs.date_paid).split(" ")[0],
                     "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
                     "dish_detail": qs.customer_dish.get_dish_detail,
+                    "payments_history": qs.get_payments_history(),
                 }
             )
             for qs in filtered_qs
         ]
+
         return Response(res, status.HTTP_200_OK)
 
     @action(

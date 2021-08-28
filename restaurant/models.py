@@ -292,6 +292,20 @@ class CustomerDishPayment(BasePayment):
     def get_remaining_amount(self) -> float:
         return self.get_total_amount_to_pay - self.amount_paid
 
+    def get_payments_history(self) -> List[Dict]:
+        histories: List[Dict] = []
+        for val in CreditCustomerDishPaymentHistory.objects.all():
+            if val.credit_customer_dish_payment.customer_dish_payment == self:
+                histories.append(
+                    {
+                        "id": val.id,
+                        "amount_paid": float(val.amount_paid),
+                        "date_paid": str(val.date_paid),
+                    }
+                )
+
+        return histories
+
 
 class CreditCustomerDishPayment(BaseCreditCustomerPayment):
     customer_dish_payment = models.ForeignKey(
