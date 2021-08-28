@@ -319,7 +319,7 @@ class CreditCustomerDishPaymentHistory(models.Model):
     objects = Manager()
 
     def __str__(self):
-        return self.credit_customer_dish_payment.customer.customer_name
+        return self.credit_customer_dish_payment.customer.name
 
     class Meta:
         ordering: List[str] = ["-id"]
