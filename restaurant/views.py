@@ -807,7 +807,10 @@ class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):
             object = CreditCustomerDishPayment.objects.get(
                 id=credit_customer_dish_payment
             )
-            if object.payment_status == "paid" and object.by_credit is False:
+            if (
+                object.customer_dish_payment.payment_status == "paid"
+                and object.customer_dish_payment.by_credit is False
+            ):
                 return Response(
                     {
                         "message": "This order was not taken by credit or is already paid."
