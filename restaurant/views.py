@@ -535,7 +535,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     today = timezone.localdate()
 
     def list(self, request, *args, **kwargs):
-        response: list = []
+        response: List[Dict] = []
         for qs in self.queryset:
             splitted_date = str(qs.date_paid).split(" ")
             response.append(
