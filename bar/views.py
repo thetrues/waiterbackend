@@ -539,7 +539,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
         return customer_regular_order_record.get_total_price - amount_paid
 
-    def get_customer(self, request):
+    def get_advance_amount(self, request):
         try:
             customer = CreditCustomer.objects.get(
                 name=request.data.get("customer_name")
