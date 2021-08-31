@@ -661,7 +661,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def get_all_unpaid(self, request, *args, **kwargs):
-        res: List = []
+        res: List[Dict] = []
         filtered_qs = self.queryset.filter(payment_status="unpaid", by_credit=True)
         [
             res.append(

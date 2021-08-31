@@ -1,4 +1,5 @@
 from core.utils import get_date_objects, validate_dates
+from rest_framework.exceptions import ValidationError
 from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
 from rest_framework.decorators import action
@@ -17,6 +18,7 @@ from bar.serializers import (
     BarPayrolSerializer,
 )
 from bar.models import (
+    CreditCustomerRegularOrderRecordPayment,
     CreditCustomerTequilaOrderRecordPayment,
     CustomerRegularOrderRecordPayment,
     CustomerRegularOrderRecordPayment,
