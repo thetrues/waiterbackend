@@ -293,7 +293,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             customer_orders_number=str(uuid.uuid4())[:8],
             created_by=request.user,
         )
-        self.add_orders(request)
+        self.add_orders(request, object)
         object.save()
         return {
             "customer_name": object.customer_name,
@@ -304,7 +304,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             "date_created": object.date_created,
         }
 
-    def add_orders(self, request):
+    def add_orders(self, request, object):
         for _ in request.data.get("orders"):
             order = RegularOrderRecord.objects.create(
                 item=RegularInventoryRecord.objects.get(id=int(_["menu_id"])),
@@ -312,7 +312,8 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
                 order_number=str(uuid.uuid4())[:8],
                 created_by=request.user,
             )
-            order.save()
+            object.orders.add(order)
+            # order.save()
 
     def list(self, request, *args, **kwargs):
 

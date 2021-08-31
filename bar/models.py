@@ -268,9 +268,9 @@ class CreditCustomerTequilaOrderRecordPaymentHistory(models.Model):
     class Meta:
         ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer Tequila Order Record Payment History"
-        verbose_name_plural: Set[
-            str
-        ] = "Credit Customer Tequila Order Record Payment Histories"
+        verbose_name_plural: str = (
+            "Credit Customer Tequila Order Record Payment Histories"
+        )
 
 
 # Payrol Management
