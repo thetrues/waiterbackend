@@ -886,6 +886,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             "total_price": instance.get_total_price,
             "orders": instance.get_orders_detail,
         }
+
         return Response(response, status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
