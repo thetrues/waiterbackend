@@ -404,7 +404,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
-        response: dict = {
+        response: Dict = {
             "id": instance.id,
             "customer_name": instance.customer_order_record.customer_name,
             "customer_phone": instance.customer_order_record.customer_phone,
