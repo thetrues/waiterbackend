@@ -75,7 +75,7 @@ def update_payment_amounts(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=CreditCustomerTequilaOrderRecordPaymentHistory)
-def update_payment_amounts_for_tequila(sender, instance, created, **kwargs):
+def update_amounts_paid_for_tequila(sender, instance, created, **kwargs):
     if created:
         object = instance.credit_customer_payment
         object.amount_paid = object.amount_paid + instance.amount_paid
