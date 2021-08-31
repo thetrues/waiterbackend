@@ -484,10 +484,8 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             )
 
         object = CustomerRegularOrderRecordPayment.objects.create(
-            customer_order_record=CustomerRegularOrderRecord.objects.get(
-                id=request.data.get("customer_order_record")
-            ),
-            amount_paid=request.data.get("amount_paid"),
+            customer_order_record=customer_regular_order_record,
+            amount_paid=amount_paid,
             created_by=request.user,
         )
         self.save_payment_status(request, object)
