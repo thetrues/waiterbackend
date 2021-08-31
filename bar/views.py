@@ -294,7 +294,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             created_by=request.user,
         )
         self.add_orders(request, object)
-        object.save()
+        # object.save()
         return {
             "customer_name": object.customer_name,
             "customer_phone": object.customer_phone,
@@ -313,7 +313,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
                 created_by=request.user,
             )
             object.orders.add(order)
-            # order.save()
+        object.save()
 
     def list(self, request, *args, **kwargs):
 
