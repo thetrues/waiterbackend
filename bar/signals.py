@@ -3,6 +3,7 @@ This signal is for changing the item quantity inventory record.
 """
 from bar.models import (
     CreditCustomerRegularOrderRecordPaymentHistory,
+    CreditCustomerTequilaOrderRecordPaymentHistory,
     RegularOrderRecord,
     RegularInventoryRecord,
     TekilaInventoryRecord,
@@ -59,6 +60,33 @@ def update_payment_amounts(sender, instance, created, **kwargs):
         obj2.save()
 
         total = CreditCustomerRegularOrderRecordPaymentHistory.objects.filter(
+            credit_customer_payment=instance.credit_customer_payment
+        ).aggregate(total=Sum("amount_paid"))["total"]
+
+        # obj3 = obj2.customer_dish
+        if total == 0:
+            obj2.payment_status = "unpaid"
+        elif total >= obj2.get_total_amount_to_pay:
+            obj2.payment_status = "paid"
+        else:
+            obj2.payment_status = "partial"
+
+        obj2.save()
+
+
+@receiver(post_save, sender=CreditCustomerTequilaOrderRecordPaymentHistory)
+def update_payment_amounts(sender, instance, created, **kwargs):
+    if created:
+        obj = instance.credit_customer_payment
+        obj.amount_paid = obj.amount_paid + instance.amount_paid
+        obj.save()
+
+        obj2 = instance.credit_customer_payment.record_order_payment_record
+        obj2.amount_paid = obj2.amount_paid + instance.amount_paid
+        obj2.date_updated = timezone.now()
+        obj2.save()
+
+        total = CreditCustomerTequilaOrderRecordPaymentHistory.objects.filter(
             credit_customer_payment=instance.credit_customer_payment
         ).aggregate(total=Sum("amount_paid"))["total"]
 

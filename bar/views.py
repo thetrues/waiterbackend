@@ -8,6 +8,7 @@ from rest_framework import status, viewsets
 from django.db.models.aggregates import Sum
 from bar.serializers import (
     CreditCustomerRegularOrderRecordPaymentHistorySerializer,
+    CreditCustomerTequilaOrderRecordPaymentHistorySerializer,
     TequilaCustomerOrderRecordPaymentSerializer,
     CustomerOrderRecordPaymentSerializer,
     TequilaCustomerOrderRecordSerializer,
@@ -22,6 +23,7 @@ from bar.models import (
     CreditCustomerRegularOrderRecordPayment,
     CreditCustomerRegularOrderRecordPaymentHistory,
     CreditCustomerTequilaOrderRecordPayment,
+    CreditCustomerTequilaOrderRecordPaymentHistory,
     CustomerRegularOrderRecordPayment,
     CustomerRegularOrderRecordPayment,
     CustomerTequilaOrderRecordPayment,
@@ -1258,3 +1260,42 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         ]
 
         return Response(res, status.HTTP_200_OK)
+
+
+class CreditCustomerTequilaOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSet):
+    queryset = CreditCustomerTequilaOrderRecordPaymentHistory.objects.select_related(
+        "credit_customer_payment__record_order_payment_record__customer_order_record"
+    )
+    serializer_class = CreditCustomerTequilaOrderRecordPaymentHistorySerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"message": f"{serializer.errors}"}, status.HTTP_400_BAD_REQUEST
+            )
+        credit_customer_payment = request.data.get("credit_customer_payment")
+        try:
+            object = CreditCustomerTequilaOrderRecordPayment.objects.get(
+                id=credit_customer_payment
+            )
+            if (
+                object.record_order_payment_record.payment_status == "paid"
+                or object.record_order_payment_record.by_credit is False
+            ):
+                return Response(
+                    {
+                        "message": "This order was not taken by credit or is already paid."
+                    },
+                    status.HTTP_400_BAD_REQUEST,
+                )
+            serializer.save()
+            return Response(
+                {"message": "Operation succeed"},
+                status.HTTP_201_CREATED,
+            )
+        except CreditCustomerTequilaOrderRecordPayment.DoesNotExist:
+            return Response(
+                {"message": "Credit Dish Chosen does not exists."},
+                status.HTTP_400_BAD_REQUEST,
+            )

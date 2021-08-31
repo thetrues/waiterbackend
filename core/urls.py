@@ -44,6 +44,10 @@ v1.register(
     "bar/sales/tequila/customer-order-payments",
     bar_views.CustomerTequilaOrderRecordPaymentViewSet,
 )
+v1.register(
+    "bar/sales/tequila/credit-customer/payment-history",
+    bar_views.CreditCustomerTequilaOrderRecordPaymentHistoryViewSet,
+)
 
 
 v1.register(
