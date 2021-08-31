@@ -72,6 +72,7 @@ class TequilaOrderRecord(BaseOrderRecord):
         return float(self.item.selling_price_per_shot * self.quantity)
 
     class Meta:
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Tequila Order Record"
         verbose_name_plural: str = "Tequila Order Records"
 
