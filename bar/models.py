@@ -151,9 +151,9 @@ class CustomerTequilaOrderRecordPayment(BasePayment):
 
     def __init__(
         self,
-        customer_order_record,
-        amount_paid,
-        created_by,
+        customer_order_record=None,
+        amount_paid=None,
+        created_by=None,
         by_credit=None,
         payment_status=None,
         payment_method=None,
@@ -162,7 +162,19 @@ class CustomerTequilaOrderRecordPayment(BasePayment):
         *args,
         **kwargs,
     ):
-        super(models.Model, self).__init__(self, *args, **kwargs)
+        super(models.Model, self).__init__(
+            self,
+            customer_order_record=None,
+            amount_paid=None,
+            created_by=None,
+            by_credit=None,
+            payment_status=None,
+            payment_method=None,
+            date_updated=None,
+            date_paid=None,
+            *args,
+            **kwargs,
+        )
         self.customer_order_record = customer_order_record
         self.by_credit = by_credit
         self.payment_status = payment_status
