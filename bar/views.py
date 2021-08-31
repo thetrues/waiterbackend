@@ -488,6 +488,8 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             amount_paid=amount_paid,
             created_by=request.user,
         )
+
+        self.pay_by_credit(request, by_credit, amount_paid, object)
         self.save_payment_status(request, object)
         object.save()
         return {
