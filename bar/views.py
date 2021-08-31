@@ -1161,6 +1161,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             )
             for qs in filtered_qs
         ]
+
         return Response(res, status.HTTP_200_OK)
 
     @action(
@@ -1184,6 +1185,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             )
             for qs in filtered_qs
         ]
+
         return Response(res, status.HTTP_200_OK)
 
     @action(
@@ -1204,4 +1206,5 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             )
             for qs in filtered_qs
         ]
+
         return Response(res, status.HTTP_200_OK)
