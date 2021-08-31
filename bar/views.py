@@ -1015,6 +1015,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         "customer_order_record", "created_by"
     )
     serializer_class = TequilaCustomerOrderRecordPaymentSerializer
+    today = timezone.localdate()
 
     def retrieve(self, request, pk=None) -> Dict:
         instance = self.get_object()
@@ -1070,20 +1071,32 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, request) -> Dict:
         by_credit = request.data.get("by_credit")
+        amount_paid = request.data.get("amount_paid")
         customer = self.get_customer(request)
+        customer_order_record = CustomerTequilaOrderRecord.objects.get(
+            id=request.data.get("customer_order_record")
+        )
+
         if (
-            by_credit and customer and self.get_total_per_day(customer) > 5000
-        ):  # 5000 can be changed to any value.
-            return Response(
-                {
-                    "message": f"Can't perform this operation. {customer.name} has reached the credit limit for today."
-                }
+            by_credit
+            and self.get_advance_amount(customer_order_record, amount_paid)
+            > customer.credit_limit
+        ):
+            raise ValidationError(
+                "Can't perform this operation. Customer's credit is not enough."
+            )
+
+        elif by_credit and self.get_advance_amount(
+            customer_order_record, amount_paid
+        ) > self.get_remained_credit_for_today(customer):
+            raise ValidationError(
+                "Can't perform this operation. Remained credit for {} is {}".format(
+                    customer.name, self.get_remained_credit_for_today(customer)
+                )
             )
         object = CustomerTequilaOrderRecordPayment.objects.create(
-            customer_order_record=CustomerTequilaOrderRecord.objects.get(
-                id=request.data.get("customer_order_record")
-            ),
-            amount_paid=request.data.get("amount_paid"),
+            customer_order_record=customer_order_record,
+            amount_paid=amount_paid,
             created_by=request.user,
         )
         self.pay_by_credit(request, by_credit, object)
@@ -1113,6 +1126,30 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         customer_order_record.customer_name = customer.name
         customer_order_record.customer_phone = customer.phone
         customer_order_record.save()
+
+    def get_remained_credit_for_today(self, customer) -> float:
+
+        return customer.credit_limit - self.get_today_spend(
+            customer
+        )  # 20,000 - 15,000 = 5,000
+
+    def get_today_spend(self, customer):
+        total_amount: float = 0.0
+        qs = self.get_credit_qs(customer)
+        for q in qs:
+            total_amount += q.get_credit_payable_amount()
+
+        return total_amount  # 15,000
+
+    def get_credit_qs(self, customer):
+        return CreditCustomerTequilaOrderRecordPayment.objects.filter(
+            customer=customer, date_created=self.today
+        )
+
+    def get_advance_amount(self, customer_order_record, amount_paid) -> float:
+        """This is the amount of money customer wants to pay in advance"""
+
+        return customer_order_record.get_total_price - amount_paid
 
     def get_total_per_day(self, customer) -> float:
         qs = CreditCustomerTequilaOrderRecordPayment.objects.filter(
