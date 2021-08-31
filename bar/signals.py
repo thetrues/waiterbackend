@@ -81,20 +81,20 @@ def update_payment_amounts_for_tequila(sender, instance, created, **kwargs):
         object.amount_paid = object.amount_paid + instance.amount_paid
         object.save()
 
-        obj2 = instance.credit_customer_payment.record_order_payment_record
-        obj2.amount_paid = obj2.amount_paid + instance.amount_paid
-        obj2.date_updated = timezone.now()
-        obj2.save()
+        object2 = instance.credit_customer_payment.record_order_payment_record
+        object2.amount_paid = object2.amount_paid + instance.amount_paid
+        object2.date_updated = timezone.now()
+        object2.save()
 
         total = CreditCustomerTequilaOrderRecordPaymentHistory.objects.filter(
             credit_customer_payment=object
         ).aggregate(total=Sum("amount_paid"))["total"]
 
         if total == 0:
-            obj2.payment_status = "unpaid"
-        elif total >= obj2.get_total_amount_to_pay:
-            obj2.payment_status = "paid"
+            object2.payment_status = "unpaid"
+        elif total >= object2.get_total_amount_to_pay:
+            object2.payment_status = "paid"
         else:
-            obj2.payment_status = "partial"
+            object2.payment_status = "partial"
 
-        obj2.save()
+        object2.save()
