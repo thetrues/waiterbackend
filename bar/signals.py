@@ -80,6 +80,9 @@ def update_payment_amounts_for_tequila(sender, instance, created, **kwargs):
         # obj = instance.credit_customer_payment
         # obj.amount_paid = obj.amount_paid + instance.amount_paid
         # obj.save()
+        object = instance.credit_customer_payment
+        object.amount_paid = object.amount_paid + instance.amount_paid
+        object.save()
 
         obj2 = instance.credit_customer_payment.record_order_payment_record
         obj2.amount_paid = obj2.amount_paid + instance.amount_paid
@@ -87,7 +90,7 @@ def update_payment_amounts_for_tequila(sender, instance, created, **kwargs):
         obj2.save()
 
         total = CreditCustomerTequilaOrderRecordPaymentHistory.objects.filter(
-            credit_customer_payment=instance.credit_customer_payment
+            credit_customer_payment=object
         ).aggregate(total=Sum("amount_paid"))["total"]
 
         if total == 0:
