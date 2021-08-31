@@ -883,7 +883,10 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             "customer_name": instance.customer_name,
             "customer_phone": instance.customer_phone,
             "dish_number": instance.customer_orders_number,
-            "total_price": instance.get_total_price,
+            "payment_status": instance.get_payment_status(),
+            "payable_amount": float(instance.get_total_price),
+            "paid_amount": float(instance.get_paid_amount()),
+            "remained_amount": float(instance.get_remained_amount()),
             "orders": instance.get_orders_detail,
         }
 
@@ -1000,7 +1003,10 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     "customer_name": _.customer_name,
                     "customer_phone": _.customer_phone,
                     "dish_number": _.customer_orders_number,
-                    "total_price": _.get_total_price,
+                    "payment_status": _.get_payment_status(),
+                    "payable_amount": float(_.get_total_price),
+                    "paid_amount": float(_.get_paid_amount()),
+                    "remained_amount": float(_.get_remained_amount()),
                     "orders": _.get_orders_detail,
                 }
             )
@@ -1050,11 +1056,13 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                     "customer_orders_number": payment.customer_order_record.customer_orders_number,
                     "payment_status": payment.payment_status,
                     "payment_method": payment.payment_method,
-                    "amount_paid": float(payment.amount_paid),
-                    "amount_remaining": float(payment.get_remaining_amount),
+                    "payable_amount": float(payment.get_total_amount_to_pay),
+                    "paid_amount": float(payment.amount_paid),
+                    "remained_amount": float(payment.get_remaining_amount),
                     "orders": payment.customer_order_record.get_orders_detail,
                     "created_by": payment.created_by.username,
-                    "date_created": payment.date_paid,
+                    "date_created": str(payment.date_paid).split(" ")[0],
+                    "time_created": str(payment.date_paid).split(" ")[1].split(".")[0],
                 }
             )
             for payment in objects
@@ -1106,7 +1114,8 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             "customer_order_record": str(object),
             "payment_status": object.payment_status,
             "amount_paid": object.amount_paid,
-            "date_paid": object.date_paid,
+            "date_paid": str(object.date_paid).split(" ")[0],
+            "time_paid": str(object.date_paid).split(" ")[1].split(".")[0],
             "created_by": str(object.created_by),
         }
 
@@ -1193,7 +1202,8 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                     "customer_phone": qs.customer_order_record.customer_phone,
                     "customer_orders_number": qs.customer_order_record.customer_orders_number,
                     "paid_amount": float(qs.amount_paid),
-                    "date_paid": qs.date_paid,
+                    "date_paid": str(qs.date_paid).split(" ")[0],
+                    "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
                 }
             )
             for qs in filtered_qs
@@ -1217,7 +1227,8 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                     "payable_amount": qs.get_total_amount_to_pay,
                     "paid_amount": qs.amount_paid,
                     "remaining_amount": qs.get_remaining_amount,
-                    "date_paid": qs.date_paid,
+                    "date_paid": str(qs.date_paid).split(" ")[0],
+                    "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
                 }
             )
             for qs in filtered_qs
