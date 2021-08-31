@@ -501,6 +501,24 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             "created_by": str(object.created_by),
         }
 
+    def pay_by_credit(self, request, by_credit, amount_paid, object):
+        customer = self.get_customer(request)
+        if by_credit and customer:
+            object.by_credit = True
+            object.save()
+            CreditCustomerRegularOrderRecordPayment.objects.create(
+                record_order_payment_record=object,
+                customer=customer,
+                amount_paid=amount_paid,
+            )
+            self._change_customer_details(object, customer)
+    
+    def _change_customer_details(self, object, customer):
+        customer_regular_order_record = object.customer_order_record
+        customer_regular_order_record.customer_name = customer.name
+        customer_regular_order_record.customer_phone = customer.phone
+        customer_regular_order_record.save()
+
     def save_payment_status(self, request, object):
         amount_paid = float(request.data.get("amount_paid"))
         if amount_paid == 0:
