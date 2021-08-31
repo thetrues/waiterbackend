@@ -224,6 +224,13 @@ class CreditCustomerRegularOrderRecordPayment(BaseCreditCustomerPayment):
         CustomerRegularOrderRecordPayment, on_delete=models.CASCADE
     )
 
+    def get_credit_dish_payable_amount(self) -> float:
+        dish_total_price: float = (
+            self.record_order_payment_record.customer_order_record.get_total_price
+        )
+
+        return dish_total_price - self.amount_paid
+
     class Meta:
         verbose_name: str = "Credit Customer Regular Order Record Payment"
         verbose_name_plural: str = "Credit Customer Regular Order Record Payments"

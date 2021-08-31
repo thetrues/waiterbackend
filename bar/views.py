@@ -550,6 +550,19 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             customer
         )  # 20,000 - 15,000 = 5,000
 
+    def get_today_spend(self, customer) -> float:
+        total_amount: float = 0.0
+        qs = self.get_credit_qs(customer)
+        for q in qs:
+            total_amount += q.get_credit_dish_payable_amount()
+
+        return total_amount  # 15,000.0
+
+    def get_credit_qs(self, customer):
+        return CreditCustomerRegularOrderRecordPayment.objects.filter(
+            customer=customer, date_created=self.today
+        )
+
     def get_advance_amount(self, customer_regular_order_record, amount_paid) -> float:
         """This is the amount of money customer wants to pay in advance"""
 
