@@ -167,7 +167,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
     @property
     def get_orders_detail(self) -> List[Dict]:
         """f(n) = n . Linear Function"""
-        res: List = []
+        res: List[Dict] = []
         [
             res.append(
                 {
