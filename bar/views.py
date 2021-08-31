@@ -444,6 +444,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             response.append(
                 {
                     "id": payment.id,
+                    "by_credit": payment.by_credit,
                     "customer_name": payment.customer_order_record.customer_name,
                     "customer_phone": payment.customer_order_record.customer_phone,
                     "customer_orders_number": payment.customer_order_record.customer_orders_number,
