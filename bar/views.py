@@ -455,6 +455,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             return Response({"message": serializer.errors}, status.HTTP_400_BAD_REQUEST)
 
         data = self.perform_create(request)
+
         return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request):
