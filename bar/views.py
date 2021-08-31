@@ -213,7 +213,8 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
                 "total_price": instance.total,
                 "order_number": instance.order_number,
                 "created_by": instance.created_by.username,
-                "date_created": instance.date_created,
+                "date_created": str(instance.date_created).split(" ")[0],
+                "time_created": str(instance.date_created).split(" ")[1].split(".")[0],
             },
             status.HTTP_200_OK,
         )
@@ -229,7 +230,10 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
                     "total_price": record.total,
                     "order_number": record.order_number,
                     "created_by": record.created_by.username,
-                    "date_created": record.date_created,
+                    "date_created": str(record.date_created).split(" ")[0],
+                    "time_created": str(record.date_created)
+                    .split(" ")[1]
+                    .split(".")[0],
                 }
             )
             for record in self.queryset
