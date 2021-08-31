@@ -615,7 +615,8 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                     "payable_amount": qs.get_total_amount_to_pay,
                     "paid_amount": qs.amount_paid,
                     "remaining_amount": qs.get_remaining_amount,
-                    "date_paid": qs.date_paid,
+                    "date_paid": str(qs.date_paid).split(" ")[0],
+                    "date_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
                 }
             )
             for qs in filtered_qs
