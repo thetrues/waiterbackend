@@ -1,3 +1,4 @@
+from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
 from typing import Dict, List, Set
 from user.models import User
@@ -188,6 +189,35 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
         ]
 
         return res
+
+    def get_payment_status(self) -> str:
+        total_payment: float = self.get_paid_amount()
+
+        if total_payment and total_payment >= self.get_total_price:
+            payment_status: str = "Fully Paid"
+        elif total_payment and self.get_total_price <= 0 or not total_payment:
+            payment_status: str = "Not Paid"
+        else:
+            payment_status: str = "Partially Paid"
+
+        return payment_status
+
+    def get_paid_amount(self) -> float:
+        paid_amount: float = self.customerregularorderrecordpayment_set.aggregate(
+            total=Sum("amount_paid")
+        )["total"]
+
+        if paid_amount:
+            return paid_amount
+        else:
+            return 0.0
+
+    def get_remained_amount(self) -> float:
+        paid_amount: float = self.get_paid_amount()
+
+        if paid_amount:
+            return self.get_total_price - self.get_paid_amount()
+        return self.get_total_price
 
     class Meta:
         ordering: List[str] = ["-id"]

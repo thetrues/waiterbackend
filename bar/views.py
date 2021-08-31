@@ -278,7 +278,10 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             "customer_name": instance.customer_name,
             "customer_phone": instance.customer_phone,
             "dish_number": instance.customer_orders_number,
-            "total_price": instance.get_total_price,
+            "payable_amount": instance.get_total_price,
+            "paid_amount": instance.get_paid_amount(),
+            "remained_amount": instance.get_remained_amount(),
+            "payment_status": instance.get_payment_status(),
             "orders": instance.get_orders_detail,
         }
         return Response(response, status.HTTP_200_OK)
@@ -384,7 +387,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         return self.appending(qs)
 
     def appending(self, objects):
-        res: list = []
+        res: List[Dict] = []
         [
             res.append(
                 {
@@ -392,7 +395,10 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
                     "customer_name": _.customer_name,
                     "customer_phone": _.customer_phone,
                     "dish_number": _.customer_orders_number,
-                    "total_price": _.get_total_price,
+                    "payable_amount": _.get_total_price,
+                    "paid_amount": _.get_paid_amount(),
+                    "remained_amount": _.get_remained_amount(),
+                    "payment_status": _.get_payment_status(),
                     "orders": _.get_orders_detail,
                 }
             )
