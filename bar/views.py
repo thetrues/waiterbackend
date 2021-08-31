@@ -407,6 +407,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         "customer_order_record", "created_by"
     )
     serializer_class = CustomerOrderRecordPaymentSerializer
+    today = timezone.localdate()
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
