@@ -779,7 +779,7 @@ class BarTequilaItemViewSet(viewsets.ModelViewSet):
     ).select_related("item", "item__unit")
 
     def list(self, request, *args, **kwargs):
-        response: list = []
+        response: List[Dict] = []
         self.append_regular(response)
         return Response(data=response, status=status.HTTP_200_OK)
 
