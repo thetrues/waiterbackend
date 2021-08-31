@@ -162,6 +162,7 @@ class CreditCustomerTequilaOrderRecordPaymentHistorySerializer(
         object2.amount_paid = object2.amount_paid + payment_history.amount_paid
         object2.date_updated = timezone.now()
         object2.save()
+        object2.change_payment_status()
         return object2
 
     def increment_amount_paid_for_ccp(self, payment_history):

@@ -1113,6 +1113,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         )
         self.pay_by_credit(request, by_credit, object)
         self.save_payment_status(request, object)
+        object.change_payment_status()
         object.save()
         return {
             "customer_order_record": str(object),
