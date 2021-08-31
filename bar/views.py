@@ -816,13 +816,14 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 "total_price": instance.total,
                 "order_number": instance.order_number,
                 "created_by": instance.created_by.username,
-                "date_created": instance.date_created,
+                "date_created": str(instance.date_created).split(" ")[0],
+                "time_created": str(instance.date_created).split(" ")[1].split(".")[0],
             },
             status.HTTP_200_OK,
         )
 
     def list(self, request, *args, **kwargs):
-        response: list = []
+        response: List[Dict] = []
         [
             response.append(
                 {
@@ -832,11 +833,15 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     "total_price": record.total,
                     "order_number": record.order_number,
                     "created_by": record.created_by.username,
-                    "date_created": record.date_created,
+                    "date_created": str(record.date_created).split(" ")[0],
+                    "time_created": str(record.date_created)
+                    .split(" ")[1]
+                    .split(".")[0],
                 }
             )
             for record in self.queryset
         ]
+
         return Response(response, status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
@@ -860,7 +865,8 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
             "quantity": object.quantity,
             "order_number": object.order_number,
             "created_by": object.created_by.username,
-            "date_created": object.date_created,
+            "date_created": str(object.date_created).split(" ")[0],
+            "time_created": str(object.date_created).split(" ")[1].split(".")[0],
         }
 
 
