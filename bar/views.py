@@ -439,7 +439,8 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                     "amount_remaining": float(payment.get_remaining_amount),
                     "orders": payment.customer_order_record.get_orders_detail,
                     "created_by": payment.created_by.username,
-                    "date_created": payment.date_paid,
+                    "date_paid": str(payment.date_paid).split(" ")[0],
+                    "time_paid": str(payment.date_paid).split(" ")[1].split(".")[0],
                 }
             )
             for payment in objects
