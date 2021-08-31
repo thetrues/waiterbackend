@@ -216,14 +216,37 @@ class CreditCustomer(models.Model):
         today_spends = self.creditcustomerdishpayment_set.filter(
             date_created=timezone.localdate()
         )
+        today_regular_spend = self.creditcustomerregularorderrecordpayment_set.filter(
+            date_created=timezone.localdate()
+        )
+        today_tequila_spend = self.creditcustomertequilaorderrecordpayment_set.filter(
+            date_created=timezone.localdate()
+        )
+        restaurant_today_total = self.get_today_restaurant_spend(today_spends)
+
+        regular_today_total = self.get_today_bar_spend(today_regular_spend)
+
+        tequila_today_total = self.get_today_bar_spend(today_tequila_spend)
+
+        return restaurant_today_total + regular_today_total + tequila_today_total
+
+    def get_today_bar_spend(self, arg0):
+        total_: float = 0.0
+        for spend in arg0:
+            total_ += spend.get_credit_payable_amount()
+        return self.total_calc(total_)
+
+    def get_today_restaurant_spend(self, today_spends):
         total: float = 0.0
         for spend in today_spends:
             total += spend.get_credit_dish_payable_amount()
-        total = self.credit_limit - total
-        if total == 0.0:
-            total = self.credit_limit
+        return self.total_calc(total)
 
-        return total
+    def total_calc(self, arg0):
+        arg0 = self.credit_limit - arg0
+        if arg0 == 0.0:
+            arg0 = self.credit_limit
+        return arg0
 
     class Meta:
         unique_together: Set[str] = ("phone", "name")
