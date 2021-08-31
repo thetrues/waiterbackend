@@ -301,7 +301,8 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             "customer_orders_number": object.customer_orders_number,
             "orders": object.get_orders_detail,
             "created_by": object.created_by.username,
-            "date_created": object.date_created,
+            "date_created": str(object.date_created).split(" ")[0],
+            "time_created": str(object.date_created).split(" ")[1].split(".")[0],
         }
 
     def add_orders(self, request, object):
