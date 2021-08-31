@@ -876,9 +876,9 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     ).prefetch_related("orders")
     serializer_class = TequilaCustomerOrderRecordSerializer
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, pk=None) -> Dict:
         instance = self.get_object()
-        response: dict = {
+        response: Dict = {
             "id": instance.id,
             "customer_name": instance.customer_name,
             "customer_phone": instance.customer_phone,
@@ -990,8 +990,8 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
         return self.appending(qs)
 
-    def appending(self, objects):
-        res: List = []
+    def appending(self, objects) -> List[Dict]:
+        res: List[Dict] = []
         [
             res.append(
                 {
