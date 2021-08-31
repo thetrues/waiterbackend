@@ -147,9 +147,48 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
 
 
 class CustomerTequilaOrderRecordPayment(BasePayment):
+    """CustomerTequilaOrderRecordPayment Class"""
+
+    def __init__(
+        self,
+        customer_order_record,
+        amount_paid,
+        created_by,
+        by_credit=None,
+        payment_status=None,
+        payment_method=None,
+        date_updated=None,
+        date_paid=None,
+        *args,
+        **kwargs,
+    ):
+        super(models.Model, self).__init__(self, *args, **kwargs)
+        self.customer_order_record = customer_order_record
+        self.by_credit = by_credit
+        self.payment_status = payment_status
+        self.payment_method = payment_method
+        self.amount_paid = amount_paid
+        self.date_paid = date_paid
+        self.date_updated = date_updated
+        self.created_by = created_by
+
+        self._run()
+
     customer_order_record = models.ForeignKey(
         CustomerTequilaOrderRecord, on_delete=models.CASCADE
     )
+
+    def change_payment_status(self):
+        self._run()
+
+    def _run(self):
+        if self.amount_paid == 0:
+            self.payment_status = "unpaid"
+        elif self.amount_paid >= self.get_total_amount_to_pay:
+            self.payment_status = "paid"
+        else:
+            self.payment_status = "partial"
+        self.save()
 
     def __str__(self) -> str:
         """f(n) = c; c=1 Constant Function"""
