@@ -149,6 +149,7 @@ class RegularOrderRecord(BaseOrderRecord):
         return float(self.item.selling_price_per_item * self.quantity)
 
     class Meta:
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Regular Order Record"
         verbose_name_plural: str = "Regular Order Records"
 
