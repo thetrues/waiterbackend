@@ -533,6 +533,15 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             object.payment_status = "paid"
         else:
             object.payment_status = "partial"
+    
+    def get_customer(self, request):
+        try:
+            customer = CreditCustomer.objects.get(
+                name=request.data.get("customer_name")
+            )
+        except CreditCustomer.DoesNotExist:
+            customer = None
+        return customer    
 
     def get_remained_credit_for_today(self, customer) -> float:
 
