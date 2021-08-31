@@ -1168,7 +1168,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def get_all_partial(self, request, *args, **kwargs):
-        res: list = []
+        res: List[Dict] = []
         filtered_qs = self.queryset.filter(payment_status="partial")
         [
             res.append(
