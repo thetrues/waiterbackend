@@ -166,7 +166,10 @@ class CreditCustomerTequilaOrderRecordPaymentHistorySerializer(
 
     def increment_amount_paid_for_ccp(self, payment_history):
         object = payment_history.credit_customer_payment
-        object.amount_paid = object.amount_paid + payment_history.amount_paid
+        if object.amount_paid:
+            object.amount_paid = object.amount_paid + payment_history.amount_paid
+        else:
+            object.amount_paid = payment_history.amount_paid
         object.save()
         return object
 
