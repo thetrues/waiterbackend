@@ -162,6 +162,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
         res_: float = 0.0
         for order in self.orders.all():
             res_ += order.total
+
         return res_
 
     @property
