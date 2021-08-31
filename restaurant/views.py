@@ -811,7 +811,7 @@ class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):
             )
             if (
                 object.customer_dish_payment.payment_status == "paid"
-                and object.customer_dish_payment.by_credit is False
+                or object.customer_dish_payment.by_credit is False
             ):
                 return Response(
                     {
