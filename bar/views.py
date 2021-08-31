@@ -629,7 +629,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def get_all_unpaid(self, request, *args, **kwargs):
-        res: list = []
+        res: List[Dict] = []
         filtered_qs = self.queryset.filter(payment_status="unpaid")
         [
             res.append(
