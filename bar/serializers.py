@@ -139,13 +139,13 @@ class CreditCustomerTequilaOrderRecordPaymentHistorySerializer(
         return credit_customer_payment
 
     def create(self, validated_data):
-        credit_customer_payment = validated_data.pop("credit_customer_payment")
-        amount_paid = validated_data.pop("amount_paid")
-        date_paid = validated_data.pop("date_paid")
+        # credit_customer_payment = validated_data.pop("credit_customer_payment")
+        # amount_paid = validated_data.pop("amount_paid")
+        # date_paid = validated_data.pop("date_paid")
         payment_history = CreditCustomerTequilaOrderRecordPaymentHistory.objects.create(
-            credit_customer_payment=credit_customer_payment,
-            amount_paid=amount_paid,
-            date_paid=date_paid,
+            # credit_customer_payment=credit_customer_payment,
+            # amount_paid=amount_paid,
+            # date_paid=date_paid,
             **validated_data,
         )
 
