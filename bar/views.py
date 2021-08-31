@@ -425,7 +425,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(response, status.HTTP_200_OK)
 
     def get_list(self, objects):
-        response: list = []
+        response: List[Dict] = []
         [
             response.append(
                 {
