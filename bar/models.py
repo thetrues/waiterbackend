@@ -190,6 +190,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
         return res
 
     class Meta:
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Regular Order Record"
         verbose_name_plural: str = "Customer Regular Order Records"
 
