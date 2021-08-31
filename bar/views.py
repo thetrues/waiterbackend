@@ -748,7 +748,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
             date_paid__year=today.year,
             date_paid__month=today.month,
         )
-        response: dict = {}
+        response: Dict = {}
         response["total_amount_paid"] = (
             payments_this_month.aggregate(total=Sum("amount_paid"))["total"] or 0
         )
