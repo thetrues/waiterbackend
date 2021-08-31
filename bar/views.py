@@ -593,7 +593,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                     "customer_orders_number": qs.customer_order_record.customer_orders_number,
                     "paid_amount": float(qs.amount_paid),
                     "date_paid": str(qs.date_paid).split(" ")[0],
-                    "date_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
+                    "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
                 }
             )
             for qs in filtered_qs
@@ -617,7 +617,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                     "paid_amount": qs.amount_paid,
                     "remaining_amount": qs.get_remaining_amount,
                     "date_paid": str(qs.date_paid).split(" ")[0],
-                    "date_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
+                    "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
                 }
             )
             for qs in filtered_qs
