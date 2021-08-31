@@ -90,7 +90,6 @@ def update_payment_amounts_for_tequila(sender, instance, created, **kwargs):
             credit_customer_payment=instance.credit_customer_payment
         ).aggregate(total=Sum("amount_paid"))["total"]
 
-        # obj3 = obj2.customer_dish
         if total == 0:
             obj2.payment_status = "unpaid"
         elif total >= obj2.get_total_amount_to_pay:
