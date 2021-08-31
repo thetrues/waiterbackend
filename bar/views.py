@@ -459,7 +459,30 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request):
-        # Check if customer is valid to borrow for today
+        by_credit = request.data.get("by_credit")
+        amount_paid = float(request.data.get("amount_paid"))
+        customer = self.get_customer(request)
+        customer_regular_order_record = CustomerRegularOrderRecord.objects.get(
+            id=request.data.get("customer_order_record")
+        )
+        if (
+            by_credit
+            and self.get_advance_amount(customer_regular_order_record, amount_paid)
+            > customer.credit_limit
+        ):
+            raise ValidationError(
+                "Can't perform this operation. Customer's credit is not enough."
+            )
+
+        elif by_credit and self.get_advance_amount(
+            customer_regular_order_record, amount_paid
+        ) > self.get_remained_credit_for_today(customer):
+            raise ValidationError(
+                "Can't perform this operation. Remained credit for {} is {}".format(
+                    customer.name, self.get_remained_credit_for_today(customer)
+                )
+            )
+
         object = CustomerRegularOrderRecordPayment.objects.create(
             customer_order_record=CustomerRegularOrderRecord.objects.get(
                 id=request.data.get("customer_order_record")
