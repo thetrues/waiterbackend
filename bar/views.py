@@ -533,7 +533,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             object.payment_status = "paid"
         else:
             object.payment_status = "partial"
-    
+
     def get_customer(self, request):
         try:
             customer = CreditCustomer.objects.get(
@@ -541,7 +541,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             )
         except CreditCustomer.DoesNotExist:
             customer = None
-        return customer    
+        return customer
 
     def get_remained_credit_for_today(self, customer) -> float:
 
@@ -553,15 +553,6 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         """This is the amount of money customer wants to pay in advance"""
 
         return customer_regular_order_record.get_total_price - amount_paid
-
-    def get_advance_amount(self, request):
-        try:
-            customer = CreditCustomer.objects.get(
-                name=request.data.get("customer_name")
-            )
-        except CreditCustomer.DoesNotExist:
-            customer = None
-        return customer
 
     @action(
         detail=False,
