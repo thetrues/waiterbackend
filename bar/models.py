@@ -178,8 +178,8 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": str(object.date_created).split(" ")[0],
-                    "time_created": str(object.date_created)
+                    "date_created": str(order.date_created).split(" ")[0],
+                    "time_created": str(order.date_created)
                     .split(" ")[1]
                     .split(".")[0],
                 },
