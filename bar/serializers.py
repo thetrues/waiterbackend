@@ -1,6 +1,7 @@
 from user.models import User
 from bar.models import (
     BarPayrol,
+    CreditCustomerRegularOrderRecordPaymentHistory,
     CustomerRegularOrderRecord,
     CustomerRegularOrderRecordPayment,
     CustomerTequilaOrderRecord,
@@ -79,6 +80,26 @@ class BarPayrolSerializer(serializers.ModelSerializer):
         rep = super(BarPayrolSerializer, self).to_representation(instance)
         rep["bar_payee"] = instance.bar_payee.username
         return rep
+
+
+class CreditCustomerRegularOrderRecordPaymentHistorySerializer(
+    serializers.ModelSerializer
+):
+    def validate_credit_customer_payment(self, credit_customer_payment):
+        if (
+            credit_customer_payment.record_order_payment_record.by_credit is False
+            and credit_customer_payment.record_order_payment_record.payment_status
+            == "paid"
+        ):
+            raise serializers.ValidationError(
+                "This order was not taken by credit or is already paid."
+            )
+
+        return credit_customer_payment
+
+    class Meta:
+        model = CreditCustomerRegularOrderRecordPaymentHistory
+        fields = "__all__"
 
 
 class TequilaOrderRecordSerializer(serializers.ModelSerializer):

@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from django.db.models.aggregates import Sum
 from bar.serializers import (
+    CreditCustomerRegularOrderRecordPaymentHistorySerializer,
     TequilaCustomerOrderRecordPaymentSerializer,
     CustomerOrderRecordPaymentSerializer,
     TequilaCustomerOrderRecordSerializer,
@@ -19,6 +20,7 @@ from bar.serializers import (
 )
 from bar.models import (
     CreditCustomerRegularOrderRecordPayment,
+    CreditCustomerRegularOrderRecordPaymentHistory,
     CreditCustomerTequilaOrderRecordPayment,
     CustomerRegularOrderRecordPayment,
     CustomerRegularOrderRecordPayment,
@@ -639,6 +641,45 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             for qs in filtered_qs
         ]
         return Response(res, status.HTTP_200_OK)
+
+
+class CreditCustomerRegularOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSet):
+    queryset = CreditCustomerRegularOrderRecordPaymentHistory.objects.select_related(
+        "credit_customer_payment__record_order_payment_record__customer_order_record"
+    )
+    serializer_class = CreditCustomerRegularOrderRecordPaymentHistorySerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"message": f"{serializer.errors}"}, status.HTTP_400_BAD_REQUEST
+            )
+        credit_customer_payment = request.data.get("credit_customer_payment")
+        try:
+            object = CreditCustomerRegularOrderRecordPayment.objects.get(
+                id=credit_customer_payment
+            )
+            if (
+                object.record_order_payment_record.payment_status == "paid"
+                or object.record_order_payment_record.by_credit is False
+            ):
+                return Response(
+                    {
+                        "message": "This order was not taken by credit or is already paid."
+                    },
+                    status.HTTP_400_BAD_REQUEST,
+                )
+            serializer.save()
+            return Response(
+                {"message": "Operation succeed"},
+                status.HTTP_201_CREATED,
+            )
+        except CreditCustomerRegularOrderRecordPayment.DoesNotExist:
+            return Response(
+                {"message": "Credit Dish Chosen does not exists."},
+                status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class BarPayrolViewSet(viewsets.ModelViewSet):
