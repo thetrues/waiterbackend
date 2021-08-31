@@ -415,7 +415,8 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             "amount_remaining": float(instance.get_remaining_amount),
             "orders": instance.customer_order_record.get_orders_detail,
             "created_by": instance.created_by.username,
-            "date_created": instance.date_paid,
+            "date_paid": str(instance.date_paid).split(" ")[0],
+            "time_paid": str(instance.date_paid).split(" ")[1].split(".")[0],
         }
         return Response(response, status.HTTP_200_OK)
 
