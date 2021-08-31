@@ -880,7 +880,6 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         response: Dict = {
             "id": instance.id,
-            "by_credit": instance.by_credit,
             "customer_name": instance.customer_name,
             "customer_phone": instance.customer_phone,
             "dish_number": instance.customer_orders_number,
@@ -1001,7 +1000,6 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             res.append(
                 {
                     "id": _.id,
-                    "by_credit": _.by_credit,
                     "customer_name": _.customer_name,
                     "customer_phone": _.customer_phone,
                     "dish_number": _.customer_orders_number,
@@ -1029,6 +1027,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         response: Dict = {
             "id": instance.id,
+            "by_credit": instance.by_credit,
             "customer_name": instance.customer_order_record.customer_name,
             "customer_phone": instance.customer_order_record.customer_phone,
             "customer_orders_number": instance.customer_order_record.customer_orders_number,
@@ -1053,6 +1052,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             response.append(
                 {
                     "id": payment.id,
+                    "by_credit": payment.by_credit,
                     "customer_name": payment.customer_order_record.customer_name,
                     "customer_phone": payment.customer_order_record.customer_phone,
                     "customer_orders_number": payment.customer_order_record.customer_orders_number,
