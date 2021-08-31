@@ -30,6 +30,10 @@ v1.register(
     "bar/sales/regular/customer-order-payments",
     bar_views.CustomerRegularOrderRecordPaymentViewSet,
 )
+v1.register(
+    "bar/sales/regular/credit-customer/payment-history",
+    bar_views.CreditCustomerRegularOrderRecordPaymentHistoryViewSet,
+)
 
 
 v1.register(
