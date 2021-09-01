@@ -40,7 +40,7 @@ from django.utils import timezone
 from typing import Dict, List
 from user.models import User
 import datetime
-import uuid
+# import uuid
 
 
 class BarInventoryItemView(ListAPIView):
@@ -79,7 +79,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         }
 
     def list(self, request, *args, **kwargs):
-        response: list = []
+        response: List[Dict] = []
         for record in self.queryset:
             response.append(self.get_res(record))
 
@@ -143,7 +143,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         }
 
     def list(self, request, *args, **kwargs):
-        response: List = []
+        response: List[Dict] = []
         for record in self.queryset:
             response.append(self.get_res(record))
 
@@ -181,11 +181,11 @@ class BarRegularItemViewSet(viewsets.ModelViewSet):
     ).select_related("item", "item__unit")
 
     def list(self, request, *args, **kwargs):
-        response: list = []
+        response: List[Dict] = []
         self.append_regular(response)
         return Response(data=response, status=status.HTTP_200_OK)
 
-    def append_regular(self, response):
+    def append_regular(self, response: List[Dict]) -> List[Dict]:
         [
             response.append(
                 {
@@ -224,7 +224,7 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
         )
 
     def list(self, request, *args, **kwargs):
-        response: List = []
+        response: List[Dict] = []
         [
             response.append(
                 {
@@ -255,7 +255,7 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
         object = RegularOrderRecord.objects.create(
             item=RegularInventoryRecord.objects.get(id=request.data.get("item")),
             quantity=request.data.get("quantity"),
-            order_number=str(uuid.uuid4())[:8],
+            # order_number=str(uuid.uuid4())[:8],
             created_by=request.user,
             date_created=timezone.now(),
         )
@@ -303,7 +303,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         object = CustomerRegularOrderRecord.objects.create(
             customer_name=request.data.get("customer_name"),
             customer_phone=request.data.get("customer_phone"),
-            customer_orders_number=str(uuid.uuid4())[:8],
+            # customer_orders_number=str(uuid.uuid4())[:8],
             created_by=request.user,
         )
         self.add_orders(request, object)
@@ -323,7 +323,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             order = RegularOrderRecord.objects.create(
                 item=RegularInventoryRecord.objects.get(id=int(_["menu_id"])),
                 quantity=_["quantity"],
-                order_number=str(uuid.uuid4())[:8],
+                # order_number=str(uuid.uuid4())[:8],
                 created_by=request.user,
             )
             object.orders.add(order)
@@ -855,7 +855,7 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
         object = TequilaOrderRecord.objects.create(
             item=TekilaInventoryRecord.objects.get(id=request.data.get("item")),
             quantity=request.data.get("quantity"),
-            order_number=str(uuid.uuid4())[:8],
+            # order_number=str(uuid.uuid4())[:8],
             created_by=request.user,
             date_created=timezone.now(),
         )
@@ -905,7 +905,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         object = CustomerTequilaOrderRecord.objects.create(
             customer_name=request.data.get("customer_name"),
             customer_phone=request.data.get("customer_phone"),
-            customer_orders_number=str(uuid.uuid4())[:8],
+            # customer_orders_number=str(uuid.uuid4())[:8],
             created_by=request.user,
         )
         self.add_orders(request, object)
@@ -924,7 +924,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             order = TequilaOrderRecord.objects.create(
                 item=TekilaInventoryRecord.objects.get(id=int(_["order_id"])),
                 quantity=_["quantity"],
-                order_number=str(uuid.uuid4())[:8],
+                # order_number=str(uuid.uuid4())[:8],
                 created_by=request.user,
             )
             object.orders.add(order)

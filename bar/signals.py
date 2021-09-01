@@ -1,22 +1,52 @@
-"""
-This signal is for changing the item quantity inventory record.
-"""
 from bar.models import (
     CreditCustomerRegularOrderRecordPaymentHistory,
-    CreditCustomerTequilaOrderRecordPaymentHistory,
-    RegularOrderRecord,
+    CustomerRegularOrderRecord,
+    CustomerTequilaOrderRecord,
     RegularInventoryRecord,
     TekilaInventoryRecord,
+    RegularOrderRecord,
+    TequilaOrderRecord,
 )
 from django.db.models.signals import post_save
+from core.utils import orders_number_generator
 from django.db.models.aggregates import Sum
 from django.dispatch import receiver
 from django.utils import timezone
 
 
+def save_number(created, instance, field_name):
+    if created:
+        if field_name == "customer_orders_number":
+            instance.customer_orders_number = orders_number_generator(
+                instance, field_name
+            )
+        elif field_name == "order_number":
+            instance.order_number = orders_number_generator(instance, field_name)
+    instance.save()
+
+
+@receiver(post_save, sender=CustomerTequilaOrderRecord)
+def save_customer_orders_number_for_tequila(sender, instance, created, **kwargs):
+    save_number(created, instance, field_name="customer_orders_number")
+
+
+@receiver(post_save, sender=CustomerRegularOrderRecord)
+def save_customer_orders_number_for_regular(sender, instance, created, **kwargs):
+    save_number(created, instance, field_name="customer_orders_number")
+
+
 @receiver(post_save, sender=RegularOrderRecord)
 def alter_regular_inventory_record(sender, instance, created, **kwargs):
-    # sourcery skip: last-if-guard
+    save_number(created, instance, field_name="order_number")
+    change_regular_inv_record(created, instance)
+    
+
+@receiver(post_save, sender=TequilaOrderRecord)
+def save_order_number_for_tequila_record(sender, instance, created, **kwargs):
+    save_number(created, instance, field_name="order_number")
+
+
+def change_regular_inv_record(created, instance):
     if created:
         ordered_item = instance.item
         ordered_quantity = instance.quantity

@@ -22,17 +22,17 @@ class RegularInventoryRecord(BaseInventory):
     selling_price_per_item = models.IntegerField()
     threshold = models.IntegerField()
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         return str(self.item)
 
-    def estimate_sales(self):
+    def estimate_sales(self) -> float:
         return self.selling_price_per_item * self.total_items
 
-    def estimate_profit(self):
+    def estimate_profit(self) -> float:
         return self.estimate_sales() - self.purchasing_price
 
     class Meta:
-        ordering: List = ["-id"]
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Regular Inventory Record"
         verbose_name_plural: str = "Regular Inventory Records"
 
@@ -43,17 +43,17 @@ class TekilaInventoryRecord(BaseInventory):
     selling_price_per_shot = models.IntegerField()
     threshold = models.IntegerField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.item.name
 
-    def estimate_sales(self) -> float():
+    def estimate_sales(self) -> float:
         return self.selling_price_per_shot * self.total_shots_per_tekila * self.quantity
 
-    def estimate_profit(self) -> float():
+    def estimate_profit(self) -> float:
         return self.estimate_sales() - self.purchasing_price
 
     class Meta:
-        ordering: list = ["-id"]
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Tequila Inventory Record"
         verbose_name_plural: str = "Tequila Inventory Records"
 
@@ -64,11 +64,11 @@ class TekilaInventoryRecord(BaseInventory):
 class TequilaOrderRecord(BaseOrderRecord):
     item = models.ForeignKey(TekilaInventoryRecord, on_delete=models.CASCADE)
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         return self.item.item.name
 
     @property
-    def total(self) -> float():
+    def total(self) -> float:
         return float(self.item.selling_price_per_shot * self.quantity)
 
     class Meta:
@@ -156,27 +156,27 @@ class CustomerTequilaOrderRecordPayment(BasePayment):
     def change_payment_status(self):
         if self.amount_paid == 0:
             self.payment_status = "unpaid"
-            print("unpaid")
         elif self.amount_paid >= self.get_total_amount_to_pay:
             self.payment_status = "paid"
-            print("paid")
         else:
             self.payment_status = "partial"
-            print("partial")
         self.save()
 
     def __str__(self) -> str:
         """f(n) = c; c=1 Constant Function"""
+
         return "{}: Payment Status: {}".format(
             self.customer_order_record, self.payment_status.title()
         )
 
     @property
     def get_total_amount_to_pay(self) -> float:
+
         return float(self.customer_order_record.get_total_price)
 
     @property
     def get_remaining_amount(self) -> float:
+
         return float(self.get_total_amount_to_pay - self.amount_paid)
 
     class Meta:
@@ -291,6 +291,7 @@ class CustomerRegularOrderRecordPayment(BasePayment):
         return float(self.get_total_amount_to_pay - self.amount_paid)
 
     class Meta:
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Regular Order Record Payment"
         verbose_name_plural: str = "Customer Regular Order Record Payments"
 
@@ -308,6 +309,7 @@ class CreditCustomerRegularOrderRecordPayment(BaseCreditCustomerPayment):
         return dish_total_price - self.amount_paid
 
     class Meta:
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer Regular Order Record Payment"
         verbose_name_plural: str = "Credit Customer Regular Order Record Payments"
 
@@ -382,6 +384,6 @@ class BarPayrol(BasePayrol):
         User, related_name="bar_payer", on_delete=models.CASCADE
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
 
         return f"{self.bar_payee.username} Paid: {self.amount_paid}"
