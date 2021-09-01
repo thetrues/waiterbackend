@@ -21,7 +21,9 @@ def save_number(created, instance, field_name):
                 instance, field_name
             )
         elif field_name == "order_number":
-            instance.order_number = orders_number_generator(instance, field_name)
+            instance.order_number = orders_number_generator(
+                TequilaOrderRecord, field_name
+            )
     instance.save()
 
 
@@ -39,7 +41,7 @@ def save_customer_orders_number_for_regular(sender, instance, created, **kwargs)
 def alter_regular_inventory_record(sender, instance, created, **kwargs):
     save_number(created, instance, field_name="order_number")
     change_regular_inv_record(created, instance)
-    
+
 
 @receiver(post_save, sender=TequilaOrderRecord)
 def save_order_number_for_tequila_record(sender, instance, created, **kwargs):
