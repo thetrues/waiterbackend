@@ -22,7 +22,7 @@ def save_number(created, instance, sender, field_name):
             )
         elif field_name == "order_number":
             instance.order_number = orders_number_generator(sender, field_name)
-    instance.save()
+    # instance.save()
 
 
 @receiver(post_save, sender=CustomerTequilaOrderRecord)
