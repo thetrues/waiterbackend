@@ -26,7 +26,7 @@ def orders_number_generator(sender, field_name) -> int:
             number: int = int(object.customer_orders_number) + 1
         elif field_name == "order_number":
             number: int = int(object.order_number) + 1
-    except sender.DoesNotExist:
+    except:
         number: int = 100
 
     return number
