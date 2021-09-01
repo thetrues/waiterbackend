@@ -1049,7 +1049,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(response, status.HTTP_200_OK)
 
     def get_list(self, objects) -> List[Dict]:
-        response: List = []
+        response: List[Dict] = []
         [
             response.append(
                 {
