@@ -13,10 +13,11 @@ from typing import Dict, List
 
 class DailyReport(APIView):
     """Get Daily Reports"""
+
     # REmeber to remove all __lt on dates
 
-    permission_classes = []
-    authentication_classes = []
+    # permission_classes = []
+    # authentication_classes = []
 
     def get(self, request, *args, **kwargs):
         response: Dict = {}
@@ -37,7 +38,7 @@ class DailyReport(APIView):
 
         return Response(response, status.HTTP_200_OK)
 
-    def get_expenses_response(self, response, todays_date):
+    def get_expenses_response(self, response: Dict, todays_date) -> Dict:
         expenses: Dict = {}
         total_misc_expense, misc_qs = self.get_total_misc_expense_and_misc_qs(
             todays_date
@@ -52,6 +53,23 @@ class DailyReport(APIView):
         misc_inventory["total_miscellenous_purchases"] = total_misc_expense
 
         expenses["misc_inventory"] = misc_inventory
+        temp_miscellenous_items = self.append_misc_items(misc_qs)
+        misc_inventory["miscellenous_items"] = temp_miscellenous_items
+
+        main_inventory: Dict = {}
+        (
+            main_inventory["total_consuption_estimation"],
+            main_qs,
+        ) = self.get_total_main_expense_and_main_qs(todays_date)
+        temp_issued_items = self.append_temp_issued_items(main_qs)
+
+        main_inventory["issued_items"] = temp_issued_items
+
+        expenses["main_inventory"] = main_inventory
+
+        return expenses
+
+    def append_misc_items(self, misc_qs) -> List:
         temp_miscellenous_items: List = []
         for misc_item in misc_qs:
             temp_miscellenous_items.append(
@@ -64,13 +82,10 @@ class DailyReport(APIView):
                     "purchasing_price": "{} TZS".format(misc_item.purchasing_price),
                 },
             )
-        misc_inventory["miscellenous_items"] = temp_miscellenous_items
 
-        main_inventory: Dict = {}
-        (
-            main_inventory["total_consuption_estimation"],
-            main_qs,
-        ) = self.get_total_main_expense_and_main_qs(todays_date)
+        return temp_miscellenous_items
+
+    def append_temp_issued_items(self, main_qs) -> List:
         temp_issued_items: List = []
         for qs in main_qs:
             temp_issued_items.append(
@@ -85,20 +100,18 @@ class DailyReport(APIView):
                 },
             )
 
-        main_inventory["issued_items"] = temp_issued_items
-
-        expenses["main_inventory"] = main_inventory
-
-        return expenses
+        return temp_issued_items
 
     def assign_total_expense(self, expenses, total_misc_expense, total_main_expense):
         expenses["total_expense"] = total_misc_expense + total_main_expense
         misc_inventory: Dict = {}
+
         return misc_inventory
 
-    def get_todays_response(self, response):
+    def get_todays_response(self, response: Dict) -> str:
         todays_date = timezone.localdate()
         response["todays_date"] = todays_date.__str__()
+
         return todays_date
 
     def get_sales_response(self, qs) -> Dict:
@@ -113,22 +126,24 @@ class DailyReport(APIView):
             date_out__lt=todays_date
         ).select_related("item_record")
         total_main_expense: float = self.get_total_main_expense(main_qs)
-
         # total_main_expense: float = main_qs.aggregate(total=Sum("get_ppu"))["total"]
 
         return total_main_expense, main_qs
 
     def get_total_main_expense(self, main_qs) -> float:
-        total_main_expense: float = 00
+        total_main_expense: float = 0.0
         for qs in main_qs:
             total_main_expense += qs.get_ppu()
+
         return total_main_expense
 
     def get_total_misc_expense_and_misc_qs(self, todays_date):
         misc_qs = MiscellaneousInventoryRecord.objects.filter(
             date_purchased__lt=todays_date
         ).select_related("item", "item__unit")
-        total_misc_expense = misc_qs.aggregate(total=Sum("purchasing_price"))["total"]
+        total_misc_expense: float = misc_qs.aggregate(total=Sum("purchasing_price"))[
+            "total"
+        ]
 
         return total_misc_expense, misc_qs
 
@@ -159,3 +174,15 @@ class DailyReport(APIView):
     def total_sales_and_dishes(self, qs, sales):
         sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"]
         sales["total_dishes"] = len(qs)
+
+
+class MonthlyReport(APIView):
+    """Get a monthly report"""
+
+    pass
+
+
+class CustomerDateReport(APIView):
+    """Get a custom date report"""
+
+    pass
