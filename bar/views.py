@@ -1089,6 +1089,11 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             id=request.data.get("customer_order_record")
         )
 
+        if customer_order_record.get_remained_amount() <= 0:
+            raise ValidationError(
+                "Order is already paid."
+            )
+
         if (
             by_credit
             and self.get_advance_amount(customer_order_record, amount_paid)
