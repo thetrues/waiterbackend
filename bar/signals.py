@@ -14,16 +14,14 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 
-def save_number(created, instance, field_name):
+def save_number(created, instance, sender, field_name):
     if created:
         if field_name == "customer_orders_number":
             instance.customer_orders_number = orders_number_generator(
-                instance, field_name
+                sender, field_name
             )
         elif field_name == "order_number":
-            instance.order_number = orders_number_generator(
-                model=TequilaOrderRecord, field_name=field_name
-            )
+            instance.order_number = orders_number_generator(sender, field_name)
     instance.save()
 
 
@@ -43,9 +41,9 @@ def alter_regular_inventory_record(sender, instance, created, **kwargs):
     change_regular_inv_record(created, instance)
 
 
-# @receiver(post_save, sender=TequilaOrderRecord)
-# def save_order_number_for_tequila_record(sender, instance, created, **kwargs):
-#     save_number(created, instance, field_name="order_number")
+@receiver(post_save, sender=TequilaOrderRecord)
+def save_order_number_for_tequila_record(sender, instance, created, **kwargs):
+    save_number(created, instance, sender, field_name="order_number")
 
 
 def change_regular_inv_record(created, instance):

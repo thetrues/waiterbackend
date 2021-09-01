@@ -13,7 +13,7 @@ def validate_dates(date1, date2):
         return True
 
 
-def orders_number_generator(model, field_name) -> int:
+def orders_number_generator(sender, field_name) -> int:
     """
         This is the generic function that generates the next number\
         from the previous object by incrementing the\
@@ -21,12 +21,12 @@ def orders_number_generator(model, field_name) -> int:
     """
 
     try:
-        object = model.objects.get(id=model.objects.first().id - 1)
+        object = sender.objects.get(id=sender.objects.first().id - 1)
         if field_name == "customer_orders_number":
             number: int = int(object.customer_orders_number) + 1
         elif field_name == "order_number":
             number: int = int(object.order_number) + 1
-    except model.DoesNotExist:
+    except sender.DoesNotExist:
         number: int = 100
 
     return number
