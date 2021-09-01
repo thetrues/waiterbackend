@@ -43,9 +43,9 @@ def alter_regular_inventory_record(sender, instance, created, **kwargs):
     change_regular_inv_record(created, instance)
 
 
-@receiver(post_save, sender=TequilaOrderRecord)
-def save_order_number_for_tequila_record(sender, instance, created, **kwargs):
-    save_number(created, instance, field_name="order_number")
+# @receiver(post_save, sender=TequilaOrderRecord)
+# def save_order_number_for_tequila_record(sender, instance, created, **kwargs):
+#     save_number(created, instance, field_name="order_number")
 
 
 def change_regular_inv_record(created, instance):
