@@ -1,4 +1,4 @@
-from core.utils import get_date_objects, validate_dates
+from core.utils import get_date_objects, orders_number_generator, validate_dates
 from rest_framework.exceptions import ValidationError
 from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
@@ -40,6 +40,7 @@ from django.utils import timezone
 from typing import Dict, List
 from user.models import User
 import datetime
+
 # import uuid
 
 
@@ -855,11 +856,12 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
         object = TequilaOrderRecord.objects.create(
             item=TekilaInventoryRecord.objects.get(id=request.data.get("item")),
             quantity=request.data.get("quantity"),
-            # order_number=str(uuid.uuid4())[:8],
+            order_number=str(
+                orders_number_generator(TequilaOrderRecord, "order_number")
+            ),
             created_by=request.user,
             date_created=timezone.now(),
         )
-        object.save()
         return {
             "id": object.id,
             "item": object.item.item.name,
@@ -1089,9 +1091,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         )
 
         if customer_order_record.get_remained_amount() <= 0:
-            raise ValidationError(
-                "Order is already paid."
-            )
+            raise ValidationError("Order is already paid.")
 
         if (
             by_credit
