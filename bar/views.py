@@ -549,9 +549,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
     def get_customer(self, request):
         try:
-            customer = CreditCustomer.objects.get(
-                id=request.data.get("customer_id")
-            )
+            customer = CreditCustomer.objects.get(id=request.data.get("customer_id"))
         except CreditCustomer.DoesNotExist:
             customer = None
         return customer
@@ -1182,9 +1180,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
     def get_customer(self, request):
         try:
-            customer = CreditCustomer.objects.get(
-                id=request.data.get("customer_id")
-            )
+            customer = CreditCustomer.objects.get(id=request.data.get("customer_id"))
         except CreditCustomer.DoesNotExist:
             customer = None
         return customer
