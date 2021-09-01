@@ -180,6 +180,7 @@ class CustomerTequilaOrderRecordPayment(BasePayment):
         return float(self.get_total_amount_to_pay - self.amount_paid)
 
     class Meta:
+        ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Tequila Order Record Payment"
         verbose_name_plural: str = "Customer Tequila Order Record Payments"
 
