@@ -859,6 +859,7 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
             created_by=request.user,
             date_created=timezone.now(),
         )
+        object.save()
         return {
             "id": object.id,
             "item": object.item.item.name,
