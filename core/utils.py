@@ -21,7 +21,7 @@ def orders_number_generator(sender, field_name) -> int:
     """
 
     try:
-        object = sender.objects.get(id=sender.objects.first().id - 1)
+        object = sender.objects.first()
         if field_name == "customer_orders_number":
             number: int = int(object.customer_orders_number) + 1
         elif field_name == "order_number":
