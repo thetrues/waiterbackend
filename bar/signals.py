@@ -22,7 +22,7 @@ def save_number(created, instance, field_name):
             )
         elif field_name == "order_number":
             instance.order_number = orders_number_generator(
-                TequilaOrderRecord, field_name
+                model=TequilaOrderRecord, field_name=field_name
             )
     instance.save()
 
