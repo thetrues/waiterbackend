@@ -776,7 +776,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     def get_customer(self, request):
         try:
             customer = CreditCustomer.objects.get(
-                name=request.data.get("customer_name")
+                id=request.data.get("customer_id")
             )
         except CreditCustomer.DoesNotExist:
             customer = None
