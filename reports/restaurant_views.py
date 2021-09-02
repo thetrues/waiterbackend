@@ -1,8 +1,7 @@
-from datetime import date
-from core.utils import get_date_objects
 from rest_framework.response import Response
 from django.db.models.aggregates import Sum
 from rest_framework.views import APIView
+from core.utils import get_date_objects
 from restaurant.models import (
     MainInventoryItemRecordStockOut,
     MiscellaneousInventoryRecord,
@@ -12,7 +11,7 @@ from restaurant.models import (
 from reports.base import BaseReport
 from rest_framework import status
 from django.utils import timezone
-from typing import Dict, List
+from typing import Dict
 import calendar
 
 
