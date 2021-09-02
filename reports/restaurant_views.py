@@ -243,7 +243,10 @@ class CustomDateReport(BaseReport, APIView):
         first_date = request.data.get("first_date")
         second_date = request.data.get("second_date")
 
-        date1, date2 = get_date_objects(first_date, second_date)
+        try:
+            date1, date2 = get_date_objects(first_date, second_date)
+        except TypeError:
+            return Response({"message": "Please choose dates range."})
 
         qs = self.get_queryset(date1, date2)
 
