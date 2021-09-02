@@ -34,7 +34,7 @@ urlpatterns = (
         ),
         path(
             "w/api/restaurant/reports/get-custom-report",
-            reports_restaurant_views.CustomerDateReport.as_view(),
+            reports_restaurant_views.CustomDateReport.as_view(),
         ),
     ]
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

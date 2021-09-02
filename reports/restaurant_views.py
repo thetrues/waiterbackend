@@ -233,7 +233,7 @@ class MonthlyReport(BaseReport, APIView):
         )
 
 
-class CustomerDateReport(BaseReport, APIView):
+class CustomDateReport(BaseReport, APIView):
     """Get a custom date report"""
 
     # def get(self, request, *args, **kwargs):
