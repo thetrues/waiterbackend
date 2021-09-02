@@ -288,7 +288,7 @@ class MonthlyReport(APIView):
             "total"
         ]
 
-        return total_misc_expense, misc_qs
+        return total_misc_expense or 0, misc_qs
 
     def get_sales_response(self, qs) -> Dict:
         sales: Dict = {}
