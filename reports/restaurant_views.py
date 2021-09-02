@@ -281,8 +281,8 @@ class MonthlyReport(APIView):
 
     def get_total_misc_expense_and_misc_qs(self, this_month):
         misc_qs = MiscellaneousInventoryRecord.objects.filter(
-            date_purchased__date__year=this_month.year,
-            date_purchased__date__month=this_month.month,
+            date_purchased__year=this_month.year,
+            date_purchased__month=this_month.month,
         ).select_related("item", "item__unit")
         total_misc_expense: float = misc_qs.aggregate(total=Sum("purchasing_price"))[
             "total"
