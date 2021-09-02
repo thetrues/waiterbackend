@@ -1,3 +1,5 @@
+from django.db.models.aggregates import Sum
+from restaurant.models import RestaurantPayrol
 from django.db.models import Manager
 from typing import List, Dict
 
@@ -18,3 +20,8 @@ class RestaurantPayrolCustomManager(Manager):
             )
 
         return response
+
+    def get_total(self, this_month) -> float:
+        return RestaurantPayrol.objects.filter(
+            date_paid__month=this_month.month, date_paid__year=this_month.year
+        ).aggregate(total=Sum("amount_paid"))["total"]

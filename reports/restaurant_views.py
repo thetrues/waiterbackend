@@ -209,8 +209,9 @@ class MonthlyReport(APIView):
         total_main_expense, gabbage = self.get_total_main_expense_and_main_qs(
             this_month
         )
+        total_payrol = RestaurantPayrol.objects.get_total(this_month)
         misc_inventory = self.assign_total_expense(
-            expenses, total_misc_expense, total_main_expense
+            expenses, total_misc_expense, total_main_expense, total_payrol
         )
 
         misc_inventory["total_miscellenous_purchases"] = total_misc_expense
@@ -284,8 +285,12 @@ class MonthlyReport(APIView):
 
         return temp_miscellenous_items
 
-    def assign_total_expense(self, expenses, total_misc_expense, total_main_expense):
-        expenses["total_expense"] = total_misc_expense + total_main_expense
+    def assign_total_expense(
+        self, expenses, total_misc_expense, total_main_expense, total_payrol
+    ):
+        expenses["total_expense"] = (
+            total_misc_expense + total_main_expense + total_payrol
+        )
         misc_inventory: Dict = {}
 
         return misc_inventory
