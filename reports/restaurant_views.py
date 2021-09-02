@@ -209,7 +209,7 @@ class MonthlyReport(APIView):
         total_main_expense, gabbage = self.get_total_main_expense_and_main_qs(
             this_month
         )
-        total_payrol = RestaurantPayrol.objects.get_total(this_month)
+        total_payrol = self.get_total(this_month)
         misc_inventory = self.assign_total_expense(
             expenses, total_misc_expense, total_main_expense, total_payrol
         )
@@ -237,6 +237,11 @@ class MonthlyReport(APIView):
         expenses["payrols"] = monthly_payrol
 
         return expenses
+
+    def get_total(self, this_month):
+        return RestaurantPayrol.objects.filter(
+            date_paid__month=this_month.month, date_paid__year=this_month.year
+        ).aggregate(total=Sum("amount_paid"))["total"]
 
     def get_monthly_payrol(self, this_month) -> Dict:
         monthly_payrol: Dict = {}
