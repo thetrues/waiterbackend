@@ -3,7 +3,7 @@ from typing import Dict, List
 from django.db.models.aggregates import Sum
 
 
-class BaseReporter(object):
+class BaseReport(object):
     """"""
 
     def append_misc_items(self, misc_qs) -> List:

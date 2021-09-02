@@ -7,14 +7,14 @@ from restaurant.models import (
     CustomerDishPayment,
     RestaurantPayrol,
 )
-from reports.base import BaseReporter
+from reports.base import BaseReport
 from rest_framework import status
 from django.utils import timezone
 from typing import Dict, List
 import calendar
 
 
-class DailyReport(BaseReporter, APIView):
+class DailyReport(BaseReport, APIView):
     """Get Daily Reports"""
 
     def get(self, request, *args, **kwargs):
@@ -106,7 +106,7 @@ class DailyReport(BaseReporter, APIView):
         )
 
 
-class MonthlyReport(BaseReporter, APIView):
+class MonthlyReport(BaseReport, APIView):
     """Get a monthly report"""
 
     this_month = timezone.now()
