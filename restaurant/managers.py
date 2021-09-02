@@ -8,7 +8,7 @@ class RestaurantPayrolCustomManager(Manager):
     def get_monthly_payments(self, queryset) -> List[Dict]:
         response: List[Dict] = []
 
-        return [
+        for q in queryset:
             response.append(
                 {
                     "id": q.id,
@@ -16,5 +16,5 @@ class RestaurantPayrolCustomManager(Manager):
                     "amount": q.amount_paid,
                 }
             )
-            for q in queryset
-        ]
+
+        return response
