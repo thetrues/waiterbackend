@@ -6,7 +6,7 @@ class RestaurantPayrolCustomManager(Manager):
     """Custom Manager for Restaurant Payrols"""
 
     def get_monthly_payments(self, queryset) -> List[Dict]:
-        response: List[Dict] = [{}]
+        response: List[Dict] = []
 
         return [
             response.append(
