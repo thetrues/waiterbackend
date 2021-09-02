@@ -7,13 +7,14 @@ from restaurant.models import (
     CustomerDishPayment,
     RestaurantPayrol,
 )
+from reports.base import BaseReporter
 from rest_framework import status
 from django.utils import timezone
 from typing import Dict, List
 import calendar
 
 
-class DailyReport(APIView):
+class DailyReport(BaseReporter, APIView):
     """Get Daily Reports"""
 
     def get(self, request, *args, **kwargs):
@@ -66,39 +67,6 @@ class DailyReport(APIView):
 
         return expenses
 
-    def append_misc_items(self, misc_qs) -> List:
-        temp_miscellenous_items: List = []
-        for misc_item in misc_qs:
-            temp_miscellenous_items.append(
-                {
-                    "item_id": misc_item.id,
-                    "item_name": misc_item.item.name,
-                    "purchased_quantity": "{} {}".format(
-                        misc_item.quantity, misc_item.item.unit.name
-                    ),
-                    "purchasing_price": "{} TZS".format(misc_item.purchasing_price),
-                },
-            )
-
-        return temp_miscellenous_items
-
-    def append_temp_issued_items(self, main_qs) -> List:
-        temp_issued_items: List = []
-        for qs in main_qs:
-            temp_issued_items.append(
-                {
-                    "item_id": qs.id,
-                    "item_name": qs.item_record.main_inventory_item.item.name,
-                    "issued_quantity": "{} {}".format(
-                        qs.quantity_out,
-                        qs.item_record.main_inventory_item.item.unit.name,
-                    ),
-                    "estimated_price": qs.item_record.ppu,
-                },
-            )
-
-        return temp_issued_items
-
     def assign_total_expense(self, expenses, total_misc_expense, total_main_expense):
         expenses["total_expense"] = total_misc_expense + total_main_expense
         misc_inventory: Dict = {}
@@ -111,13 +79,6 @@ class DailyReport(APIView):
 
         return todays_date
 
-    def get_sales_response(self, qs) -> Dict:
-        sales: Dict = {}
-        self.total_sales_and_dishes(qs, sales)
-        self.structure_dishes(qs, sales)
-
-        return sales
-
     def get_total_main_expense_and_main_qs(self, todays_date):
         main_qs = MainInventoryItemRecordStockOut.objects.filter(
             date_out=todays_date
@@ -126,13 +87,6 @@ class DailyReport(APIView):
         # total_main_expense: float = main_qs.aggregate(total=Sum("get_ppu"))["total"]
 
         return total_main_expense, main_qs
-
-    def get_total_main_expense(self, main_qs) -> float:
-        total_main_expense: float = 0.0
-        for qs in main_qs:
-            total_main_expense += qs.get_ppu()
-
-        return total_main_expense
 
     def get_total_misc_expense_and_misc_qs(self, todays_date):
         misc_qs = MiscellaneousInventoryRecord.objects.filter(
@@ -151,27 +105,8 @@ class DailyReport(APIView):
             .prefetch_related("customer_dish__orders")
         )
 
-    def structure_dishes(self, qs, sales):
-        sales["dishes_structure"] = []
-        for q in qs:
-            temp_dish_structure: Dict = {}
-            temp_dish_structure["dish_id"] = q.id
-            temp_dish_structure["dish_number"] = q.customer_dish.dish_number
-            temp_dish_structure["payment_status"] = q.payment_status
-            temp_dish_structure["by_credit"] = q.by_credit
-            temp_dish_structure["payable_amount"] = q.get_total_amount_to_pay
-            temp_dish_structure["paid_amount"] = q.amount_paid
-            temp_dish_structure["remained_amount"] = q.get_remaining_amount
-            temp_dish_structure["dish_detail"] = q.customer_dish.get_dish_detail
 
-            sales["dishes_structure"].append(temp_dish_structure)
-
-    def total_sales_and_dishes(self, qs, sales):
-        sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"]
-        sales["total_dishes"] = len(qs)
-
-
-class MonthlyReport(APIView):
+class MonthlyReport(BaseReporter, APIView):
     """Get a monthly report"""
 
     this_month = timezone.now()
@@ -257,39 +192,6 @@ class MonthlyReport(APIView):
 
         return monthly_payrol
 
-    def append_temp_issued_items(self, main_qs) -> List:
-        temp_issued_items: List = []
-        for qs in main_qs:
-            temp_issued_items.append(
-                {
-                    "item_id": qs.id,
-                    "item_name": qs.item_record.main_inventory_item.item.name,
-                    "issued_quantity": "{} {}".format(
-                        qs.quantity_out,
-                        qs.item_record.main_inventory_item.item.unit.name,
-                    ),
-                    "estimated_price": qs.item_record.ppu,
-                },
-            )
-
-        return temp_issued_items
-
-    def append_misc_items(self, misc_qs) -> List:
-        temp_miscellenous_items: List = []
-        for misc_item in misc_qs:
-            temp_miscellenous_items.append(
-                {
-                    "item_id": misc_item.id,
-                    "item_name": misc_item.item.name,
-                    "purchased_quantity": "{} {}".format(
-                        misc_item.quantity, misc_item.item.unit.name
-                    ),
-                    "purchasing_price": "{} TZS".format(misc_item.purchasing_price),
-                },
-            )
-
-        return temp_miscellenous_items
-
     def assign_total_expense(
         self, expenses, total_misc_expense, total_main_expense, total_payrol
     ):
@@ -309,13 +211,6 @@ class MonthlyReport(APIView):
 
         return total_main_expense, main_qs
 
-    def get_total_main_expense(self, main_qs) -> float:
-        total_main_expense: float = 0.0
-        for qs in main_qs:
-            total_main_expense += qs.get_ppu()
-
-        return total_main_expense
-
     def get_total_misc_expense_and_misc_qs(self, this_month):
         misc_qs = MiscellaneousInventoryRecord.objects.filter(
             date_purchased__year=this_month.year,
@@ -326,32 +221,6 @@ class MonthlyReport(APIView):
         ]
 
         return total_misc_expense or 0, misc_qs
-
-    def get_sales_response(self, qs) -> Dict:
-        sales: Dict = {}
-        self.total_sales_and_dishes(qs, sales)
-        self.structure_dishes(qs, sales)
-
-        return sales
-
-    def structure_dishes(self, qs, sales):
-        sales["dishes_structure"] = []
-        for q in qs:
-            temp_dish_structure: Dict = {}
-            temp_dish_structure["dish_id"] = q.id
-            temp_dish_structure["dish_number"] = q.customer_dish.dish_number
-            temp_dish_structure["payment_status"] = q.payment_status
-            temp_dish_structure["by_credit"] = q.by_credit
-            temp_dish_structure["payable_amount"] = q.get_total_amount_to_pay
-            temp_dish_structure["paid_amount"] = q.amount_paid
-            temp_dish_structure["remained_amount"] = q.get_remaining_amount
-            temp_dish_structure["dish_detail"] = q.customer_dish.get_dish_detail
-
-            sales["dishes_structure"].append(temp_dish_structure)
-
-    def total_sales_and_dishes(self, qs, sales):
-        sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"]
-        sales["total_dishes"] = len(qs)
 
     def get_queryset(self, this_month):
         return (
