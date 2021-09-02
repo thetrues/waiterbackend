@@ -195,7 +195,7 @@ class MonthlyReport(APIView):
 
     def get_current_month(self, response: Dict) -> str:
         response["current_month"] = (
-            calendar.month_name[self.this_month.month] + "," + str(self.this_month.year)
+            calendar.month_name[self.this_month.month] + ", " + str(self.this_month.year)
         )
 
     def get_expenses_response(self, response: Dict, this_month) -> Dict:
