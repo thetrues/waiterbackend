@@ -1,4 +1,5 @@
 # from restaurant.models import RestaurantPayrol
+import restaurant
 from django.db.models.aggregates import Sum
 from django.db.models import Manager
 from django.conf import settings
@@ -6,6 +7,9 @@ from typing import List, Dict
 
 
 RestaurantPayrol = settings.RESTAURANT_PAYROL
+
+RestaurantPayrol = getattr(restaurant.models, RestaurantPayrol)
+
 
 class RestaurantPayrolCustomManager(Manager):
     """Custom Manager for Restaurant Payrols"""
