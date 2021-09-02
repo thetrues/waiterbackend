@@ -32,6 +32,10 @@ urlpatterns = (
             "w/api/restaurant/reports/get-monthly-report",
             reports_restaurant_views.MonthlyReport.as_view(),
         ),
+        path(
+            "w/api/restaurant/reports/get-custom-report",
+            reports_restaurant_views.CustomerDateReport.as_view(),
+        ),
     ]
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
