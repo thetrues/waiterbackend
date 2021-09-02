@@ -9,6 +9,7 @@ from restaurant.models import (
 from rest_framework import status
 from django.utils import timezone
 from typing import Dict, List
+import calendar
 
 
 class DailyReport(APIView):
@@ -144,9 +145,7 @@ class DailyReport(APIView):
 
     def get_queryset(self, todays_date):
         return (
-            CustomerDishPayment.objects.filter(
-                date_paid__date=todays_date
-            )
+            CustomerDishPayment.objects.filter(date_paid__date=todays_date)
             .select_related("customer_dish")
             .prefetch_related("customer_dish__orders")
         )
@@ -179,6 +178,7 @@ class MonthlyReport(APIView):
     def get(self, request, *args, **kwargs):
         response: Dict = {}
         qs = self.get_queryset(self.this_month)
+        self.get_current_month(response)
 
         sales: Dict = self.get_sales_response(qs)
         response["sales"] = sales
@@ -192,6 +192,11 @@ class MonthlyReport(APIView):
         response["balance"] = total_sales - total_expenses
 
         return Response(response, status.HTTP_200_OK)
+
+    def get_current_month(self, response: Dict) -> str:
+        response["current_month"] = calendar.month_name[self.this_month.month] + str(
+            self.this_month.year
+        )
 
     def get_expenses_response(self, response: Dict, this_month) -> Dict:
         expenses: Dict = {}
