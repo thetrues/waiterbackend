@@ -5,6 +5,7 @@ from restaurant.models import (
     MainInventoryItemRecordStockOut,
     MiscellaneousInventoryRecord,
     CustomerDishPayment,
+    RestaurantPayrol,
 )
 from rest_framework import status
 from django.utils import timezone
@@ -195,7 +196,9 @@ class MonthlyReport(APIView):
 
     def get_current_month(self, response: Dict) -> str:
         response["current_month"] = (
-            calendar.month_name[self.this_month.month] + ", " + str(self.this_month.year)
+            calendar.month_name[self.this_month.month]
+            + ", "
+            + str(self.this_month.year)
         )
 
     def get_expenses_response(self, response: Dict, this_month) -> Dict:
@@ -227,7 +230,26 @@ class MonthlyReport(APIView):
 
         expenses["main_inventory"] = main_inventory
 
+        # Payrols
+        monthly_payrol = self.get_monthly_payrol(this_month)
+
+        expenses["payrols"] = monthly_payrol
+
         return expenses
+
+    def get_monthly_payrol(self, this_month) -> Dict:
+        monthly_payrol: Dict = {}
+        qs = RestaurantPayrol.objects.filter(
+            date_paid__month=this_month.month, date_paid__year=this_month.year
+        ).select_related("restaurant_payee")
+        monthly_payrol["total_payment"] = qs.aggregate(total=Sum("amount_paid"))[
+            "total"
+        ]
+        monthly_payrol[
+            "payments_structure"
+        ] = RestaurantPayrol.objects.get_monthly_payments(qs)
+
+        return monthly_payrol
 
     def append_temp_issued_items(self, main_qs) -> List:
         temp_issued_items: List = []

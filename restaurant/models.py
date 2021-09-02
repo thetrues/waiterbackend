@@ -1,3 +1,4 @@
+from restaurant.managers import RestaurantPayrolCustomManager
 from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
 from typing import Dict, List, Set
@@ -352,6 +353,7 @@ class RestaurantPayrol(BasePayrol):
     restaurant_payer = models.ForeignKey(
         User, related_name="restaurant_payer", on_delete=models.CASCADE
     )
+    objects = RestaurantPayrolCustomManager()
 
     def __str__(self):
 
