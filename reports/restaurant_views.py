@@ -33,7 +33,7 @@ class DailyReport(BaseReport, APIView):
         total_sales = response["sales"]["total_sales"]
         total_expenses = response["expenses"]["total_expense"]
 
-        response["balance"] = total_sales - total_expenses
+        response["balance"] = total_sales or 0.0 - total_expenses
 
         return Response(response, status.HTTP_200_OK)
 
