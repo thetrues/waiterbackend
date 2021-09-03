@@ -69,7 +69,7 @@ class DailyReport(BaseReport, APIView):
         return expenses
 
     def assign_total_expense(self, expenses, total_misc_expense, total_main_expense):
-        expenses["total_expense"] = total_misc_expense + total_main_expense
+        expenses["total_expense"] = total_misc_expense or 0.0 + total_main_expense
         misc_inventory: Dict = {}
 
         return misc_inventory
@@ -97,7 +97,7 @@ class DailyReport(BaseReport, APIView):
             "total"
         ]
 
-        return total_misc_expense, misc_qs
+        return total_misc_expense or 0.0, misc_qs
 
     def get_queryset(self, todays_date):
         return (
