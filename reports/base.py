@@ -69,5 +69,5 @@ class BaseReport(object):
             sales["dishes_structure"].append(temp_dish_structure)
 
     def total_sales_and_dishes(self, qs, sales):
-        sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"]
+        sales["total_sales"] = qs.aggregate(total=Sum("amount_paid"))["total"] or 0.0
         sales["total_dishes"] = len(qs)
