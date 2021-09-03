@@ -23,7 +23,7 @@ class DailyReport(BaseReport, APIView):
         todays_date = self.get_todays_response(response)
 
         qs = self.get_queryset(todays_date)
-ds
+
         sales: Dict = self.get_sales_response(qs)
         response["sales"] = sales
 
