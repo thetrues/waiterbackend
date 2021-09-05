@@ -493,6 +493,26 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         customer_regular_order_record = CustomerRegularOrderRecord.objects.get(
             id=request.data.get("customer_order_record")
         )
+
+        try:
+            object = CustomerRegularOrderRecordPayment.objects.get(
+                payment_started=True,
+                customer_order_record=customer_regular_order_record,
+            )
+            object.amount_paid = amount_paid
+            object.save()
+            if object.amount_paid >= object.get_total_amount_to_pay:
+                object.payment_status == "paid"
+            elif object.amount_paid <= object.get_total_amount_to_pay:
+                object.payment_status == "partial"
+            else:
+                object.payment_status == "unpaid"
+            object.save()
+
+            return Response(status.HTTP_200_OK)
+        except CustomerRegularOrderRecordPayment.DoesNotExist:
+            pass
+
         if (
             by_credit
             and self.get_advance_amount(customer_regular_order_record, amount_paid)
@@ -515,6 +535,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             customer_order_record=customer_regular_order_record,
             amount_paid=amount_paid,
             created_by=request.user,
+            payment_started=True,
         )
 
         self.pay_by_credit(request, by_credit, amount_paid, object)

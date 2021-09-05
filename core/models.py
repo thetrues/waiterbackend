@@ -170,6 +170,7 @@ PAYMENT_METHODS: Set[Set] = (
 
 class BasePayment(models.Model):
     by_credit = models.BooleanField(default=False)
+    payment_started = models.BooleanField(default=False)
     payment_status = models.CharField(
         max_length=7,
         choices=PAYMENT_STATUS_CHOICES,
