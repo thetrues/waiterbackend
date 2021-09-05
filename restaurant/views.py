@@ -689,6 +689,29 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         amount_paid = float(request.data.get("amount_paid"))
         customer_dish = CustomerDish.objects.get(id=request.data.get("customer_dish"))
         customer = self.get_customer(request)
+
+        if customer_dish.get_remained_amount() <= 0:
+            raise ValidationError("Order is already paid.")
+
+        try:
+            object = CustomerDishPayment.objects.get(
+                payment_started=True,
+                customer_dish=customer_dish,
+            )
+            object.amount_paid = amount_paid
+            object.save()
+            if object.amount_paid >= object.get_total_amount_to_pay:
+                object.payment_status == "paid"
+            elif object.amount_paid <= object.get_total_amount_to_pay:
+                object.payment_status == "partial"
+            else:
+                object.payment_status == "unpaid"
+            object.save()
+
+            return Response(status.HTTP_200_OK)
+        except CustomerDishPayment.DoesNotExist:
+            pass
+
         if (
             by_credit
             and self.get_advance_amount(customer_dish, amount_paid)
@@ -775,9 +798,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
 
     def get_customer(self, request):
         try:
-            customer = CreditCustomer.objects.get(
-                id=request.data.get("customer_id")
-            )
+            customer = CreditCustomer.objects.get(id=request.data.get("customer_id"))
         except CreditCustomer.DoesNotExist:
             customer = None
         return customer

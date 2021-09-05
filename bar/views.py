@@ -494,6 +494,9 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             id=request.data.get("customer_order_record")
         )
 
+        if customer_regular_order_record.get_remained_amount() <= 0:
+            raise ValidationError("Order is already paid.")
+
         try:
             object = CustomerRegularOrderRecordPayment.objects.get(
                 payment_started=True,
@@ -1128,6 +1131,25 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         if customer_order_record.get_remained_amount() <= 0:
             raise ValidationError("Order is already paid.")
 
+        try:
+            object = CustomerTequilaOrderRecordPayment.objects.get(
+                payment_started=True,
+                customer_order_record=customer_order_record,
+            )
+            object.amount_paid = amount_paid
+            object.save()
+            if object.amount_paid >= object.get_total_amount_to_pay:
+                object.payment_status == "paid"
+            elif object.amount_paid <= object.get_total_amount_to_pay:
+                object.payment_status == "partial"
+            else:
+                object.payment_status == "unpaid"
+            object.save()
+
+            return Response(status.HTTP_200_OK)
+        except CustomerTequilaOrderRecordPayment.DoesNotExist:
+            pass
+
         if (
             by_credit
             and self.get_advance_amount(customer_order_record, amount_paid)
@@ -1148,6 +1170,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         object = CustomerTequilaOrderRecordPayment.objects.create(
             customer_order_record=customer_order_record,
             amount_paid=amount_paid,
+            payment_started=True,
             created_by=request.user,
         )
         self.pay_by_credit(request, by_credit, object)
