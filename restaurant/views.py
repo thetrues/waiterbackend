@@ -703,25 +703,16 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         customer_dish = CustomerDish.objects.get(id=request.data.get("customer_dish"))
         customer = self.get_customer(request)
 
-        if customer_dish.get_remained_amount() <= 0:
-            raise ValidationError("Order is already paid.")
+        self.validate_payment_status(customer_dish)
 
         try:
-            object = CustomerDishPayment.objects.get(
-                payment_started=True,
-                customer_dish=customer_dish,
-            )
-            object.amount_paid = amount_paid
-            object.save()
-            if object.amount_paid >= object.get_total_amount_to_pay:
-                object.payment_status == "paid"
-            elif object.amount_paid <= object.get_total_amount_to_pay:
-                object.payment_status == "partial"
-            else:
-                object.payment_status == "unpaid"
-            object.save()
+            object = self.get_customer_dish_payment(customer_dish)
+            self.change_amount_paid(amount_paid, object)
+            self.change_payment_status(object)
+            self.change_credit_payments(object)
 
             return Response(status.HTTP_200_OK)
+
         except CustomerDishPayment.DoesNotExist:
             pass
 
@@ -759,6 +750,52 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             "date_paid": object.date_paid,
             "created_by": str(object.created_by),
         }
+
+    def change_credit_payments(self, object):
+        if object.by_credit:
+            ccdp = self.change_ccdp(object)
+
+            self.change_ccdph(ccdp)
+
+    def change_ccdph(self, ccdp):
+        ccdph = CreditCustomerDishPaymentHistory.objects.filter(
+            credit_customer_dish_payment=ccdp
+        ).last()
+        ccdph.amount_paid += ccdp.amount_paid
+        ccdph.date_paid = timezone.localdate()
+        ccdph.save()
+
+    def change_ccdp(self, object):
+        ccdp = CreditCustomerDishPayment.objects.filter(
+            customer_dish_payment=object
+        ).last()
+        ccdp.amount_paid += object.amount_paid
+        ccdp.date_created = timezone.localdate()
+        ccdp.save()
+        return ccdp
+
+    def validate_payment_status(self, customer_dish):
+        if customer_dish.get_remained_amount() <= 0:
+            raise ValidationError("Order is already paid.")
+
+    def get_customer_dish_payment(self, customer_dish):
+        return CustomerDishPayment.objects.get(
+            payment_started=True,
+            customer_dish=customer_dish,
+        )
+
+    def change_payment_status(self, object):
+        if object.amount_paid >= object.get_total_amount_to_pay:
+            object.payment_status == "paid"
+        elif object.amount_paid <= object.get_total_amount_to_pay:
+            object.payment_status == "partial"
+        else:
+            object.payment_status == "unpaid"
+        object.save()
+
+    def change_amount_paid(self, amount_paid, object):
+        object.amount_paid += amount_paid
+        object.save()
 
     def get_advance_amount(self, customer_dish, amount_paid) -> float:
         """This is the amount of money customer wants to pay in advance"""
@@ -800,7 +837,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                 customer_dish_payment=object,
                 customer=customer,
                 amount_paid=amount_paid,
-                date_created=timezone.localdate()
+                date_created=timezone.localdate(),
             )
             self._change_customer_details(object, customer)
 
