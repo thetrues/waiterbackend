@@ -1,8 +1,10 @@
 """
 This signal is for changing the item quantity inventory record.
 """
+from typing import NoReturn
 from bar.models import (
     CreditCustomerRegularOrderRecordPaymentHistory,
+    CustomerRegularOrderRecord,
     RegularInventoryRecord,
     TekilaInventoryRecord,
     RegularOrderRecord,
@@ -17,17 +19,26 @@ from django.utils import timezone
 def alter_regular_inventory_record(sender, instance, created, **kwargs):
     # sourcery skip: last-if-guard
     if created:
-        ordered_item = instance.item
-        ordered_quantity = instance.quantity
-        regular_item_record = RegularInventoryRecord.objects.get(item=ordered_item.item)
-        regular_item_record.available_quantity = (
-            regular_item_record.available_quantity - int(ordered_quantity)
-        )
+        perform_alter(instance)
+
+
+def perform_alter(instance) -> NoReturn:
+    ordered_item = instance.item
+    ordered_quantity = instance.quantity
+    regular_item_record = RegularInventoryRecord.objects.get(item=ordered_item.item)
+    regular_item_record.available_quantity -= int(ordered_quantity)
+    regular_item_record.save()
+    if regular_item_record.available_quantity == 0:
+        regular_item_record.stock_status = "unavailable"
+        regular_item_record.date_perished = timezone.now()
         regular_item_record.save()
-        if regular_item_record.available_quantity == 0:
-            regular_item_record.stock_status = "unavailable"
-            regular_item_record.date_perished = timezone.now()
-            regular_item_record.save()
+
+
+# @receiver(post_save, sender=CustomerRegularOrderRecord)
+# def reduce_inv_item_for(sender, instance, created, **kwargs) -> NoReturn:
+#     # sourcery skip: last-if-guard
+#     if created:
+#         perform_alter(instance)
 
 
 @receiver(post_save, sender=TekilaInventoryRecord)
