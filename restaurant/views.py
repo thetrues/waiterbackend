@@ -266,7 +266,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
             return Response(status.HTTP_200_OK)
 
-    def issueing_stock(self, request, quantity_out, items):
+    def issueing_stock(self, request, quantity_out, items) -> NoReturn:
         for stock in items[::-1]:
             if quantity_out == 0:
                 break
@@ -283,33 +283,34 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                     quantity_out = 0
                 stock.save()
 
-    def get_total_available_quantities_for_all_items(self, items):
+    def get_total_available_quantities_for_all_items(self, items) -> float:
         return items.aggregate(total=Sum("available_quantity"))["total"]
 
-    def filter_items(self, item_record_name):  # select_related
+    def filter_items(self, item_record_name) -> QuerySet:  # select_related
         return MainInventoryItemRecord.objects.filter(
             main_inventory_item__item__name=item_record_name, stock_status="available"
         ).select_related("main_inventory_item", "main_inventory_item__item")
 
-    def get_data(self, request):
+    def get_data(self, request) -> Tuple[int, MainInventoryItemRecord, int]:
         item_record_id = int(request.data.get("item_record_id"))
         quantity_out = int(request.data.get("quantity_out"))
         item = MainInventoryItemRecord.objects.get(id=int(item_record_id))
         available_quantity = item.available_quantity
+
         return quantity_out, item, available_quantity
 
-    def create_stock_out(self, request, quantity_out, item):
+    def create_stock_out(self, request, quantity_out, item) -> NoReturn:
         MainInventoryItemRecordStockOut.objects.create(  # Create Stock out history
             item_record=item,
             quantity_out=quantity_out,
             created_by=request.user,
         )
 
-    def reduce_availability(self, quantity_out, item, available_quantity):
+    def reduce_availability(self, quantity_out, item, available_quantity) -> NoReturn:
         item.available_quantity = available_quantity - quantity_out
         item.save()
 
-    def set_unavailable(self, item):
+    def set_unavailable(self, item) -> NoReturn:
         item.stock_status = "unavailable"
         item.date_perished = timezone.now()
         item.save()
