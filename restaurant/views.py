@@ -370,7 +370,7 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
     serializer_class = RestaurantCustomerOrderSerializer
 
     def list(self, request, *args, **kwargs):
-        res: dict = []
+        res: List[Dict] = []
         [
             res.append(
                 {
