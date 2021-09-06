@@ -502,7 +502,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                 payment_started=True,
                 customer_order_record=customer_regular_order_record,
             )
-            object.amount_paid = object.amount_paid + amount_paid
+            object.amount_paid += amount_paid
             object.save()
             if object.amount_paid >= object.get_total_amount_to_pay:
                 object.payment_status == "paid"
