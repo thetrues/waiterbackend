@@ -513,6 +513,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             object.save()
 
             return Response(status.HTTP_200_OK)
+
         except CustomerRegularOrderRecordPayment.DoesNotExist:
             pass
 
