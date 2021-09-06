@@ -1,3 +1,4 @@
+from core.utils import orders_number_generator
 from rest_framework.exceptions import ValidationError
 from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
@@ -36,7 +37,7 @@ from restaurant.serializers import (
 from django.utils import timezone
 from typing import Dict, List
 from user.models import User
-import uuid
+# import uuid
 
 
 class MenuViewSet(viewsets.ModelViewSet):
@@ -398,7 +399,9 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
         object = RestaurantCustomerOrder.objects.create(
             sub_menu=Menu.objects.get(id=request.data.get("sub_menu")),
             quantity=request.data.get("quantity"),
-            order_number=str(uuid.uuid4())[:7],
+            order_number=orders_number_generator(
+                RestaurantCustomerOrder, "order_number"
+            ),
             created_by=request.user,
         )
         return {
@@ -460,7 +463,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
         object = CustomerDish.objects.create(
             customer_name=request.data.get("customer_name"),
             customer_phone=request.data.get("customer_phone"),
-            dish_number=str(uuid.uuid4())[:8],
+            dish_number=orders_number_generator(CustomerDish, "dish_number"),
             created_by=request.user,
         )
         self.add_orders(request, object)
@@ -480,7 +483,9 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             order = RestaurantCustomerOrder.objects.create(
                 sub_menu=Menu.objects.get(id=int(_["sub_menu"])),
                 quantity=int(_["quantity"]),
-                order_number=str(uuid.uuid4())[:7],
+                order_number=orders_number_generator(
+                    RestaurantCustomerOrder, "order_number"
+                ),
                 created_by=request.user,
             )
             for ad_id in _["additives"]:
@@ -490,7 +495,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             object.save()
 
     def get_orders(self, object):
-        orders: list = []
+        orders: List[Dict] = []
 
         def _get_additives_by_order(order):
             temp: list = []
