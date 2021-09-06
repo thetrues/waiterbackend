@@ -263,6 +263,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                     status.HTTP_200_OK,
                 )
             self.issueing_stock(request, quantity_out, items)
+
             return Response(status.HTTP_200_OK)
 
     def issueing_stock(self, request, quantity_out, items):
