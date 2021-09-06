@@ -564,6 +564,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                 record_order_payment_record=object,
                 customer=customer,
                 amount_paid=amount_paid,
+                date_created=timezone.localdate()
             )
             self._change_customer_details(object, customer)
 
@@ -1196,6 +1197,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             CreditCustomerTequilaOrderRecordPayment.objects.create(
                 record_order_payment_record=object,
                 customer=customer,
+                date_created=timezone.localdate()
             )
             self._change_customer_details(object, customer)
 
@@ -1248,7 +1250,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
         return customer
 
-    def save_payment_status(self, request, object) -> NoReturn:
+    def save_payment_status(self, request, object):
         amount_paid = float(request.data.get("amount_paid"))
         if amount_paid == 0:
             object.payment_status = "unpaid"
