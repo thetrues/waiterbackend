@@ -1,7 +1,7 @@
 from core.models import CreditCustomer, Item, MeasurementUnit
 from rest_framework.response import Response
 from rest_framework import status, viewsets
-from typing import Dict, List
+from typing import Dict, List, NoReturn
 from core.serializers import (
     CreditCustomerSerializer,
     MeasurementUnitSerializer,
@@ -23,7 +23,7 @@ class CreditCustomerViewSet(viewsets.ModelViewSet):
     queryset = CreditCustomer.objects.all()
     serializer_class = CreditCustomerSerializer
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs) -> List[Dict]:
         response: List[Dict] = []
 
         self.append_list(response)

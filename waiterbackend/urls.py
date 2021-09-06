@@ -37,7 +37,7 @@ urlpatterns = (
             "w/api/restaurant/reports/get-custom-report",
             reports_restaurant_views.CustomDateReport.as_view(),
         ),
-        # Reports Restaurant
+        # Reports Bar
         path(
             "w/api/bar/reports/get-daily-report",
             reports_bar_views.DailyReport.as_view(),
