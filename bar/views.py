@@ -298,6 +298,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             data = self.perform_create(request)
 
             return Response(data, status.HTTP_201_CREATED)
+
         except Exception as e:
 
             return Response({"message": str(e)}, status.HTTP_400_BAD_REQUEST)
