@@ -800,6 +800,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                 customer_dish_payment=object,
                 customer=customer,
                 amount_paid=amount_paid,
+                date_created=timezone.localdate()
             )
             self._change_customer_details(object, customer)
 
