@@ -1,3 +1,4 @@
+from django.db.models.query import QuerySet
 from core.utils import orders_number_generator
 from rest_framework.exceptions import ValidationError
 from core.serializers import InventoryItemSerializer
@@ -35,7 +36,7 @@ from restaurant.serializers import (
     MenuSerializer,
 )
 from django.utils import timezone
-from typing import Dict, List, NoReturn
+from typing import Dict, List, NoReturn, Tuple
 from user.models import User
 
 # import uuid
@@ -172,7 +173,9 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         else:
             temp_response["stock_status"] = "Unavailable"
 
-    def get_items_available_quantity_unit(self, names, index):
+    def get_items_available_quantity_unit(
+        self, names, index
+    ) -> Tuple[QuerySet, int, str]:
         item_qs = self.queryset.filter(main_inventory_item__item__name=names[index])
         available_quantity = item_qs.aggregate(
             available_quantity=Sum("available_quantity")
