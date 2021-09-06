@@ -228,31 +228,41 @@ class CreditCustomer(models.Model):
             )
         )
         total: float = 0.0
-        self.get_restaurant_total(restaurant_today_spends, total)
+        total += self.get_restaurant_total(restaurant_today_spends)
 
-        self.get_bar_regular_total(bar_regular_today_spends, total)
+        total += self.get_bar_regular_total(bar_regular_today_spends)
 
-        total = self.get_bar_tequila_total(bar_tequila_today_spends, total)
+        total += self.get_bar_tequila_total(bar_tequila_today_spends)
 
-        total = self.credit_limit - total
+        total_ = self.credit_limit - total
 
-        if total == 0.0:
-            total = self.credit_limit
+        if total_ == 0.0:
+            total_ = self.credit_limit
 
-        return total
+        return total_
 
-    def get_bar_tequila_total(self, bar_tequila_today_spends, total):
+    def get_bar_tequila_total(self, bar_tequila_today_spends) -> float:
+        # sourcery skip: class-extract-method
+        bar_teq_total: float = 0.0
         for k in bar_tequila_today_spends:
-            total += k.get_credit_payable_amount()
-        return total
+            bar_teq_total += k.get_credit_payable_amount()
 
-    def get_bar_regular_total(self, bar_regular_today_spends, total):
+        return bar_teq_total
+
+    def get_bar_regular_total(self, bar_regular_today_spends) -> float:
+        bar_reg_total: float = 0.0
         for j in bar_regular_today_spends:
-            total += j.get_credit_payable_amount()
+            bar_reg_total += j.get_credit_payable_amount()
 
-    def get_restaurant_total(self, restaurant_today_spends, total):
+        return bar_reg_total
+
+    def get_restaurant_total(self, restaurant_today_spends) -> float:
+        rest_total: float = 0.0
+
         for i in restaurant_today_spends:
-            total += i.get_credit_dish_payable_amount()
+            rest_total += i.get_credit_dish_payable_amount()
+
+        return rest_total
 
     class Meta:
         unique_together: Set[str] = ("phone", "name")
