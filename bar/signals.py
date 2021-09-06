@@ -53,7 +53,7 @@ def set_regular_available_quantity(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=CreditCustomerRegularOrderRecordPaymentHistory)
-def update_payment_amounts(sender, instance, created, **kwargs):
+def update_payment_amounts(sender, instance, created, **kwargs) -> NoReturn:
     if created:
         obj = instance.credit_customer_payment
         obj.amount_paid = obj.amount_paid + instance.amount_paid
