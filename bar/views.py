@@ -37,7 +37,7 @@ from bar.models import (
 )
 from core.models import CreditCustomer, Item
 from django.utils import timezone
-from typing import Dict, List
+from typing import Dict, List, NoReturn
 from user.models import User
 import datetime
 
@@ -502,7 +502,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                 payment_started=True,
                 customer_order_record=customer_regular_order_record,
             )
-            object.amount_paid = amount_paid
+            object.amount_paid = object.amount_paid + amount_paid
             object.save()
             if object.amount_paid >= object.get_total_amount_to_pay:
                 object.payment_status == "paid"
@@ -1136,7 +1136,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                 payment_started=True,
                 customer_order_record=customer_order_record,
             )
-            object.amount_paid = amount_paid
+            object.amount_paid = object.amount_paid + amount_paid
             object.save()
             if object.amount_paid >= object.get_total_amount_to_pay:
                 object.payment_status == "paid"
@@ -1209,7 +1209,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             customer
         )  # 20,000 - 15,000 = 5,000
 
-    def get_today_spend(self, customer):
+    def get_today_spend(self, customer) -> float:
         total_amount: float = 0.0
         qs = self.get_credit_qs(customer)
         for q in qs:
@@ -1231,6 +1231,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         qs = CreditCustomerTequilaOrderRecordPayment.objects.filter(
             customer=customer, date_created=self.today
         )
+
         return qs.aggregate(
             total=Sum(
                 "record_order_payment_record__customer_order_record__get_total_price"
@@ -1242,9 +1243,10 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             customer = CreditCustomer.objects.get(id=request.data.get("customer_id"))
         except CreditCustomer.DoesNotExist:
             customer = None
+
         return customer
 
-    def save_payment_status(self, request, object):
+    def save_payment_status(self, request, object) -> NoReturn:
         amount_paid = float(request.data.get("amount_paid"))
         if amount_paid == 0:
             object.payment_status = "unpaid"
