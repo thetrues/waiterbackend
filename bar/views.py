@@ -326,7 +326,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             "time_created": str(object.date_created).split(" ")[1].split(".")[0],
         }
 
-    def add_orders(self, request, object):
+    def add_orders(self, request, object) -> NoReturn:
         for _ in request.data.get("orders"):
             order = RegularOrderRecord.objects.create(
                 item=RegularInventoryRecord.objects.get(id=int(_["menu_id"])),
