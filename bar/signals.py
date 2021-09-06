@@ -4,7 +4,6 @@ This signal is for changing the item quantity inventory record.
 from typing import NoReturn
 from bar.models import (
     CreditCustomerRegularOrderRecordPaymentHistory,
-    CustomerRegularOrderRecord,
     RegularInventoryRecord,
     TekilaInventoryRecord,
     RegularOrderRecord,
@@ -16,11 +15,9 @@ from django.utils import timezone
 
 
 @receiver(post_save, sender=RegularOrderRecord)
-def alter_regular_inventory_record(sender, instance, created, **kwargs):
+def alter_regular_inventory_record(sender, instance, created, **kwargs) -> NoReturn:
     # sourcery skip: last-if-guard
     if created:
-        # ordered_item = instance.item
-        # ordered_quantity = instance.quantity
         regular_item_record = RegularInventoryRecord.objects.get(
             item=instance.item.item
         )
