@@ -339,7 +339,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             object.orders.add(order)
         object.save()
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs) -> List[Dict]:
 
         return Response(self.get_list(self.queryset), status.HTTP_200_OK)
 
