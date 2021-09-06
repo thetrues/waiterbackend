@@ -35,8 +35,9 @@ from restaurant.serializers import (
     MenuSerializer,
 )
 from django.utils import timezone
-from typing import Dict, List
+from typing import Dict, List, NoReturn
 from user.models import User
+
 # import uuid
 
 
@@ -124,7 +125,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         detail=False,
         methods=["GET"],
     )
-    def list_items(self, request, *args, **kwargs):
+    def list_items(self, request, *args, **kwargs) -> List:
         names: List = self.get_items_names(self.queryset)
         response: List = []
         data = self.get_response(names, response)
@@ -145,7 +146,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
         return response
 
-    def get_records(self, response, temp_response, item_qs, unit):
+    def get_records(self, response, temp_response, item_qs, unit) -> NoReturn:
         temp_response["records_items"] = []
         temp_records: Dict = {}
         counter: int = 0
@@ -163,7 +164,9 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             counter += 1
         response.append(temp_response)
 
-    def get_stock_status(self, temp_response: dict, available_quantity: int):
+    def get_stock_status(
+        self, temp_response: dict, available_quantity: int
+    ) -> NoReturn:
         if available_quantity > 0:
             temp_response["stock_status"] = "Available"
         else:
