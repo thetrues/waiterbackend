@@ -97,7 +97,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         }
 
     def list(self, request, *args, **kwargs):
-        response: list = []
+        response: List[Dict] = []
         [
             response.append(
                 {
