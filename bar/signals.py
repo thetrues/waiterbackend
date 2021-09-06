@@ -56,7 +56,7 @@ def set_regular_available_quantity(sender, instance, created, **kwargs):
 def update_payment_amounts(sender, instance, created, **kwargs):
     if created:
         obj = instance.credit_customer_payment
-        obj.amount_paid = obj.amount_paid + instance.amount_paid
+def update_payment_amounts(sender, instance, created, **kwargs) -> NoReturn:
         obj.save()
 
         obj2 = instance.credit_customer_payment.record_order_payment_record
