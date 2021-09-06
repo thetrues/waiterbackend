@@ -37,7 +37,7 @@ def alter_regular_inventory_record(sender, instance, created, **kwargs) -> NoRet
 
 
 @receiver(post_save, sender=TekilaInventoryRecord)
-def set_tekila_available_quantity(sender, instance, created, **kwargs):
+def set_tekila_available_quantity(sender, instance, created, **kwargs) -> NoReturn:
     # sourcery skip: last-if-guard
     if created:
         instance.available_quantity = instance.total_shots_per_tekila
@@ -53,7 +53,7 @@ def set_regular_available_quantity(sender, instance, created, **kwargs) -> NoRet
 
 
 @receiver(post_save, sender=CreditCustomerRegularOrderRecordPaymentHistory)
-def update_payment_amounts(sender, instance, created, **kwargs):
+def update_payment_amounts(sender, instance, created, **kwargs) -> NoReturn:
     if created:
         obj = instance.credit_customer_payment
         obj.amount_paid = obj.amount_paid + instance.amount_paid
