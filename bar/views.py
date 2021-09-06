@@ -278,9 +278,9 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
     ).prefetch_related("orders")
     serializer_class = CustomerOrderRecordSerializer
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, request, pk=None) -> Dict:
         instance = self.get_object()
-        response: dict = {
+        response: Dict = {
             "id": instance.id,
             "customer_name": instance.customer_name,
             "customer_phone": instance.customer_phone,
