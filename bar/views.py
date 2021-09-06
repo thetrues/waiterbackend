@@ -293,7 +293,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         }
         return Response(response, status.HTTP_200_OK)
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs) -> Dict:
         try:
             data = self.perform_create(request)
 
@@ -303,7 +303,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
 
             return Response({"message": str(e)}, status.HTTP_400_BAD_REQUEST)
 
-    def perform_create(self, request):
+    def perform_create(self, request) -> Dict:
         object = CustomerRegularOrderRecord.objects.create(
             customer_name=request.data.get("customer_name"),
             customer_phone=request.data.get("customer_phone"),
