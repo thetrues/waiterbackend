@@ -327,7 +327,7 @@ class CustomDateReport(BaseReport, APIView):
         self, expenses, total_misc_expense, total_main_expense, total_payrol
     ):
         expenses["total_expense"] = (
-            total_misc_expense + total_main_expense + total_payrol
+            total_misc_expense + total_main_expense + total_payrol or 0
         )
         misc_inventory: Dict = {}
 
