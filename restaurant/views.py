@@ -738,6 +738,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             ),
             amount_paid=request.data.get("amount_paid"),
             created_by=request.user,
+            payment_started=True,
         )
         self.pay_by_credit(request, by_credit, amount_paid, object)
         self.save_payment_status(object, amount_paid)
@@ -762,7 +763,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             credit_customer_dish_payment=ccdp
         ).last()
         ccdph.amount_paid += ccdp.amount_paid
-        ccdph.date_paid = timezone.localdate()
+        ccdph.date_paid = self.today
         ccdph.save()
 
     def change_ccdp(self, object):
@@ -770,7 +771,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             customer_dish_payment=object
         ).last()
         ccdp.amount_paid += object.amount_paid
-        ccdp.date_created = timezone.localdate()
+        ccdp.date_created = self.today
         ccdp.save()
         return ccdp
 
