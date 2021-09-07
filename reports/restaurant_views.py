@@ -304,10 +304,10 @@ class CustomDateReport(BaseReport, APIView):
 
         return expenses
 
-    def get_total(self, date1, date2):
+    def get_total(self, date1, date2) -> float:
         return RestaurantPayrol.objects.filter(
             date_paid__range=(date1, date2)
-        ).aggregate(total=Sum("amount_paid"))["total"]
+        ).aggregate(total=Sum("amount_paid"))["total"] or 0.0
 
     def get_monthly_payrol(self, date1, date2) -> Dict:
         monthly_payrol: Dict = {}
