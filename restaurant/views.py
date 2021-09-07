@@ -710,7 +710,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             self.change_amount_paid(amount_paid, object)
             self.change_payment_status(object)
             self.change_credit_payments(object)
-            self.change_payment_status(object)
+            # self.change_payment_status(object)
 
             return {"message": "Success"}
 
@@ -788,13 +788,21 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         )
 
     def change_payment_status(self, object):
-        if object.amount_paid >= object.get_total_amount_to_pay:
-            object.payment_status == "paid"
-        elif object.amount_paid > 0:
-            object.payment_status == "partial"
+        if object.amount_paid == 0:
+            object.payment_status = "unpaid"
+        elif object.amount_paid >= object.get_total_amount_to_pay:
+            object.payment_status = "paid"
         else:
-            object.payment_status == "unpaid"
+            object.payment_status = "partial"
         object.save()
+        
+        # if object.amount_paid >= object.get_total_amount_to_pay:
+        #     object.payment_status == "paid"
+        # elif object.amount_paid > 0:
+        #     object.payment_status == "partial"
+        # else:
+        #     object.payment_status == "unpaid"
+        # object.save()
 
     def change_amount_paid(self, amount_paid, object):
         object.amount_paid += amount_paid
