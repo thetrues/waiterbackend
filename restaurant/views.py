@@ -762,9 +762,10 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         ccdph = CreditCustomerDishPaymentHistory.objects.filter(
             credit_customer_dish_payment=ccdp
         ).last()
-        ccdph.amount_paid += ccdp.amount_paid
-        ccdph.date_paid = self.today
-        ccdph.save()
+        if ccdph:
+            ccdph.amount_paid += ccdp.amount_paid
+            ccdph.date_paid = self.today
+            ccdph.save()
 
     def change_ccdp(self, object):
         ccdp = CreditCustomerDishPayment.objects.filter(
