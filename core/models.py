@@ -236,7 +236,7 @@ class CreditCustomer(models.Model):
 
         total_ = self.credit_limit - total
 
-        if total_ == 0.0:
+        if total_ == 0.0 or total_ > self.credit_limit:
             total_ = self.credit_limit
 
         return total_
