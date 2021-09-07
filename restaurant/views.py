@@ -710,6 +710,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             self.change_amount_paid(amount_paid, object)
             self.change_payment_status(object)
             self.change_credit_payments(object)
+            self.change_payment_status(object)
 
             return Response(status.HTTP_200_OK)
 
