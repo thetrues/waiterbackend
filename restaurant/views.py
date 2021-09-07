@@ -712,7 +712,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             self.change_credit_payments(object)
             self.change_payment_status(object)
 
-            return Response({"message": "Success"}, status.HTTP_200_OK)
+            return {"message": "Success"}
 
         except CustomerDishPayment.DoesNotExist:
             pass
