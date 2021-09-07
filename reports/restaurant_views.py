@@ -186,7 +186,7 @@ class MonthlyReport(BaseReport, APIView):
         ).select_related("restaurant_payee")
         monthly_payrol["total_payment"] = qs.aggregate(total=Sum("amount_paid"))[
             "total"
-        ]
+        ] or 0.0
         monthly_payrol[
             "payments_structure"
         ] = RestaurantPayrol.objects.get_monthly_payments(qs)
