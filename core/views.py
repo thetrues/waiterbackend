@@ -1,7 +1,7 @@
 from core.models import CreditCustomer, Item, MeasurementUnit
 from rest_framework.response import Response
 from rest_framework import status, viewsets
-from typing import Dict, List, NoReturn
+from typing import Dict, List
 from core.serializers import (
     CreditCustomerSerializer,
     MeasurementUnitSerializer,
