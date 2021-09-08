@@ -176,7 +176,7 @@ class BaseCustomerOrder(models.Model):
 
     @property
     @abstractmethod
-    def total(self):
+    def total(self) -> float:
         """Returns the total price: i.e sub_menu__price * quantity"""
 
     class Meta:
@@ -189,18 +189,18 @@ class RestaurantCustomerOrder(BaseCustomerOrder):
     sub_menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
 
     @property
-    def total(self) -> float():
+    def total(self) -> float:
         """Returns the total price: i.e sub_menu__price * quantity"""
 
         return self.quantity * self.sub_menu.price
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         return f"{self.sub_menu.name} Order#{self.order_number}"
 
     class Meta:
-        ordering: list = ["-id"]
-        verbose_name = "Restaurant Customer Order"
-        verbose_name_plural = "Restaurant Customer Orders"
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Restaurant Customer Order"
+        verbose_name_plural: str = "Restaurant Customer Orders"
 
 
 class CustomerDish(models.Model):
