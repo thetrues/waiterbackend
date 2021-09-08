@@ -1,3 +1,4 @@
+from typing import Dict
 from user.serializers import RegistrationSerializer, UserSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -16,7 +17,7 @@ class RegistrationView(APIView):
     """Registration View"""
 
     def post(self, request):
-        data: dict = {}
+        data: Dict = {}
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             data = self.create_acount(serializer)
@@ -26,6 +27,7 @@ class RegistrationView(APIView):
 
     def create_acount(self, serializer):
         user = serializer.save()
+
         return {
             "id": user.id,
             "first_name": user.first_name,
