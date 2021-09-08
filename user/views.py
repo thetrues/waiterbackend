@@ -139,7 +139,7 @@ class ChangeUserPasswordView(APIView):
             raise NotFound
 
     def put(self, request, pk, *args, **kwargs):
-        data: dict = {}
+        data: Dict = {}
         """update user password and returns user object."""
         user = self.get_object(pk=pk)
         user.set_password(request.data["password"])
