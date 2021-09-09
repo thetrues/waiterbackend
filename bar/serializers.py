@@ -74,7 +74,7 @@ class RegularTequilaOrderRecordSerializer(serializers.ModelSerializer):
 class CustomerOrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerRegularOrderRecord
-        fields = ["customer_name", "customer_phone"]
+        fields: List[str] = ["customer_name", "customer_phone"]
 
 
 class CustomerRegularTequilaOrderRecordSerializer(serializers.ModelSerializer):
