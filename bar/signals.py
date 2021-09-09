@@ -42,7 +42,7 @@ def alter_regular_inventory_record(sender, instance, created, **kwargs) -> NoRet
 def set_tekila_available_quantity(sender, instance, created, **kwargs) -> NoReturn:
     # sourcery skip: last-if-guard
     if created:
-        instance.available_quantity = instance.total_shots_per_tekila
+        instance.available_quantity -= instance.total_shots_per_tekila
         instance.save()
 
 
