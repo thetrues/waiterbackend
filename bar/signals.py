@@ -19,8 +19,9 @@ from django.utils import timezone
 def alter_regular_inventory_record(sender, instance, created, **kwargs) -> NoReturn:
     # sourcery skip: last-if-guard
     if created:
+        id = instance.item.item.id
         regular_item_record = RegularInventoryRecord.objects.get(
-            item=instance.item.item
+            item__id=id
         )
         regular_item_record.available_quantity -= int(instance.quantity)
         regular_item_record.save()
