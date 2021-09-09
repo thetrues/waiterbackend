@@ -522,7 +522,7 @@ class CustomerRegularTequilaOrderRecordPayment(BasePayment):
     @property
     def get_total_amount_to_pay(self):
         return float(
-            self.customer_regular_tequila_order_record.regular_tequila_order_record.get_total_price
+            self.customer_regular_tequila_order_record.regular_tequila_order_record.get_total_price()
         )
 
     @property
