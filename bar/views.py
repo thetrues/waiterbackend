@@ -695,7 +695,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
 class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     queryset = RegularTequilaOrderRecord.objects.select_related(
-        "item", "item__item", "created_by"
+        "created_by"
     ).prefetch_related("regular_items", "tequila_items")
     serializer_class = RegularTequilaOrderRecordSerializer
 
