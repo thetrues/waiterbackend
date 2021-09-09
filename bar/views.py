@@ -1024,19 +1024,10 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             raise ValidationError("Order is already paid.")
 
         try:
-            object = CustomerRegularTequilaOrderRecordPayment.objects.get(
-                payment_started=True,
-                customer_regular_tequila_order_record=customer_regular_order_record,
-            )
-            object.amount_paid += amount_paid
-            object.save()
-            if object.amount_paid >= object.get_total_amount_to_pay:
-                object.payment_status == "paid"
-            elif object.amount_paid <= object.get_total_amount_to_pay:
-                object.payment_status == "partial"
-            else:
-                object.payment_status == "unpaid"
-            object.save()
+            object = self.get_crtorp(customer_regular_order_record)
+            self.alter_crtorp_amount_paid(amount_paid, object)
+            self.alter_crtrop_payment_status(object)
+            self.alter_ccrtrop_amount_paid(amount_paid, customer, object)
 
             return {"message": "Success"}
 
@@ -1079,6 +1070,34 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             "date_paid": object.date_paid,
             "created_by": str(object.created_by),
         }
+
+    def alter_ccrtrop_amount_paid(self, amount_paid, customer, object):
+        ccrtorp = CreditCustomerRegularTequilaOrderRecordPayment.objects.filter(
+            record_order_payment_record=object, customer=customer, by_credit=True
+        ).first()
+
+        if ccrtorp:
+            ccrtorp.amount_paid += amount_paid
+            ccrtorp.save()
+
+    def alter_crtrop_payment_status(self, object):
+        if object.amount_paid >= object.get_total_amount_to_pay:
+            object.payment_status == "paid"
+        elif object.amount_paid <= object.get_total_amount_to_pay:
+            object.payment_status == "partial"
+        else:
+            object.payment_status == "unpaid"
+        object.save()
+
+    def alter_crtorp_amount_paid(self, amount_paid, object):
+        object.amount_paid += amount_paid
+        object.save()
+
+    def get_crtorp(self, customer_regular_order_record):
+        return CustomerRegularTequilaOrderRecordPayment.objects.get(
+            payment_started=True,
+            customer_regular_tequila_order_record=customer_regular_order_record,
+        )
 
     def pay_by_credit(self, request, by_credit, amount_paid, object):
         customer = self.get_customer(request)
