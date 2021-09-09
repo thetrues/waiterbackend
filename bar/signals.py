@@ -20,9 +20,9 @@ def alter_regular_inventory_record(sender, instance, created, **kwargs) -> NoRet
     # sourcery skip: last-if-guard
     if created:
         id = instance.item.item.id
-        regular_item_record = RegularInventoryRecord.objects.get(
-            item__id=id
-        )
+        regular_item_record = RegularInventoryRecord.objects.filter(
+            item__id=id, stock_status="available"
+        ).first()
         regular_item_record.available_quantity -= int(instance.quantity)
         regular_item_record.save()
         if regular_item_record.available_quantity == 0:
