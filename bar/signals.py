@@ -1,7 +1,6 @@
 """
 This signal is for changing the item quantity inventory record.
 """
-from typing import NoReturn
 from bar.models import (
     CreditCustomerRegularTequilaOrderRecordPaymentHistory,
     RegularInventoryRecord,
@@ -12,6 +11,7 @@ from django.db.models.signals import post_save
 from django.db.models.aggregates import Sum
 from django.dispatch import receiver
 from django.utils import timezone
+from typing import NoReturn
 
 
 @receiver(post_save, sender=RegularOrderRecord)
