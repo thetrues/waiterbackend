@@ -33,8 +33,8 @@ class RegularInventoryRecordSerializer(serializers.ModelSerializer):
         return data
 
     class Meta:
-        model = RegularInventoryRecord
-        exclude = ["date_perished", "available_quantity"]
+        model: str = RegularInventoryRecord
+        exclude: List[str] = ["date_perished", "available_quantity"]
 
 
 class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
