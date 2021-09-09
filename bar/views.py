@@ -989,7 +989,7 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                     "customer_orders_number": payment.customer_regular_tequila_order_record.customer_orders_number,
                     "payment_status": payment.payment_status,
                     "payment_method": payment.payment_method,
-                    "payable_amount": float(payment.get_total_amount_to_pay()),
+                    "payable_amount": float(payment.get_total_amount_to_pay),
                     "paid_amount": float(payment.amount_paid),
                     "remained_amount": float(payment.get_remaining_amount),
                     "orders": payment.customer_regular_tequila_order_record.get_orders_detail,
