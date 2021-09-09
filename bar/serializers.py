@@ -62,7 +62,13 @@ class OrderRecordSerializer(serializers.ModelSerializer):
 class RegularTequilaOrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegularTequilaOrderRecord
-        exclude = ["order_number", "created_by", "date_created"]
+        exclude = [
+            "order_number",
+            "created_by",
+            "date_created",
+            "regular_items",
+            "tequila_items",
+        ]
 
 
 class CustomerOrderRecordSerializer(serializers.ModelSerializer):
