@@ -1,7 +1,6 @@
 from typing import List
 from django.db.models.aggregates import Sum
 from django.utils import timezone
-from user.models import User
 from bar.models import (
     BarPayrol,
     CreditCustomerRegularOrderRecordPaymentHistory,
