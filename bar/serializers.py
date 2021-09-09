@@ -33,7 +33,7 @@ class RegularInventoryRecordSerializer(serializers.ModelSerializer):
         return data
 
     class Meta:
-        model: str = RegularInventoryRecord
+        model = RegularInventoryRecord
         exclude: List[str] = ["date_perished", "available_quantity"]
 
 
@@ -49,20 +49,20 @@ class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
         return data
 
     class Meta:
-        model: str = TekilaInventoryRecord
+        model = TekilaInventoryRecord
         exclude: List[str] = ["date_perished", "available_quantity"]
 
 
 class OrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
-        model: str = RegularOrderRecord
+        model = RegularOrderRecord
         exclude: List[str] = ["order_number", "created_by", "date_created"]
 
 
 class RegularTequilaOrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegularTequilaOrderRecord
-        exclude = [
+        exclude: List[str] = [
             "order_number",
             "created_by",
             "date_created",
