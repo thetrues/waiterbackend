@@ -835,8 +835,46 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         methods=["POST"],
     )
     def remove_order(self, request, *args, **kwargs):
+        try:
+            object = RegularTequilaOrderRecord.objects.get(
+                id=request.data.get("customer_order_id")
+            )
+        except RegularTequilaOrderRecord.DoesNotExist:
+            return Response(
+                {"error": "Order selected does not exist"}, status.HTTP_200_OK
+            )
 
-        return Response({"message": "Order removed"}, status.HTTP_200_OK)
+        orders_to_remove = request.data.get("orders_to_remove")
+        try:
+            for order in orders_to_remove["regular_orders_to_remove"]:
+                regular_order = object.regular_items.get(id=order["item_id"])
+                quantity_to_remove = order["quantity"]
+                res_q = regular_order.quantity - quantity_to_remove
+                if res_q < 0:
+                    return Response(
+                        {"error": "This item does not have such a quantity."},
+                        status.HTTP_400_BAD_REQUEST,
+                    )
+                elif res_q == 0:
+                    object.regular_items.remove(regular_order)
+                    return Response(
+                        {"success": "Item removed."},
+                        status.HTTP_200_OK,
+                    )
+                else:
+                    regular_order.quantity = res_q
+                    regular_order.save()
+                    return Response(
+                        {"success": "Item removed."},
+                        status.HTTP_200_OK,
+                    )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        # return Response({"message": "Order removed"}, status.HTTP_200_OK)
 
     def add_regular_orders(self, request, orders, object):
         regular_orders: List[Dict] = orders["regular_orders"]
