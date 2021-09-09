@@ -860,6 +860,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     )
                 elif res_q == 0:
                     object.regular_items.remove(regular_order)
+                    self.change_amount_paid(object, regular_order, quantity_to_remove)
                     return Response(
                         {"success": "Item removed."},
                         status.HTTP_200_OK,
@@ -868,14 +869,9 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     regular_order.quantity = res_q
                     regular_order.save()
                     try:
-                        payment_made = CustomerRegularTequilaOrderRecordPayment.objects.get(
-                            customer_regular_tequila_order_record__regular_tequila_order_record=object,
-                            payment_started=True,
+                        self.change_amount_paid(
+                            object, regular_order, regular_order.quantity
                         )
-                        payment_made.amount_paid -= regular_order.get_price_of_items(
-                            regular_order.quantity
-                        )
-                        payment_made.save()
                     except:
                         pass
                     return Response(
@@ -887,6 +883,14 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 {"error": str(e)},
                 status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    def change_amount_paid(self, object, regular_order, roq):  # regular_order_quantity
+        payment_made = CustomerRegularTequilaOrderRecordPayment.objects.get(
+            customer_regular_tequila_order_record__regular_tequila_order_record=object,
+            payment_started=True,
+        )
+        payment_made.amount_paid -= regular_order.get_price_of_items(roq)
+        payment_made.save()
 
         # return Response({"message": "Order removed"}, status.HTTP_200_OK)
 
