@@ -31,6 +31,10 @@ class RegularInventoryRecord(BaseInventory):
     def estimate_profit(self) -> float:
         return self.estimate_sales() - self.purchasing_price
 
+    def get_price_of_items(self, item_quantity) -> float:
+
+        return float(item_quantity * self.selling_price_per_item)
+
     class Meta:
         ordering: List[str] = ["-id"]
         verbose_name: str = "Regular Inventory Record"

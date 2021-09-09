@@ -867,6 +867,16 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 else:
                     regular_order.quantity = res_q
                     regular_order.save()
+                    try:
+                        payment_made = CustomerRegularTequilaOrderRecordPayment.objects.get(
+                            customer_regular_tequila_order_record__regular_tequila_order_record=object,
+                            payment_started=True,
+                        )
+                        payment_made.amount_paid -= regular_order.get_price_of_items(
+                            regular_order.quantity
+                        )
+                    except:
+                        pass
                     return Response(
                         {"success": "Item removed."},
                         status.HTTP_200_OK,
