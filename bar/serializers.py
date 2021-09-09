@@ -92,7 +92,13 @@ class CustomerOrderRecordPaymentSerializer(serializers.ModelSerializer):
 class CustomerRegularTequilaOrderRecordPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerRegularTequilaOrderRecordPayment
-        exclude = ["payment_status", "date_paid", "date_updated", "created_by"]
+        exclude = [
+            "payment_status",
+            "date_paid",
+            "date_updated",
+            "created_by",
+            "customer_regular_tequila_order_record",
+        ]
 
 
 class BarPayrolSerializer(serializers.ModelSerializer):
