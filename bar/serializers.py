@@ -50,7 +50,7 @@ class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
 
     class Meta:
         model: str = TekilaInventoryRecord
-        exclude = ["date_perished", "available_quantity"]
+        exclude: List[str] = ["date_perished", "available_quantity"]
 
 
 class OrderRecordSerializer(serializers.ModelSerializer):
