@@ -55,7 +55,7 @@ class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
 
 class OrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RegularOrderRecord
+        model: str = RegularOrderRecord
         exclude = ["order_number", "created_by", "date_created"]
 
 
