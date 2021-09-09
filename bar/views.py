@@ -840,11 +840,11 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
     def add_regular_orders(self, request, orders, object):
         regular_orders: List[Dict] = orders["regular_orders"]
-        self.create_regular_orders(self, request, object, regular_orders)
+        self.create_regular_orders(request, object, regular_orders)
 
     def add_tequila_orders(self, request, orders, object):
         tequila_orders: List[Dict] = orders["tequila_orders"]
-        self.create_tequila_orders(self, request, object, tequila_orders)
+        self.create_tequila_orders(request, object, tequila_orders)
 
 
 class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
