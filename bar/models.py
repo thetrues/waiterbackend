@@ -492,13 +492,13 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
     def get_orders_detail(self) -> Dict:
 
         res: Dict = {}
-        res["order_total_price"] = self.regular_tequila_order_record.get_total_price()
+        res["total_price"] = self.regular_tequila_order_record.get_total_price()
 
         orders: List = []
         orders.append(self.regular_tequila_order_record.get_regular_items_details())
         orders.append(self.regular_tequila_order_record.get_tequila_items_details())
 
-        res["orders"] = orders
+        res["order_structures"] = orders
 
         return res
 
