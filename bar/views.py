@@ -801,6 +801,20 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             )
             object.regular_items.add(regular_order_object)
 
+    @action(
+        detail=False,
+        methods=["POST"],
+    )
+    def add_order(self, request, *args, **kwargs):
+        pass
+
+    @action(
+        detail=False,
+        methods=["POST"],
+    )
+    def remove_order(self, request, *args, **kwargs):
+        pass
+
 
 class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     queryset = CustomerRegularTequilaOrderRecord.objects.select_related(
