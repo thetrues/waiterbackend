@@ -1073,7 +1073,9 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
     def alter_ccrtrop_amount_paid(self, amount_paid, customer, object):
         ccrtorp = CreditCustomerRegularTequilaOrderRecordPayment.objects.filter(
-            record_order_payment_record=object, customer=customer, by_credit=True
+            record_order_payment_record=object,
+            customer=customer,
+            record_order_payment_record__by_credit=True,
         ).first()
 
         if ccrtorp:
