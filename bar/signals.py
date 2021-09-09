@@ -3,7 +3,6 @@ This signal is for changing the item quantity inventory record.
 """
 from typing import NoReturn
 from bar.models import (
-    CreditCustomerRegularOrderRecordPaymentHistory,
     CreditCustomerRegularTequilaOrderRecordPaymentHistory,
     RegularInventoryRecord,
     TekilaInventoryRecord,
