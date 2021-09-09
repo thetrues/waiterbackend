@@ -455,12 +455,12 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         if (
             total_payment
-            and total_payment >= self.regular_tequila_order_record.get_total_price
+            and total_payment >= self.regular_tequila_order_record.get_total_price()
         ):
             payment_status: str = "Fully Paid"
         elif (
             total_payment
-            and self.regular_tequila_order_record.get_total_price <= 0
+            and self.regular_tequila_order_record.get_total_price() <= 0
             or not total_payment
         ):
             payment_status: str = "Not Paid"
@@ -483,10 +483,10 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         if paid_amount:
             return (
-                self.regular_tequila_order_record.get_total_price
+                self.regular_tequila_order_record.get_total_price()
                 - self.get_paid_amount()
             )
-        return self.regular_tequila_order_record.get_total_price
+        return self.regular_tequila_order_record.get_total_price()
 
     @property
     def get_orders_detail(self) -> Dict:
