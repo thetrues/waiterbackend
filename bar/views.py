@@ -1084,11 +1084,11 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
     def alter_crtrop_payment_status(self, object):
         if object.amount_paid >= object.get_total_amount_to_pay:
-            object.payment_status == "paid"
+            object.payment_status = "paid"
         elif object.amount_paid <= object.get_total_amount_to_pay:
-            object.payment_status == "partial"
+            object.payment_status = "partial"
         else:
-            object.payment_status == "unpaid"
+            object.payment_status = "unpaid"
         object.save()
 
     def alter_crtorp_amount_paid(self, amount_paid, object):
