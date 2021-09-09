@@ -1094,7 +1094,7 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             self._change_customer_details(object, customer)
 
     def _change_customer_details(self, object, customer):
-        customer_regular_order_record = object.customer_order_record
+        customer_regular_order_record = object.customer_regular_tequila_order_record
         customer_regular_order_record.customer_name = customer.name
         customer_regular_order_record.customer_phone = customer.phone
         customer_regular_order_record.save()
