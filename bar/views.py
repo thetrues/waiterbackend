@@ -816,10 +816,19 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             )
 
         orders = request.data.get("orders")
-        self.add_regular_orders(orders, object)
-        self.add_tequila_orders(orders, object)
+        self.add_regular_orders(request, orders, object)
+        self.add_tequila_orders(request, orders, object)
+        self.change_payment_status(object)
 
         return Response({"message": "Order added"}, status.HTTP_200_OK)
+
+    def change_payment_status(self, object):
+        crtorp = CustomerRegularTequilaOrderRecordPayment.objects.get(
+            customer_regular_tequila_order_record__regular_tequila_order_record=object
+        )
+        if crtorp.payment_started:
+            crtorp.payment_status = "partial"
+            crtorp.save()
 
     @action(
         detail=False,
@@ -829,11 +838,13 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
         return Response({"message": "Order removed"}, status.HTTP_200_OK)
 
-    def add_regular_orders(self, orders, object):
-        pass
+    def add_regular_orders(self, request, orders, object):
+        regular_orders: List[Dict] = orders["regular_orders"]
+        self.create_regular_orders(self, request, object, regular_orders)
 
-    def add_tequila_orders(self, orders, object):
-        pass
+    def add_tequila_orders(self, request, orders, object):
+        tequila_orders: List[Dict] = orders["tequila_orders"]
+        self.create_tequila_orders(self, request, object, tequila_orders)
 
 
 class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
