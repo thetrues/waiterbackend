@@ -56,7 +56,7 @@ class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
 class OrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model: str = RegularOrderRecord
-        exclude = ["order_number", "created_by", "date_created"]
+        exclude: List[str] = ["order_number", "created_by", "date_created"]
 
 
 class RegularTequilaOrderRecordSerializer(serializers.ModelSerializer):
