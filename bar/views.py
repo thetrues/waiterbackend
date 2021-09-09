@@ -806,6 +806,18 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         methods=["POST"],
     )
     def add_order(self, request, *args, **kwargs):
+        try:
+            object = RegularTequilaOrderRecord.objects.get(
+                id=request.data.get("customer_order_id")
+            )
+        except RegularTequilaOrderRecord.DoesNotExist:
+            return Response(
+                {"error": "Order selected does not exist"}, status.HTTP_200_OK
+            )
+
+        orders = request.data.get("orders")
+        self.add_regular_orders(orders, object)
+        self.add_tequila_orders(orders, object)
 
         return Response({"message": "Order added"}, status.HTTP_200_OK)
 
@@ -816,6 +828,12 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     def remove_order(self, request, *args, **kwargs):
 
         return Response({"message": "Order removed"}, status.HTTP_200_OK)
+
+    def add_regular_orders(self, orders, object):
+        pass
+
+    def add_tequila_orders(self, orders, object):
+        pass
 
 
 class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
