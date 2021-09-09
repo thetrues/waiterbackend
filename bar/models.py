@@ -479,6 +479,7 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
                 total=Sum("amount_paid")
             )["total"]
         )
+        # if paid_amount and paid_amount
 
         return paid_amount or 0.0
 

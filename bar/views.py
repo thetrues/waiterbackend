@@ -838,7 +838,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         try:
             object = RegularTequilaOrderRecord.objects.get(
                 id=request.data.get("customer_order_id")
-            )
+            )   
         except RegularTequilaOrderRecord.DoesNotExist:
             return Response(
                 {"error": "Order selected does not exist"}, status.HTTP_200_OK
@@ -870,7 +870,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     regular_order.save()
                     try:
                         self.change_amount_paid(
-                            object, regular_order, regular_order.quantity
+                            object, regular_order, res_q
                         )
                     except:
                         pass
