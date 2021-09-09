@@ -852,7 +852,10 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 res_q = regular_order.quantity - quantity_to_remove
                 if res_q < 0:
                     return Response(
-                        {"error": "This item does not have such a quantity."},
+                        {
+                            "error": "There is only %d %s"
+                            % (regular_order.quantity, regular_order.item.item.name)
+                        },
                         status.HTTP_400_BAD_REQUEST,
                     )
                 elif res_q == 0:
