@@ -806,14 +806,16 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         methods=["POST"],
     )
     def add_order(self, request, *args, **kwargs):
-        pass
+
+        return Response({"message": "Order added"}, status.HTTP_200_OK)
 
     @action(
         detail=False,
         methods=["POST"],
     )
     def remove_order(self, request, *args, **kwargs):
-        pass
+
+        return Response({"message": "Order removed"}, status.HTTP_200_OK)
 
 
 class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
