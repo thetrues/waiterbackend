@@ -1,3 +1,4 @@
+from typing import List
 from django.db.models.aggregates import Sum
 from django.utils import timezone
 from user.models import User
@@ -92,7 +93,7 @@ class CustomerOrderRecordPaymentSerializer(serializers.ModelSerializer):
 class CustomerRegularTequilaOrderRecordPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerRegularTequilaOrderRecordPayment
-        exclude = [
+        exclude: List[str] = [
             "payment_status",
             "date_paid",
             "date_updated",
