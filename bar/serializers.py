@@ -1,24 +1,24 @@
-from typing import List
 from django.db.models.aggregates import Sum
-from django.utils import timezone
 from bar.models import (
-    BarPayrol,
-    CreditCustomerRegularOrderRecordPaymentHistory,
     CreditCustomerRegularTequilaOrderRecordPaymentHistory,
+    CreditCustomerRegularOrderRecordPaymentHistory,
     CreditCustomerTequilaOrderRecordPaymentHistory,
-    CustomerRegularOrderRecord,
+    CustomerRegularTequilaOrderRecordPayment,
     CustomerRegularOrderRecordPayment,
     CustomerRegularTequilaOrderRecord,
-    CustomerRegularTequilaOrderRecordPayment,
-    CustomerTequilaOrderRecord,
     CustomerTequilaOrderRecordPayment,
-    RegularOrderRecord,
-    RegularInventoryRecord,
+    CustomerRegularOrderRecord,
+    CustomerTequilaOrderRecord,
     RegularTequilaOrderRecord,
+    RegularInventoryRecord,
     TekilaInventoryRecord,
+    RegularOrderRecord,
     TequilaOrderRecord,
+    BarPayrol,
 )
 from rest_framework import serializers
+from django.utils import timezone
+from typing import List 
 
 
 class RegularInventoryRecordSerializer(serializers.ModelSerializer):
