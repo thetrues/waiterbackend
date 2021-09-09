@@ -542,7 +542,7 @@ class CreditCustomerRegularTequilaOrderRecordPayment(BaseCreditCustomerPayment):
 
     def get_credit_payable_amount(self) -> float:
         dish_total_price: float = (
-            self.record_order_payment_record.customer_regular_tequila_order_record.regular_tequila_order_record.get_total_price
+            self.record_order_payment_record.customer_regular_tequila_order_record.regular_tequila_order_record.get_total_price()
         )
 
         return dish_total_price - self.amount_paid
