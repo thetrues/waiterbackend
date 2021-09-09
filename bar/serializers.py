@@ -80,7 +80,7 @@ class CustomerOrderRecordSerializer(serializers.ModelSerializer):
 class CustomerRegularTequilaOrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerRegularTequilaOrderRecord
-        fields = ["customer_name", "customer_phone"]
+        fields: List[str] = ["customer_name", "customer_phone"]
 
 
 class CustomerOrderRecordPaymentSerializer(serializers.ModelSerializer):
