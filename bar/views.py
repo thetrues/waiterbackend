@@ -958,14 +958,14 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         response: Dict = {
             "id": instance.id,
-            "customer_name": instance.customer_order_record.customer_name,
-            "customer_phone": instance.customer_order_record.customer_phone,
-            "customer_orders_number": instance.customer_order_record.customer_orders_number,
+            "customer_name": instance.customer_regular_tequila_order_record.customer_name,
+            "customer_phone": instance.customer_regular_tequila_order_record.customer_phone,
+            "customer_orders_number": instance.customer_regular_tequila_order_record.customer_orders_number,
             "payment_status": instance.payment_status,
             "payment_method": instance.payment_method,
             "amount_paid": float(instance.amount_paid),
             "amount_remaining": float(instance.get_remaining_amount),
-            "orders": instance.customer_order_record.get_orders_detail,
+            "orders": instance.customer_regular_tequila_order_record.get_orders_detail,
             "created_by": instance.created_by.username,
             "date_paid": str(instance.date_paid).split(" ")[0],
             "time_paid": str(instance.date_paid).split(" ")[1].split(".")[0],
