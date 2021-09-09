@@ -934,7 +934,7 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     "customer_name": _.customer_name,
                     "customer_phone": _.customer_phone,
                     "dish_number": _.customer_orders_number,
-                    "payable_amount": _.regular_tequila_order_record.get_total_price,
+                    "payable_amount": _.regular_tequila_order_record.get_total_price(),
                     "paid_amount": _.get_paid_amount(),
                     "remained_amount": _.get_remained_amount(),
                     "payment_status": _.get_payment_status(),
