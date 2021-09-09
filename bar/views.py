@@ -875,6 +875,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                         payment_made.amount_paid -= regular_order.get_price_of_items(
                             regular_order.quantity
                         )
+                        payment_made.save()
                     except:
                         pass
                     return Response(
