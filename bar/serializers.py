@@ -163,13 +163,13 @@ class CreditCustomerRegularTequilaOrderRecordPaymentHistorySerializer(
 class TequilaOrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = TequilaOrderRecord
-        exclude = ["order_number", "created_by", "date_created"]
+        exclude: List[str] = ["order_number", "created_by", "date_created"]
 
 
 class TequilaCustomerOrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerTequilaOrderRecord
-        fields = ["customer_name", "customer_phone"]
+        fields: List[str] = ["customer_name", "customer_phone"]
 
 
 class TequilaCustomerOrderRecordPaymentSerializer(serializers.ModelSerializer):
