@@ -1038,7 +1038,7 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                 object.payment_status == "unpaid"
             object.save()
 
-            return Response(status.HTTP_200_OK)
+            return {"message": "Success"}
 
         except CustomerRegularTequilaOrderRecordPayment.DoesNotExist:
             pass
