@@ -1733,11 +1733,11 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             object.amount_paid = object.amount_paid + amount_paid
             object.save()
             if object.amount_paid >= object.get_total_amount_to_pay:
-                object.payment_status == "paid"
+                object.payment_status = "paid"
             elif object.amount_paid <= object.get_total_amount_to_pay:
-                object.payment_status == "partial"
+                object.payment_status = "partial"
             else:
-                object.payment_status == "unpaid"
+                object.payment_status = "unpaid"
             object.save()
 
             return Response(status.HTTP_200_OK)
