@@ -1138,7 +1138,7 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         """This is the amount of money customer wants to pay in advance"""
 
         return (
-            customer_regular_order_record.regular_tequila_order_record.get_total_price
+            customer_regular_order_record.regular_tequila_order_record.get_total_price()
             - amount_paid
         )
 

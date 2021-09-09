@@ -217,22 +217,16 @@ class CreditCustomer(models.Model):
         restaurant_today_spends = self.creditcustomerdishpayment_set.filter(
             date_created=timezone.localdate()
         )
-        bar_regular_today_spends = (
-            self.creditcustomerregularorderrecordpayment_set.filter(
+        bar_today_spends = (
+            self.creditcustomerregulartequilaorderrecordpayment_set.filter(
                 date_created=timezone.localdate()
             )
         )
-        bar_tequila_today_spends = (
-            self.creditcustomertequilaorderrecordpayment_set.filter(
-                date_created=timezone.localdate()
-            )
-        )
+
         total: float = 0.0
         total += self.get_restaurant_total(restaurant_today_spends)
 
-        total += self.get_bar_regular_total(bar_regular_today_spends)
-
-        total += self.get_bar_tequila_total(bar_tequila_today_spends)
+        total += self.get_bar_total(bar_today_spends)
 
         total_ = self.credit_limit - total
 
@@ -241,20 +235,12 @@ class CreditCustomer(models.Model):
 
         return total_
 
-    def get_bar_tequila_total(self, bar_tequila_today_spends) -> float:
-        # sourcery skip: class-extract-method
+    def get_bar_total(self, bar_today_spends) -> float:
         bar_teq_total: float = 0.0
-        for k in bar_tequila_today_spends:
+        for k in bar_today_spends:
             bar_teq_total += k.get_credit_payable_amount()
 
         return bar_teq_total
-
-    def get_bar_regular_total(self, bar_regular_today_spends) -> float:
-        bar_reg_total: float = 0.0
-        for j in bar_regular_today_spends:
-            bar_reg_total += j.get_credit_payable_amount()
-
-        return bar_reg_total
 
     def get_restaurant_total(self, restaurant_today_spends) -> float:
         rest_total: float = 0.0
