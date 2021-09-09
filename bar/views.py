@@ -760,7 +760,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         return {"message": "Order created."}
 
     def create_tequila_orders(self, request, object):
-        for tequila_order in request.data.get("tequila_items"):
+        tequila_items_list = request.data.get("tequila_items")
+        for tequila_order in tequila_items_list:
             tequila_order_object = TequilaOrderRecord.objects.create(
                 item=TekilaInventoryRecord.objects.get(id=tequila_order["item_id"]),
                 quantity=tequila_order["shots_quantity"],
@@ -773,7 +774,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             object.tequila_items.add(tequila_order_object)
 
     def create_regular_orders(self, request, object):
-        for regular_order in request.data.get("regular_items"):
+        regular_items_list = request.data.get("regular_items")
+        for regular_order in regular_items_list:
             regular_order_object = RegularOrderRecord.objects.create(
                 item=RegularInventoryRecord.objects.get(id=regular_order["item_id"]),
                 quantity=regular_order["quantity"],
