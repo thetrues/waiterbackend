@@ -49,7 +49,7 @@ class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
         return data
 
     class Meta:
-        model = TekilaInventoryRecord
+        model: str = TekilaInventoryRecord
         exclude = ["date_perished", "available_quantity"]
 
 
