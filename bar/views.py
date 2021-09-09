@@ -752,16 +752,31 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             created_by=request.user,
             date_created=timezone.now(),
         )
+        orders = request.data.get("orders")
 
-        self.create_regular_orders(request, object)
-        self.create_tequila_orders(request, object)
+        self.create_regular_orders(request, object, orders["regular_orders"])
+        self.create_tequila_orders(request, object, orders["tequila_orders"])
         object.save()
+
+        self.create_customer_order(request, object)
 
         return {"message": "Order created."}
 
-    def create_tequila_orders(self, request, object):
-        tequila_items_list = request.data.get("tequila_items")
-        for tequila_order in tequila_items_list:
+    def create_customer_order(self, request, object):
+        CustomerRegularTequilaOrderRecord.objects.create(
+            customer_name=request.data.get("customer_name"),
+            customer_phone=request.data.get("customer_phone"),
+            regular_tequila_order_record=object,
+            customer_orders_number=str(
+                orders_number_generator(
+                    CustomerRegularTequilaOrderRecord, "customer_orders_number"
+                )
+            ),
+            created_by=request.user,
+        )
+
+    def create_tequila_orders(self, request, object, tequila_orders):
+        for tequila_order in tequila_orders:
             tequila_order_object = TequilaOrderRecord.objects.create(
                 item=TekilaInventoryRecord.objects.get(id=tequila_order["item_id"]),
                 quantity=tequila_order["shots_quantity"],
@@ -773,9 +788,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             )
             object.tequila_items.add(tequila_order_object)
 
-    def create_regular_orders(self, request, object):
-        regular_items_list = request.data.get("regular_items")
-        for regular_order in regular_items_list:
+    def create_regular_orders(self, request, object, regular_orders):
+        for regular_order in regular_orders:
             regular_order_object = RegularOrderRecord.objects.create(
                 item=RegularInventoryRecord.objects.get(id=regular_order["item_id"]),
                 quantity=regular_order["quantity"],
