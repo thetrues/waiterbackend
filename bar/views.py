@@ -8,7 +8,11 @@ from rest_framework import status, viewsets
 from django.db.models.aggregates import Sum
 from bar.serializers import (
     CreditCustomerRegularOrderRecordPaymentHistorySerializer,
+    CreditCustomerRegularTequilaOrderRecordPaymentHistorySerializer,
     CreditCustomerTequilaOrderRecordPaymentHistorySerializer,
+    CustomerRegularTequilaOrderRecordPaymentSerializer,
+    CustomerRegularTequilaOrderRecordSerializer,
+    RegularTequilaOrderRecordSerializer,
     TequilaCustomerOrderRecordPaymentSerializer,
     CustomerOrderRecordPaymentSerializer,
     TequilaCustomerOrderRecordSerializer,
@@ -22,14 +26,19 @@ from bar.serializers import (
 from bar.models import (
     CreditCustomerRegularOrderRecordPayment,
     CreditCustomerRegularOrderRecordPaymentHistory,
+    CreditCustomerRegularTequilaOrderRecordPayment,
+    CreditCustomerRegularTequilaOrderRecordPaymentHistory,
     CreditCustomerTequilaOrderRecordPayment,
     CreditCustomerTequilaOrderRecordPaymentHistory,
     CustomerRegularOrderRecordPayment,
     CustomerRegularOrderRecordPayment,
+    CustomerRegularTequilaOrderRecord,
+    CustomerRegularTequilaOrderRecordPayment,
     CustomerTequilaOrderRecordPayment,
     CustomerRegularOrderRecord,
     CustomerTequilaOrderRecord,
     RegularInventoryRecord,
+    RegularTequilaOrderRecord,
     TekilaInventoryRecord,
     RegularOrderRecord,
     TequilaOrderRecord,
@@ -326,7 +335,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             "time_created": str(object.date_created).split(" ")[1].split(".")[0],
         }
 
-    def add_orders(self, request, object) -> NoReturn:
+    def add_orders(self, request, object):
         for _ in request.data.get("orders"):
             order = RegularOrderRecord.objects.create(
                 item=RegularInventoryRecord.objects.get(id=int(_["menu_id"])),
@@ -564,7 +573,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                 record_order_payment_record=object,
                 customer=customer,
                 amount_paid=amount_paid,
-                date_created=timezone.localdate()
+                date_created=timezone.localdate(),
             )
             self._change_customer_details(object, customer)
 
@@ -681,6 +690,551 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(res, status.HTTP_200_OK)
 
 
+#### Sales Changes Starts
+
+
+class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
+    queryset = RegularTequilaOrderRecord.objects.select_related(
+        "item", "item__item", "created_by"
+    ).prefetch_related("regular_items", "tequila_items")
+    serializer_class = RegularTequilaOrderRecordSerializer
+
+    def retrieve(self, request, pk=None):
+        instance = self.get_object()
+        return Response(
+            {
+                "id": instance.id,
+                "order_number": instance.order_number,
+                "total_price": instance.get_total_price(),
+                "regular_orders": instance.get_regular_items_details(),
+                "tequila_orders": instance.get_tequila_items_details(),
+                "created_by": instance.created_by.username,
+                "date_created": str(instance.date_created).split(" ")[0],
+                "time_created": str(instance.date_created).split(" ")[1].split(".")[0],
+            },
+            status.HTTP_200_OK,
+        )
+
+    def list(self, request, *args, **kwargs):
+        response: List[Dict] = []
+        [
+            response.append(
+                {
+                    "id": record.id,
+                    "order_number": record.order_number,
+                    "total_price": record.get_total_price(),
+                    "regular_orders": record.get_regular_items_details(),
+                    "tequila_orders": record.get_tequila_items_details(),
+                    "created_by": record.created_by.username,
+                    "date_created": str(record.date_created).split(" ")[0],
+                    "time_created": str(record.date_created)
+                    .split(" ")[1]
+                    .split(".")[0],
+                }
+            )
+            for record in self.queryset
+        ]
+        return Response(response, status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = self.perform_create(request)
+
+        return Response(data, status.HTTP_201_CREATED)
+
+    def perform_create(self, request):
+        object = RegularTequilaOrderRecord.objects.create(
+            order_number=str(
+                orders_number_generator(RegularTequilaOrderRecord, "order_number")
+            ),
+            created_by=request.user,
+            date_created=timezone.now(),
+        )
+
+        self.create_regular_orders(request, object)
+        self.create_tequila_orders(request, object)
+        object.save()
+
+        return {"message": "Order created."}
+
+    def create_tequila_orders(self, request, object):
+        for tequila_order in request.data.get("tequila_items"):
+            tequila_order_object = TequilaOrderRecord.objects.create(
+                item=TekilaInventoryRecord.objects.get(id=tequila_order["item_id"]),
+                quantity=tequila_order["shots_quantity"],
+                order_number=str(
+                    orders_number_generator(TequilaOrderRecord, "order_number")
+                ),
+                created_by=request.user,
+                date_created=timezone.now(),
+            )
+            object.tequila_items.add(tequila_order_object)
+
+    def create_regular_orders(self, request, object):
+        for regular_order in request.data.get("regular_items"):
+            regular_order_object = RegularOrderRecord.objects.create(
+                item=RegularInventoryRecord.objects.get(id=regular_order["item_id"]),
+                quantity=regular_order["quantity"],
+                order_number=str(
+                    orders_number_generator(RegularOrderRecord, "order_number")
+                ),
+                created_by=request.user,
+                date_created=timezone.now(),
+            )
+            object.regular_items.add(regular_order_object)
+
+
+class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
+    queryset = CustomerRegularTequilaOrderRecord.objects.select_related(
+        "created_by",
+        "regular_tequila_order_record",
+        "regular_tequila_order_record__created_by",
+    ).prefetch_related(
+        "regular_tequila_order_record__regular_items",
+        "regular_tequila_order_record__tequila_items",
+    )
+
+    serializer_class = CustomerRegularTequilaOrderRecordSerializer
+
+    def retrieve(self, request, pk=None) -> Dict:
+        instance = self.get_object()
+        response: Dict = {
+            "id": instance.id,
+            "customer_name": instance.customer_name,
+            "customer_phone": instance.customer_phone,
+            "dish_number": instance.customer_orders_number,
+            "payable_amount": instance.regular_tequila_order_record.get_total_price,
+            "paid_amount": instance.get_paid_amount(),
+            "remained_amount": instance.get_remained_amount(),
+            "payment_status": instance.get_payment_status(),
+            "orders": instance.get_orders_detail,
+        }
+        return Response(response, status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs) -> Dict:
+        try:
+            data = self.perform_create(request)
+
+            return Response(data, status.HTTP_201_CREATED)
+
+        except Exception as e:
+
+            return Response({"message": str(e)}, status.HTTP_400_BAD_REQUEST)
+
+    def perform_create(self, request) -> Dict:
+        object = CustomerRegularTequilaOrderRecord.objects.create(
+            customer_name=request.data.get("customer_name"),
+            customer_phone=request.data.get("customer_phone"),
+            regular_tequila_order_record=RegularTequilaOrderRecord.objects.get(
+                id=request.data.get("order_id")
+            ),
+            customer_orders_number=str(
+                orders_number_generator(
+                    CustomerRegularTequilaOrderRecord, "customer_orders_number"
+                )
+            ),
+            created_by=request.user,
+        )
+
+        return {
+            "customer_name": object.customer_name,
+            "customer_phone": object.customer_phone,
+            "customer_orders_number": object.customer_orders_number,
+            "orders": object.get_orders_detail,
+            "created_by": object.created_by.username,
+            "date_created": str(object.date_created).split(" ")[0],
+            "time_created": str(object.date_created).split(" ")[1].split(".")[0],
+        }
+
+    def list(self, request, *args, **kwargs) -> List[Dict]:
+
+        return Response(self.get_list(self.queryset), status.HTTP_200_OK)
+
+    def get_list(self, objects):
+        return self.appending(objects)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def search(self, request, *args, **kwargs):
+        try:
+            customer_name = request.data["customer_name"]
+            results = CustomerRegularTequilaOrderRecord.objects.filter(
+                customer_name=customer_name
+            )
+            return Response(self.get_list(results), status.HTTP_200_OK)
+        except KeyError:
+            return Response(
+                {"message": "Field error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_today_orders(self, request, *args, **kwargs):
+        today_date = timezone.localdate()
+        qs = self.queryset.filter(date_created__date=today_date)
+        response = self.append_orders(qs)
+
+        return Response(response, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_orders_by_dates(self, request, *args, **kwargs):
+        try:
+            # Convert dates strings to dates objects
+            from_date, to_date = get_date_objects(
+                request.data["from_date"], request.data["to_date"]
+            )
+            # Validation: Check if the from_date is less than or equal to the to_date otherwise raise an error
+            if validate_dates(from_date, to_date):
+                return Response(
+                    {"message": "from_date must be less than or equal to to_date"},
+                    status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+            qs = self.queryset.filter(date_created__date__range=[from_date, to_date])
+            response = self.append_orders(qs)
+            return Response(response, status.HTTP_200_OK)
+        except KeyError:
+            return Response(
+                {"message": "Invalid dates."}, status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def append_orders(self, qs):
+        return self.appending(qs)
+
+    def appending(self, objects):
+        res: List[Dict] = []
+        [
+            res.append(
+                {
+                    "id": _.id,
+                    "customer_name": _.customer_name,
+                    "customer_phone": _.customer_phone,
+                    "dish_number": _.customer_orders_number,
+                    "payable_amount": _.regular_tequila_order_record.get_total_price,
+                    "paid_amount": _.get_paid_amount(),
+                    "remained_amount": _.get_remained_amount(),
+                    "payment_status": _.get_payment_status(),
+                    "orders": _.get_orders_detail,
+                }
+            )
+            for _ in objects
+        ]
+
+        return res
+
+
+class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
+    queryset = CustomerRegularTequilaOrderRecordPayment.objects.select_related(
+        "customer_regular_tequila_order_record", "created_by"
+    )
+    serializer_class = CustomerRegularTequilaOrderRecordPaymentSerializer
+    today = timezone.localdate()
+
+    def retrieve(self, request, pk=None):
+        instance = self.get_object()
+        response: Dict = {
+            "id": instance.id,
+            "customer_name": instance.customer_order_record.customer_name,
+            "customer_phone": instance.customer_order_record.customer_phone,
+            "customer_orders_number": instance.customer_order_record.customer_orders_number,
+            "payment_status": instance.payment_status,
+            "payment_method": instance.payment_method,
+            "amount_paid": float(instance.amount_paid),
+            "amount_remaining": float(instance.get_remaining_amount),
+            "orders": instance.customer_order_record.get_orders_detail,
+            "created_by": instance.created_by.username,
+            "date_paid": str(instance.date_paid).split(" ")[0],
+            "time_paid": str(instance.date_paid).split(" ")[1].split(".")[0],
+        }
+        return Response(response, status.HTTP_200_OK)
+
+    def list(self, request, *args, **kwargs):
+        response: List[Dict] = self.get_list(self.queryset)
+
+        return Response(response, status.HTTP_200_OK)
+
+    def get_list(self, objects):
+        response: List[Dict] = []
+        [
+            response.append(
+                {
+                    "id": payment.id,
+                    "by_credit": payment.by_credit,
+                    "customer_name": payment.customer_regular_tequila_order_record.customer_name,
+                    "customer_phone": payment.customer_regular_tequila_order_record.customer_phone,
+                    "customer_orders_number": payment.customer_regular_tequila_order_record.customer_orders_number,
+                    "payment_status": payment.payment_status,
+                    "payment_method": payment.payment_method,
+                    "payable_amount": float(payment.get_total_amount_to_pay),
+                    "paid_amount": float(payment.amount_paid),
+                    "remained_amount": float(payment.get_remaining_amount),
+                    "orders": payment.customer_regular_tequila_order_record.get_orders_detail,
+                    "created_by": payment.created_by.username,
+                    "date_paid": str(payment.date_paid).split(" ")[0],
+                    "time_paid": str(payment.date_paid).split(" ")[1].split(".")[0],
+                }
+            )
+            for payment in objects
+        ]
+
+        return response
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response({"message": serializer.errors}, status.HTTP_400_BAD_REQUEST)
+
+        data = self.perform_create(request)
+
+        return Response(data, status.HTTP_201_CREATED)
+
+    def perform_create(self, request):
+        by_credit = request.data.get("by_credit")
+        amount_paid = float(request.data.get("amount_paid"))
+        customer = self.get_customer(request)
+        customer_regular_order_record = CustomerRegularTequilaOrderRecord.objects.get(
+            id=request.data.get("customer_order_record")
+        )
+
+        if customer_regular_order_record.get_remained_amount() <= 0:
+            raise ValidationError("Order is already paid.")
+
+        try:
+            object = CustomerRegularTequilaOrderRecordPayment.objects.get(
+                payment_started=True,
+                customer_regular_tequila_order_record=customer_regular_order_record,
+            )
+            object.amount_paid += amount_paid
+            object.save()
+            if object.amount_paid >= object.get_total_amount_to_pay:
+                object.payment_status == "paid"
+            elif object.amount_paid <= object.get_total_amount_to_pay:
+                object.payment_status == "partial"
+            else:
+                object.payment_status == "unpaid"
+            object.save()
+
+            return Response(status.HTTP_200_OK)
+
+        except CustomerRegularTequilaOrderRecordPayment.DoesNotExist:
+            pass
+
+        if (
+            by_credit
+            and self.get_advance_amount(customer_regular_order_record, amount_paid)
+            > customer.credit_limit
+        ):
+            raise ValidationError(
+                "Can't perform this operation. Customer's credit is not enough."
+            )
+
+        elif by_credit and self.get_advance_amount(
+            customer_regular_order_record, amount_paid
+        ) > self.get_remained_credit_for_today(customer):
+            raise ValidationError(
+                "Can't perform this operation. Remained credit for {} is {}".format(
+                    customer.name, self.get_remained_credit_for_today(customer)
+                )
+            )
+
+        object = CustomerRegularTequilaOrderRecordPayment.objects.create(
+            customer_regular_tequila_order_record=customer_regular_order_record,
+            amount_paid=amount_paid,
+            created_by=request.user,
+            payment_started=True,
+        )
+
+        self.pay_by_credit(request, by_credit, amount_paid, object)
+        self.save_payment_status(request, object)
+
+        object.save()
+        return {
+            "customer_order_record": str(object),
+            "payment_status": object.payment_status,
+            "amount_paid": object.amount_paid,
+            "date_paid": object.date_paid,
+            "created_by": str(object.created_by),
+        }
+
+    def pay_by_credit(self, request, by_credit, amount_paid, object):
+        customer = self.get_customer(request)
+        if by_credit and customer:
+            object.by_credit = True
+            object.save()
+            CreditCustomerRegularTequilaOrderRecordPayment.objects.create(
+                record_order_payment_record=object,
+                customer=customer,
+                amount_paid=amount_paid,
+                date_created=timezone.localdate(),
+            )
+            self._change_customer_details(object, customer)
+
+    def _change_customer_details(self, object, customer):
+        customer_regular_order_record = object.customer_order_record
+        customer_regular_order_record.customer_name = customer.name
+        customer_regular_order_record.customer_phone = customer.phone
+        customer_regular_order_record.save()
+
+    def save_payment_status(self, request, object):
+        amount_paid = float(request.data.get("amount_paid"))
+        if amount_paid == 0:
+            object.payment_status = "unpaid"
+        elif amount_paid >= object.get_total_amount_to_pay:
+            object.payment_status = "paid"
+        else:
+            object.payment_status = "partial"
+
+    def get_customer(self, request):
+        try:
+            customer = CreditCustomer.objects.get(id=request.data.get("customer_id"))
+        except CreditCustomer.DoesNotExist:
+            customer = None
+        return customer
+
+    def get_remained_credit_for_today(self, customer) -> float:
+
+        return customer.credit_limit - self.get_today_spend(
+            customer
+        )  # 20,000 - 15,000 = 5,000
+
+    def get_today_spend(self, customer) -> float:
+        total_amount: float = 0.0
+        qs = self.get_credit_qs(customer)
+        for q in qs:
+            total_amount += q.get_credit_payable_amount()
+
+        return total_amount  # 15,000.0
+
+    def get_credit_qs(self, customer):
+        return CreditCustomerRegularTequilaOrderRecordPayment.objects.filter(
+            customer=customer, date_created=self.today
+        )
+
+    def get_advance_amount(self, customer_regular_order_record, amount_paid) -> float:
+        """This is the amount of money customer wants to pay in advance"""
+
+        return (
+            customer_regular_order_record.regular_tequila_order_record.get_total_price
+            - amount_paid
+        )
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_all_paid(self, request, *args, **kwargs):
+        res: List[Dict] = []
+        filtered_qs = self.queryset.filter(payment_status="paid")
+        [
+            res.append(
+                {
+                    "customer_name": qs.customer_regular_tequila_order_record.customer_name,
+                    "customer_phone": qs.customer_regular_tequila_order_record.customer_phone,
+                    "customer_orders_number": qs.customer_regular_tequila_order_record.customer_orders_number,
+                    "paid_amount": float(qs.amount_paid),
+                    "date_paid": str(qs.date_paid).split(" ")[0],
+                    "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
+                }
+            )
+            for qs in filtered_qs
+        ]
+        return Response(res, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_all_partial(self, request, *args, **kwargs):
+        res: List[Dict] = []
+        filtered_qs = self.queryset.filter(payment_status="partial")
+        [
+            res.append(
+                {
+                    "customer_name": qs.customer_regular_tequila_order_record.customer_name,
+                    "customer_phone": qs.customer_regular_tequila_order_record.customer_phone,
+                    "customer_orders_number": qs.customer_regular_tequila_order_record.customer_orders_number,
+                    "payable_amount": qs.get_total_amount_to_pay,
+                    "paid_amount": qs.amount_paid,
+                    "remaining_amount": qs.get_remaining_amount,
+                    "date_paid": str(qs.date_paid).split(" ")[0],
+                    "time_paid": str(qs.date_paid).split(" ")[1].split(".")[0],
+                }
+            )
+            for qs in filtered_qs
+        ]
+        return Response(res, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+    )
+    def get_all_unpaid(self, request, *args, **kwargs):
+        res: List[Dict] = []
+        filtered_qs = self.queryset.filter(payment_status="unpaid")
+        [
+            res.append(
+                {
+                    "customer_name": qs.customer_regular_tequila_order_record.customer_name,
+                    "customer_phone": qs.customer_regular_tequila_order_record.customer_phone,
+                    "customer_orders_number": qs.customer_regular_tequila_order_record.customer_orders_number,
+                    "payable_amount": qs.get_total_amount_to_pay,
+                }
+            )
+            for qs in filtered_qs
+        ]
+        return Response(res, status.HTTP_200_OK)
+
+
+class CreditCustomerRegularTequilaOrderRecordPaymentHistoryViewSet(
+    viewsets.ModelViewSet
+):
+    queryset = CreditCustomerRegularTequilaOrderRecordPaymentHistory.objects.select_related(
+        "credit_customer_payment__record_order_payment_record__customer_regular_tequila_order_record"
+    )
+    serializer_class = CreditCustomerRegularTequilaOrderRecordPaymentHistorySerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"message": f"{serializer.errors}"}, status.HTTP_400_BAD_REQUEST
+            )
+        credit_customer_payment = request.data.get("credit_customer_payment")
+        try:
+            object = CreditCustomerRegularTequilaOrderRecordPayment.objects.get(
+                id=credit_customer_payment
+            )
+            if (
+                object.record_order_payment_record.payment_status == "paid"
+                or object.record_order_payment_record.by_credit is False
+            ):
+                return Response(
+                    {
+                        "message": "This order was not taken by credit or is already paid."
+                    },
+                    status.HTTP_400_BAD_REQUEST,
+                )
+            serializer.save()
+            return Response(
+                {"message": "Operation succeed"},
+                status.HTTP_201_CREATED,
+            )
+        except CreditCustomerRegularTequilaOrderRecordPayment.DoesNotExist:
+            return Response(
+                {"message": "Customer Order Chosen does not exists."},
+                status.HTTP_400_BAD_REQUEST,
+            )
+
+
+#### Sales Changes Ends
 class CreditCustomerRegularOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSet):
     queryset = CreditCustomerRegularOrderRecordPaymentHistory.objects.select_related(
         "credit_customer_payment__record_order_payment_record__customer_order_record"
@@ -1197,7 +1751,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             CreditCustomerTequilaOrderRecordPayment.objects.create(
                 record_order_payment_record=object,
                 customer=customer,
-                date_created=timezone.localdate()
+                date_created=timezone.localdate(),
             )
             self._change_customer_details(object, customer)
 

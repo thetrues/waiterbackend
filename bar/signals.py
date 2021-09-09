@@ -4,6 +4,7 @@ This signal is for changing the item quantity inventory record.
 from typing import NoReturn
 from bar.models import (
     CreditCustomerRegularOrderRecordPaymentHistory,
+    CreditCustomerRegularTequilaOrderRecordPaymentHistory,
     RegularInventoryRecord,
     TekilaInventoryRecord,
     RegularOrderRecord,
@@ -52,7 +53,7 @@ def set_regular_available_quantity(sender, instance, created, **kwargs) -> NoRet
         instance.save()
 
 
-@receiver(post_save, sender=CreditCustomerRegularOrderRecordPaymentHistory)
+@receiver(post_save, sender=CreditCustomerRegularTequilaOrderRecordPaymentHistory)
 def update_payment_amounts(sender, instance, created, **kwargs) -> NoReturn:
     if created:
         obj = instance.credit_customer_payment
@@ -64,7 +65,7 @@ def update_payment_amounts(sender, instance, created, **kwargs) -> NoReturn:
         obj2.date_updated = timezone.now()
         obj2.save()
 
-        total = CreditCustomerRegularOrderRecordPaymentHistory.objects.filter(
+        total = CreditCustomerRegularTequilaOrderRecordPaymentHistory.objects.filter(
             credit_customer_payment=instance.credit_customer_payment
         ).aggregate(total=Sum("amount_paid"))["total"]
 

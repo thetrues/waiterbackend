@@ -105,10 +105,7 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
             total=Sum("amount_paid")
         )["total"]
 
-        if paid_amount:
-            return paid_amount
-        else:
-            return 0.0
+        return paid_amount or 0.0
 
     def get_remained_amount(self) -> float:
         paid_amount: float = self.get_paid_amount()
@@ -369,6 +366,215 @@ class CreditCustomerTequilaOrderRecordPaymentHistory(models.Model):
         verbose_name_plural: str = (
             "Credit Customer Tequila Order Record Payment Histories"
         )
+
+
+### Start Major Changes
+
+
+class RegularTequilaOrderRecord(models.Model):
+    regular_items = models.ManyToManyField(RegularOrderRecord)
+    tequila_items = models.ManyToManyField(TequilaOrderRecord)
+    order_number = models.CharField(max_length=10, null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(auto_now_add=True)
+    objects = Manager()
+
+    def __str__(self) -> str:
+
+        return "Bar Order Number: %s" % self.order_number
+
+    def get_total_price(self) -> float:
+        res_: float = 0.0
+        for r_order in self.regular_items.all():
+            res_ += r_order.total
+
+        for t_order in self.tequila_items.all():
+            res_ += t_order.total
+
+        return res_
+
+    def get_regular_items_details(self) -> List[Dict]:
+        regular_items: List[Dict] = []
+        [
+            regular_items.append(
+                {
+                    "order_id": order.id,
+                    "item_name": order.item.item.name,
+                    "ordered_quantity": order.quantity,
+                    "price_per_item": float(order.item.selling_price_per_item),
+                    "order_total_price": order.total,
+                    "order_number": order.order_number,
+                    "created_by": order.created_by.username,
+                    "date_created": str(order.date_created).split(" ")[0],
+                    "time_created": str(order.date_created).split(" ")[1].split(".")[0],
+                },
+            )
+            for order in self.regular_items.all()
+        ]
+
+        return regular_items
+
+    def get_tequila_items_details(self) -> List[Dict]:
+        tequila_items: List[Dict] = []
+        [
+            tequila_items.append(
+                {
+                    "order_id": order.id,
+                    "item_name": order.item.item.name,
+                    "ordered_quantity": order.quantity,
+                    "price_per_shot": float(order.item.selling_price_per_shot),
+                    "order_total_price": order.total,
+                    "order_number": order.order_number,
+                    "created_by": order.created_by.username,
+                    "date_created": str(order.date_created).split(" ")[0],
+                    "time_created": str(order.date_created).split(" ")[1].split(".")[0],
+                },
+            )
+            for order in self.tequila_items.all()
+        ]
+
+        return tequila_items
+
+    class Meta:
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Regular and Tequila Order Record"
+        verbose_name_plural: str = "Regular and Tequila Order Records"
+
+
+class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
+    regular_tequila_order_record = models.ForeignKey(
+        RegularTequilaOrderRecord, on_delete=models.CASCADE
+    )
+
+    def __str__(self) -> str:
+
+        return "Customer Orders Number: %s" % self.customer_orders_number
+
+    def get_payment_status(self) -> str:
+        total_payment: float = self.get_paid_amount()
+
+        if (
+            total_payment
+            and total_payment >= self.regular_tequila_order_record.get_total_price
+        ):
+            payment_status: str = "Fully Paid"
+        elif (
+            total_payment
+            and self.regular_tequila_order_record.get_total_price <= 0
+            or not total_payment
+        ):
+            payment_status: str = "Not Paid"
+        else:
+            payment_status: str = "Partially Paid"
+
+        return payment_status
+
+    def get_paid_amount(self) -> float:
+        paid_amount: float = (
+            self.customerregulartequilaorderrecordpayment_set.aggregate(
+                total=Sum("amount_paid")
+            )["total"]
+        )
+
+        return paid_amount or 0.0
+
+    def get_remained_amount(self) -> float:
+        paid_amount: float = self.get_paid_amount()
+
+        if paid_amount:
+            return (
+                self.regular_tequila_order_record.get_total_price
+                - self.get_paid_amount()
+            )
+        return self.regular_tequila_order_record.get_total_price
+
+    @property
+    def get_orders_detail(self) -> Dict:
+
+        res: Dict = {}
+        res["order_total_price"] = self.regular_tequila_order_record.get_total_price()
+
+        orders: List = []
+        orders.append(self.regular_tequila_order_record.get_regular_items_details())
+        orders.append(self.regular_tequila_order_record.get_tequila_items_details())
+
+        res["orders"] = orders
+
+        return res
+
+    class Meta:
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Customer Regular Order Record"
+        verbose_name_plural: str = "Customer Regular Order Records"
+
+
+class CustomerRegularTequilaOrderRecordPayment(BasePayment):
+    customer_regular_tequila_order_record = models.ForeignKey(
+        CustomerRegularTequilaOrderRecord, on_delete=models.CASCADE
+    )
+
+    def __str__(self) -> str:
+        """f(n) = c; c=1 Constant Function"""
+        return "{}: Payment Status: {}".format(
+            self.customer_regular_tequila_order_record, self.payment_status.title()
+        )
+
+    @property
+    def get_total_amount_to_pay(self):
+        return float(
+            self.customer_regular_tequila_order_record.regular_tequila_order_record.get_total_price
+        )
+
+    @property
+    def get_remaining_amount(self):
+        return float(self.get_total_amount_to_pay - self.amount_paid)
+
+    class Meta:
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Customer Regular Order Record Payment"
+        verbose_name_plural: str = "Customer Regular Order Record Payments"
+
+
+class CreditCustomerRegularTequilaOrderRecordPayment(BaseCreditCustomerPayment):
+    record_order_payment_record = models.ForeignKey(
+        CustomerRegularTequilaOrderRecordPayment, on_delete=models.CASCADE
+    )
+
+    def get_credit_payable_amount(self) -> float:
+        dish_total_price: float = (
+            self.record_order_payment_record.customer_regular_tequila_order_record.regular_tequila_order_record.get_total_price
+        )
+
+        return dish_total_price - self.amount_paid
+
+    class Meta:
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Credit Customer Regular Order Record Payment"
+        verbose_name_plural: str = "Credit Customer Regular Order Record Payments"
+
+
+class CreditCustomerRegularTequilaOrderRecordPaymentHistory(models.Model):
+    credit_customer_payment = models.ForeignKey(
+        CreditCustomerRegularTequilaOrderRecordPayment, on_delete=models.CASCADE
+    )  # Filter all dishes with 'by_credit'=True and 'customer_dish_payment__payment_status' !="paid"
+    amount_paid = models.PositiveIntegerField()
+    date_paid = models.DateField()
+    objects = Manager()
+
+    def __str__(self):
+        return self.credit_customer_payment.customer.name
+
+    class Meta:
+        ordering: List[str] = ["-id"]
+        verbose_name: str = (
+            "Credit Customer Regular and Tequila Order Record Payment History"
+        )
+        verbose_name_plural: str = (
+            "Credit Customer Regular and Tequila Order Record Payment Histories"
+        )
+
+
+### End Major Changes
 
 
 # Payrol Management

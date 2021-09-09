@@ -17,23 +17,39 @@ v1.register("core/credit-customers", core_views.CreditCustomerViewSet)
 v1.register("bar/regular-inventory-record", bar_views.RegularInventoryRecordViewSet)
 v1.register("bar/tekila-inventory-record", bar_views.TekilaInventoryRecordViewSet)
 v1.register("bar/sales/regular/items", bar_views.BarRegularItemViewSet)
-v1.register("bar/sales/regular/order-records", bar_views.RegularOrderRecordViewSet)
+# v1.register("bar/sales/regular/order-records", bar_views.RegularOrderRecordViewSet)
+
+# Starts
+v1.register("bar/sales/order-records", bar_views.RegularTequilaOrderRecordViewSet)
+v1.register(
+    "bar/sales/customer-order-records",
+    bar_views.CustomerRegularTequilaOrderRecordViewSet,
+)
+v1.register(
+    "bar/sales/customer-order-payments",
+    bar_views.CustomerRegularTequilaOrderRecordPaymentViewSet,
+)
+v1.register(
+    "bar/sales/credit-customer/payment-history",
+    bar_views.CreditCustomerRegularTequilaOrderRecordPaymentHistoryViewSet,
+)
+# Ends
 
 v1.register("bar/sales/tequila/items", bar_views.BarTequilaItemViewSet)
 v1.register("bar/sales/tequila/order-records", bar_views.TequilaOrderRecordViewSet)
 
-v1.register(
-    "bar/sales/regular/customer-order-records",
-    bar_views.CustomerRegularOrderRecordViewSet,
-)
-v1.register(
-    "bar/sales/regular/customer-order-payments",
-    bar_views.CustomerRegularOrderRecordPaymentViewSet,
-)
-v1.register(
-    "bar/sales/regular/credit-customer/payment-history",
-    bar_views.CreditCustomerRegularOrderRecordPaymentHistoryViewSet,
-)
+# v1.register(
+#     "bar/sales/regular/customer-order-records",
+#     bar_views.CustomerRegularOrderRecordViewSet,
+# )
+# v1.register(
+#     "bar/sales/regular/customer-order-payments",
+#     bar_views.CustomerRegularOrderRecordPaymentViewSet,
+# )
+# v1.register(
+#     "bar/sales/regular/credit-customer/payment-history",
+#     bar_views.CreditCustomerRegularOrderRecordPaymentHistoryViewSet,
+# )
 
 
 v1.register(

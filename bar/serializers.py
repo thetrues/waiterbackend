@@ -4,13 +4,17 @@ from user.models import User
 from bar.models import (
     BarPayrol,
     CreditCustomerRegularOrderRecordPaymentHistory,
+    CreditCustomerRegularTequilaOrderRecordPaymentHistory,
     CreditCustomerTequilaOrderRecordPaymentHistory,
     CustomerRegularOrderRecord,
     CustomerRegularOrderRecordPayment,
+    CustomerRegularTequilaOrderRecord,
+    CustomerRegularTequilaOrderRecordPayment,
     CustomerTequilaOrderRecord,
     CustomerTequilaOrderRecordPayment,
     RegularOrderRecord,
     RegularInventoryRecord,
+    RegularTequilaOrderRecord,
     TekilaInventoryRecord,
     TequilaOrderRecord,
 )
@@ -55,15 +59,33 @@ class OrderRecordSerializer(serializers.ModelSerializer):
         exclude = ["order_number", "created_by", "date_created"]
 
 
+class RegularTequilaOrderRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegularTequilaOrderRecord
+        exclude = ["order_number", "created_by", "date_created"]
+
+
 class CustomerOrderRecordSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerRegularOrderRecord
         fields = ["customer_name", "customer_phone"]
 
 
+class CustomerRegularTequilaOrderRecordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerRegularTequilaOrderRecord
+        fields = ["customer_name", "customer_phone"]
+
+
 class CustomerOrderRecordPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerRegularOrderRecordPayment
+        exclude = ["payment_status", "date_paid", "date_updated", "created_by"]
+
+
+class CustomerRegularTequilaOrderRecordPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerRegularTequilaOrderRecordPayment
         exclude = ["payment_status", "date_paid", "date_updated", "created_by"]
 
 
@@ -102,6 +124,26 @@ class CreditCustomerRegularOrderRecordPaymentHistorySerializer(
 
     class Meta:
         model = CreditCustomerRegularOrderRecordPaymentHistory
+        fields = "__all__"
+
+
+class CreditCustomerRegularTequilaOrderRecordPaymentHistorySerializer(
+    serializers.ModelSerializer
+):
+    def validate_credit_customer_payment(self, credit_customer_payment):
+        if (
+            credit_customer_payment.record_order_payment_record.by_credit is False
+            and credit_customer_payment.record_order_payment_record.payment_status
+            == "paid"
+        ):
+            raise serializers.ValidationError(
+                "This order was not taken by credit or is already paid."
+            )
+
+        return credit_customer_payment
+
+    class Meta:
+        model = CreditCustomerRegularTequilaOrderRecordPaymentHistory
         fields = "__all__"
 
 
