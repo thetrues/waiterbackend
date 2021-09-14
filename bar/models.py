@@ -13,6 +13,7 @@ from core.models import (
     Item,
 )
 
+
 # Inventory Management
 
 
@@ -32,7 +33,6 @@ class RegularInventoryRecord(BaseInventory):
         return self.estimate_sales() - self.purchasing_price
 
     def get_price_of_items(self, item_quantity) -> float:
-
         return float(item_quantity * self.selling_price_per_item)
 
     class Meta:
@@ -458,14 +458,14 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
         total_payment: float = self.get_paid_amount()
 
         if (
-            total_payment
-            and total_payment >= self.regular_tequila_order_record.get_total_price()
+                total_payment
+                and total_payment >= self.regular_tequila_order_record.get_total_price()
         ):
             payment_status: str = "Fully Paid"
         elif (
-            total_payment
-            and self.regular_tequila_order_record.get_total_price() <= 0
-            or not total_payment
+                total_payment
+                and self.regular_tequila_order_record.get_total_price() <= 0
+                or not total_payment
         ):
             payment_status: str = "Not Paid"
         else:
@@ -488,20 +488,24 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         if paid_amount:
             return (
-                self.regular_tequila_order_record.get_total_price()
-                - self.get_paid_amount()
+                    self.regular_tequila_order_record.get_total_price()
+                    - self.get_paid_amount()
             )
         return self.regular_tequila_order_record.get_total_price()
 
     @property
     def get_orders_detail(self) -> Dict:
 
-        res: Dict = {}
-        res["total_price"] = self.regular_tequila_order_record.get_total_price()
+        res: Dict = {"total_price": self.regular_tequila_order_record.get_total_price()}
 
-        orders: List = []
-        orders.append(self.regular_tequila_order_record.get_regular_items_details())
-        orders.append(self.regular_tequila_order_record.get_tequila_items_details())
+        orders: List = [
+            {
+                "drinks": self.regular_tequila_order_record.get_regular_items_details()
+            },
+            {
+                "shots": self.regular_tequila_order_record.get_tequila_items_details()
+            }
+        ]
 
         res["order_structures"] = orders
 
@@ -596,5 +600,4 @@ class BarPayrol(BasePayrol):
     )
 
     def __str__(self) -> str:
-
         return f"{self.bar_payee.username} Paid: {self.amount_paid}"
