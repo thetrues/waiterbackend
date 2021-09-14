@@ -397,8 +397,9 @@ class RegularTequilaOrderRecord(models.Model):
 
         return res_
 
-    def get_regular_items_details(self) -> List[Dict]:
-        regular_items: List[Dict] = []
+    def get_regular_items_details(self) -> Dict:
+        regular_items: List = []
+        res: Dict = {}
         [
             regular_items.append(
                 {
@@ -415,11 +416,13 @@ class RegularTequilaOrderRecord(models.Model):
             )
             for order in self.regular_items.all()
         ]
+        res["drinks"] = regular_items
 
-        return regular_items
+        return res
 
-    def get_tequila_items_details(self) -> List[Dict]:
-        tequila_items: List[Dict] = []
+    def get_tequila_items_details(self) -> Dict:
+        tequila_items: List = []
+        res: Dict = {}
         [
             tequila_items.append(
                 {
@@ -436,8 +439,9 @@ class RegularTequilaOrderRecord(models.Model):
             )
             for order in self.tequila_items.all()
         ]
+        res["shots"] = tequila_items
 
-        return tequila_items
+        return res
 
     class Meta:
         ordering: List[str] = ["-id"]
@@ -499,12 +503,8 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
         res: Dict = {"total_price": self.regular_tequila_order_record.get_total_price()}
 
         orders: List = [
-            {
-                "drinks": self.regular_tequila_order_record.get_regular_items_details()
-            },
-            {
-                "shots": self.regular_tequila_order_record.get_tequila_items_details()
-            }
+            self.regular_tequila_order_record.get_regular_items_details(),
+            self.regular_tequila_order_record.get_tequila_items_details()
         ]
 
         res["order_structures"] = orders
