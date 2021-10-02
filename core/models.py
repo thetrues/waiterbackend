@@ -1,13 +1,13 @@
 from django.db.models.manager import Manager
 from django.db.models.aggregates import Sum
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 from abc import abstractmethod
 from django.db import models
 from django.utils import timezone
 from user.models import User
 
 
-STOKE_STATUS_CHOICES: Set[Set] = (
+STOKE_STATUS_CHOICES = (
     ("available", "Available"),
     ("unavailable", "Unavailable"),
 )
@@ -233,7 +233,7 @@ class CreditCustomer(models.Model):
         if total_ == 0.0 or total_ > self.credit_limit:
             total_ = self.credit_limit
 
-        return total_
+        return total_ or 0.0
 
     def get_bar_total(self, bar_today_spends) -> float:
         bar_teq_total: float = 0.0
