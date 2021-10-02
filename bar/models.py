@@ -447,7 +447,7 @@ class RegularTequilaOrderRecord(models.Model):
         verbose_name_plural: str = "Regular and Tequila Order Records"
 
 
-class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord, ABC):
+class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
     regular_tequila_order_record = models.ForeignKey(
         RegularTequilaOrderRecord, on_delete=models.CASCADE
     )
