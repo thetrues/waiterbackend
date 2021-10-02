@@ -228,7 +228,7 @@ class CreditCustomer(models.Model):
 
         total += self.get_bar_total(bar_today_spends)
 
-        total_ = self.credit_limit - total
+        total_ = self.credit_limit or 0.0 - total
 
         if total_ == 0.0 or total_ > self.credit_limit:
             total_ = self.credit_limit
