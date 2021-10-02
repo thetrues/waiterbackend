@@ -1,3 +1,5 @@
+from abc import ABC
+
 from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
 from typing import Dict, List, Set
@@ -445,7 +447,7 @@ class RegularTequilaOrderRecord(models.Model):
         verbose_name_plural: str = "Regular and Tequila Order Records"
 
 
-class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
+class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord, ABC):
     regular_tequila_order_record = models.ForeignKey(
         RegularTequilaOrderRecord, on_delete=models.CASCADE
     )
