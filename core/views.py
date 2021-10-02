@@ -23,7 +23,7 @@ class CreditCustomerViewSet(viewsets.ModelViewSet):
     queryset = CreditCustomer.objects.all()
     serializer_class = CreditCustomerSerializer
 
-    def list(self, request, *args, **kwargs) -> List[Dict]:
+    def list(self, request, *args, **kwargs) -> Response:
         response: List[Dict] = []
 
         self.append_list(response)
@@ -37,7 +37,7 @@ class CreditCustomerViewSet(viewsets.ModelViewSet):
                 "name": customer.name,
                 "phone": customer.phone,
                 "address": customer.address,
-                "credit_limit": customer.credit_limit,
+                "credit_limit": customer.credit_limit or 0.0,
                 "today_balance": customer.get_today_balance(),
             }
             response.append(temp_dict)
