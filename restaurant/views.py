@@ -46,6 +46,8 @@ from user.models import User
 
 
 class MenuViewSet(viewsets.ModelViewSet):
+    authentication_classes = []
+    permission_classes = []
     queryset = Menu.objects.all()
     serializer_class = MenuSerializer
     menu_image_class = ChangeMenuImageSerializer
@@ -68,7 +70,7 @@ class MenuViewSet(viewsets.ModelViewSet):
     )
     def update_image(self, request, pk=None):
         instance = self.get_object()
-        serializer = self.menu_image_class(request.data)
+        serializer = self.menu_image_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         instance.image = request.data.get("image")
         instance.save()
