@@ -63,8 +63,8 @@ class MenuViewSet(viewsets.ModelViewSet):
         return Response({"message": "Operation success"}, status.HTTP_200_OK)
 
     @action(
-        detail=False,
-        methods=["POST"],
+        detail=True,
+        methods=["PUT"],
     )
     def update_image(self, request, pk=None):
         instance = self.get_object()
