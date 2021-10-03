@@ -1,14 +1,17 @@
+from typing import Dict, List, NoReturn, Tuple
+
+from django.db.models.aggregates import Sum
 from django.db.models.query import QuerySet
-from core.utils import orders_number_generator
+from django.utils import timezone
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from core.serializers import InventoryItemSerializer
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
+
 from core.models import CreditCustomer, Item
-from rest_framework.decorators import action
-from restaurant.utils import get_recipients
-from django.db.models.aggregates import Sum
-from rest_framework import status, viewsets
+from core.serializers import InventoryItemSerializer
+from core.utils import orders_number_generator
 from restaurant.models import (
     CreditCustomerDishPaymentHistory,
     MainInventoryItemRecordStockOut,
@@ -33,11 +36,11 @@ from restaurant.serializers import (
     RestaurantPayrolSerializer,
     CustomerDishSerializer,
     AdditiveSerializer,
-    MenuSerializer,
+    MenuSerializer, ChangeMenuImageSerializer,
 )
-from django.utils import timezone
-from typing import Dict, List, NoReturn, Tuple
+from restaurant.utils import get_recipients
 from user.models import User
+
 
 # import uuid
 
@@ -50,6 +53,32 @@ class MenuViewSet(viewsets.ModelViewSet):
 class AdditiveViewSet(viewsets.ModelViewSet):
     queryset = Additive.objects.all()
     serializer_class = AdditiveSerializer
+    menu_image_class = ChangeMenuImageSerializer
+
+    def update(self, request, pk=None):
+        instance = self.get_object()
+        name = request.data.get("name")
+        description = request.data.get("description")
+        price = request.data.get("price")
+        instance.name = name
+        instance.description = description
+        instance.price = price
+        instance.save()
+
+        return Response({"message": "Operation success"}, status.HTTP_200_OK)
+
+    @action(
+        detail=False,
+        methods=["POST"],
+    )
+    def update_image(self, request, pk=None):
+        instance = self.get_object()
+        serializer = self.menu_image_class(request.data)
+        serializer.is_valid(raise_exception=True)
+        instance.image = request.data.get("image")
+        instance.save()
+
+        return Response({"message": "Operation success"}, status.HTTP_200_OK)
 
 
 class RestaurantInventoryItemView(ListAPIView):
@@ -154,7 +183,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         for item in item_qs:
             temp_records["record_id"] = counter + 1
             temp_records["available_quantity"] = (
-                str(item.available_quantity) + " " + unit
+                    str(item.available_quantity) + " " + unit
             )
             temp_records["received_quantity"] = str(item.quantity) + " " + unit
             temp_records["estimated_sales"] = item.estimate_sales
@@ -166,7 +195,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         response.append(temp_response)
 
     def get_stock_status(
-        self, temp_response: dict, available_quantity: int
+            self, temp_response: dict, available_quantity: int
     ) -> NoReturn:
         if available_quantity > 0:
             temp_response["stock_status"] = "Available"
@@ -174,7 +203,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             temp_response["stock_status"] = "Unavailable"
 
     def get_items_available_quantity_unit(
-        self, names, index
+            self, names, index
     ) -> Tuple[QuerySet, int, str]:
         item_qs = self.queryset.filter(main_inventory_item__item__name=names[index])
         available_quantity = item_qs.aggregate(
@@ -223,8 +252,8 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             self.create_stock_out(request, quantity_out, item)
             self.reduce_availability(quantity_out, item, available_quantity)
             if (
-                item.available_quantity <= item.threshold
-                and item.available_quantity > 0
+                    item.available_quantity <= item.threshold
+                    and item.available_quantity > 0
             ):
                 item.send_notification(
                     message="{} is nearly out of stock. The remained quantity is {} {}".format(
@@ -718,15 +747,15 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             pass
 
         if (
-            by_credit
-            and self.get_advance_amount(customer_dish, amount_paid)
-            > customer.credit_limit
+                by_credit
+                and self.get_advance_amount(customer_dish, amount_paid)
+                > customer.credit_limit
         ):
             raise ValidationError(
                 "Can't perform this operation. Customer's credit is not enough."
             )
         elif by_credit and self.get_advance_amount(
-            customer_dish, amount_paid
+                customer_dish, amount_paid
         ) > self.get_remained_credit_for_today(customer):
             raise ValidationError(
                 "Can't perform this operation. Remained credit for {} is {}".format(
@@ -795,7 +824,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         else:
             object.payment_status = "partial"
         object.save()
-        
+
         # if object.amount_paid >= object.get_total_amount_to_pay:
         #     object.payment_status == "paid"
         # elif object.amount_paid > 0:
@@ -893,8 +922,8 @@ class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):
                 id=credit_customer_dish_payment
             )
             if (
-                object.customer_dish_payment.payment_status == "paid"
-                or object.customer_dish_payment.by_credit is False
+                    object.customer_dish_payment.payment_status == "paid"
+                    or object.customer_dish_payment.by_credit is False
             ):
                 return Response(
                     {
@@ -977,17 +1006,17 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def get_monthly_payments(self, request, *args, **kwargs):
-        response: list = []
+        response: List = []
         today = timezone.localdate()
         payments_this_month = RestaurantPayrol.objects.filter(
             date_paid__year=today.year,
             date_paid__month=today.month,
         ).select_related("restaurant_payee", "restaurant_payer")
-        response: dict = {}
+        response: Dict = {}
         response["total_paid_amount"] = (
-            payments_this_month.aggregate(total=Sum("amount_paid"))["total"] or 0
+                payments_this_month.aggregate(total=Sum("amount_paid"))["total"] or 0
         )
-        payments: list = []
+        payments: List = []
         [
             payments.append(
                 {

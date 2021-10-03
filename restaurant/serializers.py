@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from restaurant.models import (
     Additive,
     CreditCustomerDishPaymentHistory,
@@ -12,7 +14,6 @@ from restaurant.models import (
     MainInventoryItemRecord,
     MiscellaneousInventoryRecord,
 )
-from rest_framework import serializers
 
 
 class MainInventoryItemSerializer(serializers.ModelSerializer):
@@ -75,6 +76,10 @@ class MenuSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "price", "image"]
 
 
+class ChangeMenuImageSerializer(serializers.Serializer):
+    image = serializers.ImageField()
+
+
 class AdditiveSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Additive
@@ -108,9 +113,9 @@ class CustomerDishPaymentSerializer(serializers.ModelSerializer):
 class CreditCustomerDishPaymentHistorySerializer(serializers.ModelSerializer):
     def validate_credit_customer_dish_payment(self, credit_customer_dish_payment):
         if (
-            credit_customer_dish_payment.customer_dish_payment.by_credit is False
-            and credit_customer_dish_payment.customer_dish_payment.payment_status
-            == "paid"
+                credit_customer_dish_payment.customer_dish_payment.by_credit is False
+                and credit_customer_dish_payment.customer_dish_payment.payment_status
+                == "paid"
         ):
             raise serializers.ValidationError(
                 "This order was not taken by credit or is already paid."
