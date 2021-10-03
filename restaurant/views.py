@@ -46,8 +46,6 @@ from user.models import User
 
 
 class MenuViewSet(viewsets.ModelViewSet):
-    authentication_classes = []
-    permission_classes = []
     queryset = Menu.objects.all()
     serializer_class = MenuSerializer
     menu_image_class = ChangeMenuImageSerializer
