@@ -48,11 +48,6 @@ from user.models import User
 class MenuViewSet(viewsets.ModelViewSet):
     queryset = Menu.objects.all()
     serializer_class = MenuSerializer
-
-
-class AdditiveViewSet(viewsets.ModelViewSet):
-    queryset = Additive.objects.all()
-    serializer_class = AdditiveSerializer
     menu_image_class = ChangeMenuImageSerializer
 
     def update(self, request, pk=None):
@@ -79,6 +74,11 @@ class AdditiveViewSet(viewsets.ModelViewSet):
         instance.save()
 
         return Response({"message": "Operation success"}, status.HTTP_200_OK)
+
+
+class AdditiveViewSet(viewsets.ModelViewSet):
+    queryset = Additive.objects.all()
+    serializer_class = AdditiveSerializer
 
 
 class RestaurantInventoryItemView(ListAPIView):
