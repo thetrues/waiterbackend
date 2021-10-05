@@ -146,7 +146,7 @@ class Menu(BaseConfig):
 
     description = models.CharField(max_length=255)
     image = models.FileField(upload_to="menu/images/", null=True, blank=True)
-    price = models.FloatField()
+    price = models.IntegerField()
 
 
 class Additive(BaseConfig):
@@ -189,7 +189,7 @@ class RestaurantCustomerOrder(BaseCustomerOrder):
     sub_menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
 
     @property
-    def total(self) -> float:
+    def total(self) -> int:
         """Returns the total price: i.e sub_menu__price * quantity"""
 
         return self.quantity * self.sub_menu.price
