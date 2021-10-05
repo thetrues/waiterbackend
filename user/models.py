@@ -6,7 +6,7 @@ from django.conf import settings
 from django.db import models
 
 
-USER_TYPE_CHOICES: set = (
+USER_TYPE_CHOICES = (
     ("manager", "Manager"),
     ("bar_waiter", "Bar Waiter"),
     ("bar_cashier", "Bar Cashier"),
@@ -23,7 +23,7 @@ class User(AbstractUser):
     address = models.TextField(null=True, blank=True)
     user_type = models.CharField(max_length=18, choices=USER_TYPE_CHOICES)
 
-    def __str__(self) -> str():
+    def __str__(self) -> str:
         return self.username
 
     class Meta:

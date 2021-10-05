@@ -13,6 +13,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     )
 
     def save(self):
+        user_type = self.validated_data.get("user_type")
         user = User(
             first_name=self.validated_data.get("first_name"),
             last_name=self.validated_data.get("last_name"),
@@ -20,6 +21,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
             username=self.validated_data.get("username"),
             user_type=self.validated_data.get("user_type"),
         )
+        if user_type == "manager":
+            user.is_staff = True
+
         password = self.validated_data["password"]
         confirm_password = self.validated_data["confirm_password"]
         if password != confirm_password:

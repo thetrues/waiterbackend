@@ -17,7 +17,6 @@ class RegistrationView(APIView):
     """Registration View"""
 
     def post(self, request):
-        data: Dict = {}
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             data = self.create_acount(serializer)
