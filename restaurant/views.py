@@ -484,13 +484,13 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
                     "orders": self.get_orders(_),
                 }
             )
-            for _ in self.queryset
+            for _ in self.get_queryset()
         ]
 
         return res
 
     def get_additives(self, object):
-        res: list = []
+        res: List = []
         for order in object.orders.all():
             res.append(
                 {
@@ -504,7 +504,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
         data = self.perform_create(request)
         return Response(data, status.HTTP_201_CREATED)
 
-    def perform_create(self, request) -> dict():
+    def perform_create(self, request) -> Dict:
         object = CustomerDish.objects.create(
             customer_name=request.data.get("customer_name"),
             customer_phone=request.data.get("customer_phone"),
@@ -523,7 +523,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
         }
 
     def add_orders(self, request, object):  # Performance Bottleneck 🕵
-        """f(n) = n^2 i.e Quadractic Function."""
+        """f(n) = n^2 i.e Quadratic Function."""
         for _ in request.data.get("orders"):
             order = RestaurantCustomerOrder.objects.create(
                 sub_menu=Menu.objects.get(id=int(_["sub_menu"])),
@@ -543,7 +543,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
         orders: List[Dict] = []
 
         def _get_additives_by_order(order):
-            temp: list = []
+            temp: List = []
             for additive in order.additives.all():
                 temp.append(
                     {
@@ -588,7 +588,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         response: List[Dict] = []
-        for qs in self.queryset:
+        for qs in self.get_queryset():
             splitted_date = str(qs.date_paid).split(" ")
             response.append(
                 {
@@ -631,7 +631,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                     "dish_detail": ordr.customer_dish.get_dish_detail,
                 }
             )
-            for ordr in self.queryset
+            for ordr in self.get_queryset()
         ]
         return Response(res, status.HTTP_200_OK)
 
@@ -655,7 +655,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_paid(self, request, *args, **kwargs):
         res: List = []
-        f_qs = self.queryset.filter(payment_status="paid", by_credit=True)
+        f_qs = self.get_queryset().filter(payment_status="paid", by_credit=True)
         numbers: List = self.get_dish_numbers(f_qs)
         self.get_dishes_structure(res, numbers, f_qs)
 
@@ -687,7 +687,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_partial(self, request, *args, **kwargs):
         res: List[Dict] = []
-        filtered_qs = self.queryset.filter(payment_status="partial", by_credit=True)
+        filtered_qs = self.get_queryset().filter(payment_status="partial", by_credit=True)
         [
             res.append(
                 {
@@ -714,7 +714,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_unpaid(self, request, *args, **kwargs):
         res: List[Dict] = []
-        filtered_qs = self.queryset.filter(payment_status="unpaid", by_credit=True)
+        filtered_qs = self.get_queryset().filter(payment_status="unpaid", by_credit=True)
         [
             res.append(
                 {
@@ -834,14 +834,6 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
         else:
             object.payment_status = "partial"
         object.save()
-
-        # if object.amount_paid >= object.get_total_amount_to_pay:
-        #     object.payment_status == "paid"
-        # elif object.amount_paid > 0:
-        #     object.payment_status == "partial"
-        # else:
-        #     object.payment_status == "unpaid"
-        # object.save()
 
     def change_amount_paid(self, amount_paid, object):
         object.amount_paid += amount_paid
@@ -1020,7 +1012,6 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def get_monthly_payments(self, request, *args, **kwargs):
-        response: List = []
         today = timezone.localdate()
         payments_this_month = RestaurantPayrol.objects.filter(
             date_paid__year=today.year,
