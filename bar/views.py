@@ -1,11 +1,34 @@
-from core.utils import get_date_objects, orders_number_generator, validate_dates
-from rest_framework.exceptions import ValidationError
-from core.serializers import InventoryItemSerializer
-from rest_framework.generics import ListAPIView
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework import status, viewsets
+import datetime
+from typing import Dict, List
+
 from django.db.models.aggregates import Sum
+from django.utils import timezone
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import ListAPIView
+from rest_framework.response import Response
+
+from bar.models import (
+    CreditCustomerRegularOrderRecordPayment,
+    CreditCustomerRegularOrderRecordPaymentHistory,
+    CreditCustomerRegularTequilaOrderRecordPayment,
+    CreditCustomerRegularTequilaOrderRecordPaymentHistory,
+    CreditCustomerTequilaOrderRecordPayment,
+    CreditCustomerTequilaOrderRecordPaymentHistory,
+    CustomerRegularOrderRecordPayment,
+    CustomerRegularTequilaOrderRecord,
+    CustomerRegularTequilaOrderRecordPayment,
+    CustomerTequilaOrderRecordPayment,
+    CustomerRegularOrderRecord,
+    CustomerTequilaOrderRecord,
+    RegularInventoryRecord,
+    RegularTequilaOrderRecord,
+    TekilaInventoryRecord,
+    RegularOrderRecord,
+    TequilaOrderRecord,
+    BarPayrol,
+)
 from bar.serializers import (
     CreditCustomerRegularOrderRecordPaymentHistorySerializer,
     CreditCustomerRegularTequilaOrderRecordPaymentHistorySerializer,
@@ -23,44 +46,27 @@ from bar.serializers import (
     OrderRecordSerializer,
     BarPayrolSerializer,
 )
-from bar.models import (
-    CreditCustomerRegularOrderRecordPayment,
-    CreditCustomerRegularOrderRecordPaymentHistory,
-    CreditCustomerRegularTequilaOrderRecordPayment,
-    CreditCustomerRegularTequilaOrderRecordPaymentHistory,
-    CreditCustomerTequilaOrderRecordPayment,
-    CreditCustomerTequilaOrderRecordPaymentHistory,
-    CustomerRegularOrderRecordPayment,
-    CustomerRegularOrderRecordPayment,
-    CustomerRegularTequilaOrderRecord,
-    CustomerRegularTequilaOrderRecordPayment,
-    CustomerTequilaOrderRecordPayment,
-    CustomerRegularOrderRecord,
-    CustomerTequilaOrderRecord,
-    RegularInventoryRecord,
-    RegularTequilaOrderRecord,
-    TekilaInventoryRecord,
-    RegularOrderRecord,
-    TequilaOrderRecord,
-    BarPayrol,
-)
 from core.models import CreditCustomer, Item
-from django.utils import timezone
-from typing import Dict, List, NoReturn
+from core.serializers import InventoryItemSerializer
+from core.utils import get_date_objects, orders_number_generator, validate_dates
 from user.models import User
-import datetime
+
 
 # import uuid
 
 
 class BarInventoryItemView(ListAPIView):
-    queryset = Item.objects.filter(item_for__in=["bar", "both"])
     serializer_class = InventoryItemSerializer
+
+    def get_queryset(self):
+        return Item.objects.filter(item_for__in=["bar", "both"])
 
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
-    queryset = RegularInventoryRecord.objects.select_related("item", "item__unit")
     serializer_class = RegularInventoryRecordSerializer
+
+    def get_queryset(self):
+        return RegularInventoryRecord.objects.select_related("item", "item__unit")
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
@@ -69,7 +75,6 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         return Response(data=response, status=status.HTTP_200_OK)
 
     def get_res(self, instance):
-
         return {
             "id": instance.id,
             "quantity": instance.quantity,
@@ -100,7 +105,6 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_total_cash_after_sale(self, request, pk=None):
-
         return Response(
             {
                 "estimated_total_cash_after_sale": float(
@@ -115,7 +119,6 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_profit_after_sale(self, request, pk=None):
-
         return Response(
             {"estimated_profit_after_sale": float(self.get_object().estimate_profit())},
             status.HTTP_200_OK,
@@ -123,8 +126,10 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
 
 
 class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
-    queryset = TekilaInventoryRecord.objects.select_related("item", "item__unit")
     serializer_class = TekilaInventoryRecordSerializer
+
+    def get_queryset(self):
+        return TekilaInventoryRecord.objects.select_related("item", "item__unit")
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
@@ -164,7 +169,6 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_total_cash_after_sale(self, request, pk=None):
-
         return Response(
             {"estimated_total_cash_after_sale": self.get_object().estimate_sales()},
             status.HTTP_200_OK,
@@ -175,7 +179,6 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def estimate_profit_after_sale(self, request, pk=None):
-
         return Response(
             {"estimated_profit_after_sale": self.get_object().estimate_profit()},
             status.HTTP_200_OK,
@@ -186,9 +189,11 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
 
 
 class BarRegularItemViewSet(viewsets.ModelViewSet):
-    queryset = RegularInventoryRecord.objects.filter(
-        stock_status="available"
-    ).select_related("item", "item__unit")
+
+    def get_queryset(self):
+        return RegularInventoryRecord.objects.filter(
+            stock_status="available"
+        ).select_related("item", "item__unit")
 
     def list(self, request, *args, **kwargs):
         response: List[Dict] = []
@@ -212,10 +217,12 @@ class BarRegularItemViewSet(viewsets.ModelViewSet):
 
 
 class RegularOrderRecordViewSet(viewsets.ModelViewSet):
-    queryset = RegularOrderRecord.objects.select_related(
-        "item", "item__item", "created_by"
-    )
     serializer_class = OrderRecordSerializer
+
+    def get_queryset(self):
+        return RegularOrderRecord.objects.select_related(
+            "item", "item__item", "created_by"
+        )
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
@@ -246,8 +253,8 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
                     "created_by": record.created_by.username,
                     "date_created": str(record.date_created).split(" ")[0],
                     "time_created": str(record.date_created)
-                    .split(" ")[1]
-                    .split(".")[0],
+                        .split(" ")[1]
+                        .split(".")[0],
                 }
             )
             for record in self.queryset
@@ -282,10 +289,12 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
 
 
 class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
-    queryset = CustomerRegularOrderRecord.objects.select_related(
-        "created_by"
-    ).prefetch_related("orders")
     serializer_class = CustomerOrderRecordSerializer
+
+    def get_queryset(self):
+        return CustomerRegularOrderRecord.objects.select_related(
+            "created_by"
+        ).prefetch_related("orders")
 
     def retrieve(self, request, pk=None) -> Dict:
         instance = self.get_object()
@@ -432,11 +441,13 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
 
 
 class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
-    queryset = CustomerRegularOrderRecordPayment.objects.select_related(
-        "customer_order_record", "created_by"
-    )
     serializer_class = CustomerOrderRecordPaymentSerializer
     today = timezone.localdate()
+
+    def get_queryset(self):
+        return CustomerRegularOrderRecordPayment.objects.select_related(
+            "customer_order_record", "created_by"
+        )
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
@@ -528,16 +539,16 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             pass
 
         if (
-            by_credit
-            and self.get_advance_amount(customer_regular_order_record, amount_paid)
-            > customer.credit_limit
+                by_credit
+                and self.get_advance_amount(customer_regular_order_record, amount_paid)
+                > customer.credit_limit
         ):
             raise ValidationError(
                 "Can't perform this operation. Customer's credit is not enough."
             )
 
         elif by_credit and self.get_advance_amount(
-            customer_regular_order_record, amount_paid
+                customer_regular_order_record, amount_paid
         ) > self.get_remained_credit_for_today(customer):
             raise ValidationError(
                 "Can't perform this operation. Remained credit for {} is {}".format(
@@ -694,10 +705,12 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
 
 class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
-    queryset = RegularTequilaOrderRecord.objects.select_related(
-        "created_by"
-    ).prefetch_related("regular_items", "tequila_items")
     serializer_class = RegularTequilaOrderRecordSerializer
+
+    def get_queryset(self):
+        return RegularTequilaOrderRecord.objects.select_related(
+            "created_by"
+        ).prefetch_related("regular_items", "tequila_items")
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
@@ -728,8 +741,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     "created_by": record.created_by.username,
                     "date_created": str(record.date_created).split(" ")[0],
                     "time_created": str(record.date_created)
-                    .split(" ")[1]
-                    .split(".")[0],
+                        .split(" ")[1]
+                        .split(".")[0],
                 }
             )
             for record in self.queryset
@@ -838,7 +851,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         try:
             object = RegularTequilaOrderRecord.objects.get(
                 id=request.data.get("customer_order_id")
-            )   
+            )
         except RegularTequilaOrderRecord.DoesNotExist:
             return Response(
                 {"error": "Order selected does not exist"}, status.HTTP_200_OK
@@ -854,7 +867,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     return Response(
                         {
                             "error": "There is only %d %s"
-                            % (regular_order.quantity, regular_order.item.item.name)
+                                     % (regular_order.quantity, regular_order.item.item.name)
                         },
                         status.HTTP_400_BAD_REQUEST,
                     )
@@ -904,14 +917,16 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
 
 class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
-    queryset = CustomerRegularTequilaOrderRecord.objects.select_related(
-        "created_by",
-        "regular_tequila_order_record",
-        "regular_tequila_order_record__created_by",
-    ).prefetch_related(
-        "regular_tequila_order_record__regular_items",
-        "regular_tequila_order_record__tequila_items",
-    )
+
+    def get_queryset(self):
+        return CustomerRegularTequilaOrderRecord.objects.select_related(
+            "created_by",
+            "regular_tequila_order_record",
+            "regular_tequila_order_record__created_by",
+        ).prefetch_related(
+            "regular_tequila_order_record__regular_items",
+            "regular_tequila_order_record__tequila_items",
+        )
 
     serializer_class = CustomerRegularTequilaOrderRecordSerializer
 
@@ -1049,11 +1064,13 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
 
 class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
-    queryset = CustomerRegularTequilaOrderRecordPayment.objects.select_related(
-        "customer_regular_tequila_order_record", "created_by"
-    )
     serializer_class = CustomerRegularTequilaOrderRecordPaymentSerializer
     today = timezone.localdate()
+
+    def get_queryset(self):
+        return CustomerRegularTequilaOrderRecordPayment.objects.select_related(
+            "customer_regular_tequila_order_record", "created_by"
+        )
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
@@ -1136,16 +1153,16 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             pass
 
         if (
-            by_credit
-            and self.get_advance_amount(customer_regular_order_record, amount_paid)
-            > customer.credit_limit
+                by_credit
+                and self.get_advance_amount(customer_regular_order_record, amount_paid)
+                > customer.credit_limit
         ):
             raise ValidationError(
                 "Can't perform this operation. Customer's credit is not enough."
             )
 
         elif by_credit and self.get_advance_amount(
-            customer_regular_order_record, amount_paid
+                customer_regular_order_record, amount_paid
         ) > self.get_remained_credit_for_today(customer):
             raise ValidationError(
                 "Can't perform this operation. Remained credit for {} is {}".format(
@@ -1260,8 +1277,8 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         """This is the amount of money customer wants to pay in advance"""
 
         return (
-            customer_regular_order_record.regular_tequila_order_record.get_total_price()
-            - amount_paid
+                customer_regular_order_record.regular_tequila_order_record.get_total_price()
+                - amount_paid
         )
 
     @action(
@@ -1334,10 +1351,12 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 class CreditCustomerRegularTequilaOrderRecordPaymentHistoryViewSet(
     viewsets.ModelViewSet
 ):
-    queryset = CreditCustomerRegularTequilaOrderRecordPaymentHistory.objects.select_related(
-        "credit_customer_payment__record_order_payment_record__customer_regular_tequila_order_record"
-    )
     serializer_class = CreditCustomerRegularTequilaOrderRecordPaymentHistorySerializer
+
+    def get_queryset(self):
+        return CreditCustomerRegularTequilaOrderRecordPaymentHistory.objects.select_related(
+            "credit_customer_payment__record_order_payment_record__customer_regular_tequila_order_record"
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -1351,8 +1370,8 @@ class CreditCustomerRegularTequilaOrderRecordPaymentHistoryViewSet(
                 id=credit_customer_payment
             )
             if (
-                object.record_order_payment_record.payment_status == "paid"
-                or object.record_order_payment_record.by_credit is False
+                    object.record_order_payment_record.payment_status == "paid"
+                    or object.record_order_payment_record.by_credit is False
             ):
                 return Response(
                     {
@@ -1372,12 +1391,16 @@ class CreditCustomerRegularTequilaOrderRecordPaymentHistoryViewSet(
             )
 
 
-#### Sales Changes Ends
+# Sales Changes Ends
+
+
 class CreditCustomerRegularOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSet):
-    queryset = CreditCustomerRegularOrderRecordPaymentHistory.objects.select_related(
-        "credit_customer_payment__record_order_payment_record__customer_order_record"
-    )
     serializer_class = CreditCustomerRegularOrderRecordPaymentHistorySerializer
+
+    def get_queryset(self):
+        return CreditCustomerRegularOrderRecordPaymentHistory.objects.select_related(
+            "credit_customer_payment__record_order_payment_record__customer_order_record"
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -1391,8 +1414,8 @@ class CreditCustomerRegularOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSe
                 id=credit_customer_payment
             )
             if (
-                object.record_order_payment_record.payment_status == "paid"
-                or object.record_order_payment_record.by_credit is False
+                    object.record_order_payment_record.payment_status == "paid"
+                    or object.record_order_payment_record.by_credit is False
             ):
                 return Response(
                     {
@@ -1413,8 +1436,10 @@ class CreditCustomerRegularOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSe
 
 
 class BarPayrolViewSet(viewsets.ModelViewSet):
-    queryset = BarPayrol.objects.select_related("bar_payer", "bar_payee")
     serializer_class = BarPayrolSerializer
+
+    def get_queryset(self):
+        return BarPayrol.objects.select_related("bar_payer", "bar_payee")
 
     def update(self, request, pk=None):
         instance = self.get_object()
@@ -1478,7 +1503,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
         )
         response: Dict = {}
         response["total_amount_paid"] = (
-            payments_this_month.aggregate(total=Sum("amount_paid"))["total"] or 0
+                payments_this_month.aggregate(total=Sum("amount_paid"))["total"] or 0
         )
         payments: List[Dict] = []
         [
@@ -1502,9 +1527,11 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
 
 
 class BarTequilaItemViewSet(viewsets.ModelViewSet):
-    queryset = TekilaInventoryRecord.objects.filter(
-        stock_status="available"
-    ).select_related("item", "item__unit")
+
+    def get_queryset(self):
+        return TekilaInventoryRecord.objects.filter(
+            stock_status="available"
+        ).select_related("item", "item__unit")
 
     def list(self, request, *args, **kwargs):
         response: List[Dict] = []
@@ -1529,10 +1556,12 @@ class BarTequilaItemViewSet(viewsets.ModelViewSet):
 
 
 class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
-    queryset = TequilaOrderRecord.objects.select_related(
-        "item", "item__item", "created_by"
-    )
     serializer_class = TequilaOrderRecordSerializer
+
+    def get_queryset(self):
+        return TequilaOrderRecord.objects.select_related(
+            "item", "item__item", "created_by"
+        )
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
@@ -1563,8 +1592,8 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     "created_by": record.created_by.username,
                     "date_created": str(record.date_created).split(" ")[0],
                     "time_created": str(record.date_created)
-                    .split(" ")[1]
-                    .split(".")[0],
+                        .split(" ")[1]
+                        .split(".")[0],
                 }
             )
             for record in self.queryset
@@ -1601,10 +1630,12 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
 
 class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
-    queryset = CustomerTequilaOrderRecord.objects.select_related(
-        "created_by"
-    ).prefetch_related("orders")
     serializer_class = TequilaCustomerOrderRecordSerializer
+
+    def get_queryset(self):
+        return CustomerTequilaOrderRecord.objects.select_related(
+            "created_by"
+        ).prefetch_related("orders")
 
     def retrieve(self, request, pk=None) -> Dict:
         instance = self.get_object()
@@ -1682,8 +1713,8 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             customer_name = request.data["customer_name"]
             results = (
                 CustomerTequilaOrderRecord.objects.filter(customer_name=customer_name)
-                .select_related("orders")
-                .prefetch_related("orders")
+                    .select_related("orders")
+                    .prefetch_related("orders")
             )
             return Response(self.get_list(results), status.HTTP_200_OK)
         except KeyError:
@@ -1753,11 +1784,13 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
 
 class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
-    queryset = CustomerTequilaOrderRecordPayment.objects.select_related(
-        "customer_order_record", "created_by"
-    )
     serializer_class = TequilaCustomerOrderRecordPaymentSerializer
     today = timezone.localdate()
+
+    def get_queryset(self):
+        return CustomerTequilaOrderRecordPayment.objects.select_related(
+            "customer_order_record", "created_by"
+        )
 
     def retrieve(self, request, pk=None) -> Dict:
         instance = self.get_object()
@@ -1808,14 +1841,14 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
         return response
 
-    def create(self, request, *args, **kwargs) -> Dict:
+    def create(self, request, *args, **kwargs) -> Response:
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = self.perform_create(request)
 
         return Response(data, status.HTTP_201_CREATED)
 
-    def perform_create(self, request) -> Dict:
+    def perform_create(self, request):
         by_credit = request.data.get("by_credit")
         amount_paid = request.data.get("amount_paid")
         customer = self.get_customer(request)
@@ -1846,16 +1879,16 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             pass
 
         if (
-            by_credit
-            and self.get_advance_amount(customer_order_record, amount_paid)
-            > customer.credit_limit
+                by_credit
+                and self.get_advance_amount(customer_order_record, amount_paid)
+                > customer.credit_limit
         ):
             raise ValidationError(
                 "Can't perform this operation. Customer's credit is not enough."
             )
 
         elif by_credit and self.get_advance_amount(
-            customer_order_record, amount_paid
+                customer_order_record, amount_paid
         ) > self.get_remained_credit_for_today(customer):
             raise ValidationError(
                 "Can't perform this operation. Remained credit for {} is {}".format(
@@ -2022,10 +2055,12 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
 
 class CreditCustomerTequilaOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSet):
-    queryset = CreditCustomerTequilaOrderRecordPaymentHistory.objects.select_related(
-        "credit_customer_payment__record_order_payment_record__customer_order_record"
-    )
     serializer_class = CreditCustomerTequilaOrderRecordPaymentHistorySerializer
+
+    def get_queryset(self):
+        return CreditCustomerTequilaOrderRecordPaymentHistory.objects.select_related(
+            "credit_customer_payment__record_order_payment_record__customer_order_record"
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -2039,8 +2074,8 @@ class CreditCustomerTequilaOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSe
                 id=credit_customer_payment
             )
             if (
-                object.record_order_payment_record.payment_status == "paid"
-                or object.record_order_payment_record.by_credit is False
+                    object.record_order_payment_record.payment_status == "paid"
+                    or object.record_order_payment_record.by_credit is False
             ):
                 return Response(
                     {
