@@ -189,11 +189,15 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
 
 
 class BarRegularItemViewSet(viewsets.ModelViewSet):
+    queryset = RegularInventoryRecord.objects.all()
+    serializer_class = RegularInventoryRecordSerializer
 
     def get_queryset(self):
-        return RegularInventoryRecord.objects.filter(
+        queryset = RegularInventoryRecord.objects.filter(
             stock_status="available"
         ).select_related("item", "item__unit")
+
+        return queryset
 
     def list(self, request, *args, **kwargs):
         response: List[Dict] = []
@@ -706,11 +710,14 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
 class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     serializer_class = RegularTequilaOrderRecordSerializer
+    queryset = []
 
     def get_queryset(self):
-        return RegularTequilaOrderRecord.objects.select_related(
+        queryset = RegularTequilaOrderRecord.objects.select_related(
             "created_by"
         ).prefetch_related("regular_items", "tequila_items")
+
+        return queryset
 
     def retrieve(self, request, pk=None):
         instance = self.get_object()
