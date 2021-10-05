@@ -220,8 +220,8 @@ class CustomerDish(models.Model):
         return f"{self.customer_name}: Dish #{self.dish_number}"
 
     @property
-    def get_total_price(self) -> float:
-        res_: float = 0.0
+    def get_total_price(self) -> int:
+        res_: int = 0
         for order in self.orders.all():
             res_ += order.total
         return res_
@@ -253,18 +253,18 @@ class CustomerDish(models.Model):
             payment_status: str = "Partially Paid"
         return payment_status
 
-    def get_paid_amount(self) -> float:
-        paid_amount: float = self.customerdishpayment_set.aggregate(
+    def get_paid_amount(self) -> int:
+        paid_amount: int = self.customerdishpayment_set.aggregate(
             total=Sum("amount_paid")
         )["total"]
 
         if paid_amount:
             return paid_amount
         else:
-            return 0.0
+            return 0
 
-    def get_remained_amount(self) -> float:
-        paid_amount: float = self.get_paid_amount()
+    def get_remained_amount(self) -> int:
+        paid_amount: int = self.get_paid_amount()
 
         if paid_amount:
             return self.get_total_price - self.get_paid_amount()
@@ -286,11 +286,11 @@ class CustomerDishPayment(BasePayment):
         return f"{self.customer_dish}: Payment Status - {self.payment_status}"
 
     @property
-    def get_total_amount_to_pay(self) -> float:
+    def get_total_amount_to_pay(self) -> int:
         return self.customer_dish.get_total_price
 
     @property
-    def get_remaining_amount(self) -> float:
+    def get_remaining_amount(self) -> int:
         return self.get_total_amount_to_pay - self.amount_paid
 
     def get_payments_history(self) -> List[Dict]:

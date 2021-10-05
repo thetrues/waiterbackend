@@ -213,7 +213,7 @@ class CreditCustomer(models.Model):
 
         return self.name
 
-    def get_today_balance(self) -> float:
+    def get_today_balance(self) -> int:
         restaurant_today_spends = self.creditcustomerdishpayment_set.filter(
             date_created=timezone.localdate()
         )
@@ -223,27 +223,27 @@ class CreditCustomer(models.Model):
             )
         )
 
-        total: float = 0.0
+        total: int = 0
         total += self.get_restaurant_total(restaurant_today_spends)
 
         total += self.get_bar_total(bar_today_spends)
 
-        total_ = self.credit_limit or 0.0 - total
+        total_ = self.credit_limit or 0 - total
 
-        if total_ == 0.0 or total_ > self.credit_limit:
+        if total_ == 0 or total_ > self.credit_limit:
             total_ = self.credit_limit
 
-        return total_ or 0.0
+        return total_ or 0
 
-    def get_bar_total(self, bar_today_spends) -> float:
-        bar_teq_total: float = 0.0
+    def get_bar_total(self, bar_today_spends) -> int:
+        bar_teq_total: int = 0
         for k in bar_today_spends:
             bar_teq_total += k.get_credit_payable_amount()
 
         return bar_teq_total
 
-    def get_restaurant_total(self, restaurant_today_spends) -> float:
-        rest_total: float = 0.0
+    def get_restaurant_total(self, restaurant_today_spends) -> int:
+        rest_total: int = 0
 
         for i in restaurant_today_spends:
             rest_total += i.get_credit_dish_payable_amount()
