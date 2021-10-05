@@ -92,10 +92,12 @@ class MainInventoryItemViewSet(viewsets.ModelViewSet):
 
 
 class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
-    queryset = MainInventoryItemRecord.objects.select_related(
-        "main_inventory_item__item", "main_inventory_item__item__unit"
-    )
     serializer_class = MainInventoryItemRecordSerializer
+
+    def get_queryset(self):
+        return MainInventoryItemRecord.objects.select_related(
+            "main_inventory_item__item", "main_inventory_item__item__unit"
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -346,8 +348,10 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
 
 class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
-    queryset = MiscellaneousInventoryRecord.objects.select_related("item")
     serializer_class = MiscellaneousInventoryRecordSerializer
+
+    def get_queryset(self):
+        return MiscellaneousInventoryRecord.objects.select_related("item")
 
     @action(
         detail=False,
@@ -404,8 +408,10 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
 
 class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
-    queryset = RestaurantCustomerOrder.objects.select_related("sub_menu", "created_by")
     serializer_class = RestaurantCustomerOrderSerializer
+
+    def get_queryset(self):
+        return RestaurantCustomerOrder.objects.select_related("sub_menu", "created_by")
 
     def list(self, request, *args, **kwargs):
         res: List[Dict] = []
@@ -453,8 +459,10 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
 
 
 class CustomerDishViewSet(viewsets.ModelViewSet):
-    queryset = CustomerDish.objects.prefetch_related("orders")
     serializer_class = CustomerDishSerializer
+
+    def get_queryset(self):
+        return CustomerDish.objects.prefetch_related("orders")
 
     def list(self, request, *args, **kwargs):
 
@@ -570,11 +578,13 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
 
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
-    queryset = CustomerDishPayment.objects.select_related(
-        "customer_dish", "created_by", "customer_dish__created_by"
-    ).prefetch_related("customer_dish__orders")
     serializer_class = CustomerDishPaymentSerializer
     today = timezone.localdate()
+
+    def get_queryset(self):
+        return CustomerDishPayment.objects.select_related(
+            "customer_dish", "created_by", "customer_dish__created_by"
+        ).prefetch_related("customer_dish__orders")
 
     def list(self, request, *args, **kwargs):
         response: List[Dict] = []
@@ -905,10 +915,12 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
 
 
 class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):
-    queryset = CreditCustomerDishPaymentHistory.objects.select_related(
-        "credit_customer_dish_payment__customer_dish_payment__customer_dish"
-    )
     serializer_class = CreditCustomerDishPaymentHistorySerializer
+
+    def get_queryset(self):
+        return CreditCustomerDishPaymentHistory.objects.select_related(
+            "credit_customer_dish_payment__customer_dish_payment__customer_dish"
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -944,10 +956,12 @@ class CreditCustomerDishPaymentHistoryViewSet(viewsets.ModelViewSet):
 
 
 class RestaurantPayrolViewSet(viewsets.ModelViewSet):
-    queryset = RestaurantPayrol.objects.select_related(
-        "restaurant_payee", "restaurant_payer"
-    )
     serializer_class = RestaurantPayrolSerializer
+
+    def get_queryset(self):
+        return RestaurantPayrol.objects.select_related(
+            "restaurant_payee", "restaurant_payer"
+        )
 
     def update(self, request, pk=None):
         instance = self.get_object()
