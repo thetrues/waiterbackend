@@ -95,7 +95,7 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         response: List[Dict] = []
-        for record in self.queryset:
+        for record in self.get_queryset():
             response.append(self.get_res(record))
 
         return Response(data=response, status=status.HTTP_200_OK)
@@ -159,7 +159,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         response: List[Dict] = []
-        for record in self.queryset:
+        for record in self.get_queryset():
             response.append(self.get_res(record))
 
         return Response(data=response, status=status.HTTP_200_OK)
@@ -189,7 +189,7 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
 
 
 class BarRegularItemViewSet(viewsets.ModelViewSet):
-    queryset = RegularInventoryRecord.objects.all()
+    # queryset = RegularInventoryRecord.objects.all()
     serializer_class = RegularInventoryRecordSerializer
 
     def get_queryset(self):
@@ -216,7 +216,7 @@ class BarRegularItemViewSet(viewsets.ModelViewSet):
                     "item_type": "Regular",
                 }
             )
-            for item in self.queryset
+            for item in self.get_queryset()
         ]
 
 
@@ -710,7 +710,6 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
 class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     serializer_class = RegularTequilaOrderRecordSerializer
-    queryset = []
 
     def get_queryset(self):
         queryset = RegularTequilaOrderRecord.objects.select_related(
@@ -752,7 +751,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                         .split(".")[0],
                 }
             )
-            for record in self.queryset
+            for record in self.get_queryset()
         ]
         return Response(response, status.HTTP_200_OK)
 
@@ -937,7 +936,7 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
     serializer_class = CustomerRegularTequilaOrderRecordSerializer
 
-    def retrieve(self, request, pk=None) -> Dict:
+    def retrieve(self, request, pk=None) -> Response:
         instance = self.get_object()
         response: Dict = {
             "id": instance.id,
@@ -952,7 +951,7 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         }
         return Response(response, status.HTTP_200_OK)
 
-    def create(self, request, *args, **kwargs) -> Dict:
+    def create(self, request, *args, **kwargs) -> Response:
         try:
             data = self.perform_create(request)
 
@@ -987,9 +986,9 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             "time_created": str(object.date_created).split(" ")[1].split(".")[0],
         }
 
-    def list(self, request, *args, **kwargs) -> List[Dict]:
+    def list(self, request, *args, **kwargs) -> Response:
 
-        return Response(self.get_list(self.queryset), status.HTTP_200_OK)
+        return Response(self.get_list(self.get_queryset()), status.HTTP_200_OK)
 
     def get_list(self, objects):
         return self.appending(objects)
@@ -1016,7 +1015,7 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     )
     def get_today_orders(self, request, *args, **kwargs):
         today_date = timezone.localdate()
-        qs = self.queryset.filter(date_created__date=today_date)
+        qs = self.get_queryset().filter(date_created__date=today_date)
         response = self.append_orders(qs)
 
         return Response(response, status.HTTP_200_OK)
@@ -1037,7 +1036,7 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     {"message": "from_date must be less than or equal to to_date"},
                     status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
-            qs = self.queryset.filter(date_created__date__range=[from_date, to_date])
+            qs = self.get_queryset().filter(date_created__date__range=[from_date, to_date])
             response = self.append_orders(qs)
             return Response(response, status.HTTP_200_OK)
         except KeyError:
@@ -1098,7 +1097,7 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(response, status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
-        response: List[Dict] = self.get_list(self.queryset)
+        response: List[Dict] = self.get_list(self.get_queryset())
 
         return Response(response, status.HTTP_200_OK)
 
@@ -1294,7 +1293,7 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_paid(self, request, *args, **kwargs):
         res: List[Dict] = []
-        filtered_qs = self.queryset.filter(payment_status="paid")
+        filtered_qs = self.get_queryset().filter(payment_status="paid")
         [
             res.append(
                 {
@@ -1316,7 +1315,7 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_partial(self, request, *args, **kwargs):
         res: List[Dict] = []
-        filtered_qs = self.queryset.filter(payment_status="partial")
+        filtered_qs = self.get_queryset().filter(payment_status="partial")
         [
             res.append(
                 {
@@ -1340,7 +1339,7 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_unpaid(self, request, *args, **kwargs):
         res: List[Dict] = []
-        filtered_qs = self.queryset.filter(payment_status="unpaid")
+        filtered_qs = self.get_queryset().filter(payment_status="unpaid")
         [
             res.append(
                 {
@@ -1558,7 +1557,7 @@ class BarTequilaItemViewSet(viewsets.ModelViewSet):
                     "item_type": "Tequila",
                 }
             )
-            for item in self.queryset
+            for item in self.get_queryset()
         ]
 
 
@@ -1603,7 +1602,7 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
                         .split(".")[0],
                 }
             )
-            for record in self.queryset
+            for record in self.get_queryset()
         ]
 
         return Response(response, status.HTTP_200_OK)
@@ -1706,7 +1705,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
 
-        return Response(self.get_list(self.queryset), status.HTTP_200_OK)
+        return Response(self.get_list(self.get_queryset()), status.HTTP_200_OK)
 
     def get_list(self, objects):
         return self.appending(objects)
@@ -1735,7 +1734,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     )
     def get_today_orders(self, request, *args, **kwargs):
         todays_date = timezone.localdate()
-        qs = self.queryset.filter(date_created__date=todays_date)
+        qs = self.get_queryset().filter(date_created__date=todays_date)
         response = self.append_orders(qs)
 
         return Response(response, status.HTTP_200_OK)
@@ -1756,7 +1755,7 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     {"message": "from_date must be less than or equal to to_date"},
                     status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
-            qs = self.queryset.filter(date_created__date__range=[from_date, to_date])
+            qs = self.get_queryset().filter(date_created__date__range=[from_date, to_date])
             response = self.append_orders(qs)
             return Response(response, status.HTTP_200_OK)
         except KeyError:
@@ -1799,7 +1798,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             "customer_order_record", "created_by"
         )
 
-    def retrieve(self, request, pk=None) -> Dict:
+    def retrieve(self, request, pk=None) -> Response:
         instance = self.get_object()
         response: Dict = {
             "id": instance.id,
@@ -1817,8 +1816,8 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         }
         return Response(response, status.HTTP_200_OK)
 
-    def list(self, request, *args, **kwargs) -> List[Dict]:
-        response: Dict = self.get_list(self.queryset)
+    def list(self, request, *args, **kwargs) -> Response:
+        response: List[dict] = self.get_list(self.get_queryset())
 
         return Response(response, status.HTTP_200_OK)
 
@@ -1997,7 +1996,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_paid(self, request, *args, **kwargs):
         res: List[Dict] = []
-        filtered_qs = self.queryset.filter(payment_status="paid")
+        filtered_qs = self.get_queryset().filter(payment_status="paid")
         [
             res.append(
                 {
@@ -2020,7 +2019,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_partial(self, request, *args, **kwargs):
         res: List[Dict] = []
-        filtered_qs = self.queryset.filter(payment_status="partial")
+        filtered_qs = self.get_queryset().filter(payment_status="partial")
         [
             res.append(
                 {
@@ -2045,7 +2044,7 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
     )
     def get_all_unpaid(self, request, *args, **kwargs):
         res: List[Dict] = []
-        filtered_qs = self.queryset.filter(payment_status="unpaid")
+        filtered_qs = self.get_queryset().filter(payment_status="unpaid")
         [
             res.append(
                 {
