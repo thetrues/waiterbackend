@@ -322,10 +322,10 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         ).select_related("main_inventory_item", "main_inventory_item__item")
 
     def get_data(self, request) -> Tuple[int, MainInventoryItemRecord, int]:
-        item_record_id = int(request.data.get("item_record_id"))
-        quantity_out = int(request.data.get("quantity_out"))
+        item_record_id: int = int(request.data.get("item_record_id"))
+        quantity_out: int = int(request.data.get("quantity_out"))
         item = MainInventoryItemRecord.objects.get(id=int(item_record_id))
-        available_quantity = item.available_quantity
+        available_quantity: int = item.available_quantity
 
         return quantity_out, item, available_quantity
 
@@ -357,14 +357,14 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def list_items(self, request, *args, **kwargs):
-        names: List = self.get_items_names(self.queryset)
+        names: List = self.get_items_names(self.get_queryset())
         response: List = []
 
         data = self.get_response(names, response)
 
         return Response(data, status.HTTP_200_OK)
 
-    def get_response(self, names: list, response: list) -> Dict:
+    def get_response(self, names: list, response: list) -> List:
         for i in range(len(names)):
             temp_resp: Dict = {}
             temp_resp["id"] = i + 1
@@ -425,7 +425,7 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
                     "time_created": str(order.date_created).split(" ")[1].split(".")[0],
                 }
             )
-            for order in self.queryset
+            for order in self.get_queryset()
         ]
         return Response(res, status=status.HTTP_200_OK)
 
