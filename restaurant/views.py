@@ -148,7 +148,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
                     "stock_out_history": obj.stock_out_history,
                 }
             )
-            for obj in self.queryset
+            for obj in self.get_queryset()
         ]
 
         return Response(response, status.HTTP_200_OK)
@@ -157,8 +157,8 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         detail=False,
         methods=["GET"],
     )
-    def list_items(self, request, *args, **kwargs) -> List:
-        names: List = self.get_items_names(self.queryset)
+    def list_items(self, request, *args, **kwargs) -> Response:
+        names: List = self.get_items_names(self.get_queryset())
         response: List = []
         data = self.get_response(names, response)
 
@@ -207,7 +207,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     def get_items_available_quantity_unit(
             self, names, index
     ) -> Tuple[QuerySet, int, str]:
-        item_qs = self.queryset.filter(main_inventory_item__item__name=names[index])
+        item_qs = self.get_queryset().filter(main_inventory_item__item__name=names[index])
         available_quantity = item_qs.aggregate(
             available_quantity=Sum("available_quantity")
         )["available_quantity"]
@@ -254,8 +254,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             self.create_stock_out(request, quantity_out, item)
             self.reduce_availability(quantity_out, item, available_quantity)
             if (
-                    item.available_quantity <= item.threshold
-                    and item.available_quantity > 0
+                    item.threshold >= item.available_quantity > 0
             ):
                 item.send_notification(
                     message="{} is nearly out of stock. The remained quantity is {} {}".format(
