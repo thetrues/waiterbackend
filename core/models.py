@@ -137,7 +137,7 @@ class BaseConfig(models.Model):
         ]
 
 
-ITEM_FOR_TYPE: Set[Set] = (
+ITEM_FOR_TYPE = (
     ("bar", "Bar"),
     ("restaurant", "Restaurant"),
     ("both", "Both"),
@@ -155,13 +155,13 @@ class Item(BaseConfig):
     item_for = models.CharField(max_length=10, choices=ITEM_FOR_TYPE)
 
 
-PAYMENT_STATUS_CHOICES: Set[Set] = (
+PAYMENT_STATUS_CHOICES = (
     ("paid", "Fully Paid"),
     ("partial", "Partially Paid"),
     ("unpaid", "Not Paid"),
 )
 
-PAYMENT_METHODS: Set[Set] = (
+PAYMENT_METHODS = (
     ("cash", "Cash"),
     ("mobile", "Mobile Money"),
     ("card", "Credit Card"),

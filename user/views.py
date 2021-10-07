@@ -55,16 +55,18 @@ class LoginView(APIView):
 class GetAllUsersView(APIView):
     """GetUsersView
 
-    get(self, request, format=None)
+    get(self, request, format="JSON")
         Returns a list of users
     """
 
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
-    def get(self, request, format=None):
+    def get(self, request):
         """Returns a list of all users"""
-        users = User.objects.all()
+
+        request_user_id: int = request.user.id
+        users = User.objects.exclude(id=request_user_id)
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

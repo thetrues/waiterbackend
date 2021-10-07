@@ -54,7 +54,7 @@ class MainInventoryItemRecord(BaseInventory):
         return self.main_inventory_item.item.name
 
     @property
-    def estimate_sales(self):
+    def estimate_sales(self) -> float:
         return float(
             self.main_inventory_item.amount_per_unit
             * self.main_inventory_item.price_per_unit
@@ -78,9 +78,9 @@ class MainInventoryItemRecord(BaseInventory):
         try:
             SMS.send_sms(message, recipients, source_addr="RESTAURANT")
         except Exception as e:
-            errorName = str(e)
+            error_name: str = str(e)
             return requests.models.Response(
-                json.dumps(errorName),
+                json.dumps(error_name),
                 status=500,
             )
 

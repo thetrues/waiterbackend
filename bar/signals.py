@@ -15,30 +15,24 @@ from typing import NoReturn
 
 
 @receiver(post_save, sender=RegularOrderRecord)
-def alter_regular_inventory_record(sender, instance, created, **kwargs) -> NoReturn:
+def alter_regular_inventory_record(sender, instance, created, **kwargs):
     # sourcery skip: last-if-guard
     if created:
-        id = instance.item.item.id
-        regular_item_record = RegularInventoryRecord.objects.filter(
-            item__id=id, stock_status="available"
-        ).first()
-        regular_item_record.available_quantity = int(instance.quantity)
-        regular_item_record.save()
-        if regular_item_record.available_quantity == 0:
-            regular_item_record.stock_status = "unavailable"
-            regular_item_record.date_perished = timezone.now()
-            regular_item_record.save()
-
-
-# @receiver(post_save, sender=CustomerRegularOrderRecord)
-# def reduce_inv_item_for(sender, instance, created, **kwargs) -> NoReturn:
-#     # sourcery skip: last-if-guard
-#     if created:
-#         perform_alter(instance)
+        pass
+        # id = instance.item.item.id
+        # regular_item_record = RegularInventoryRecord.objects.filter(
+        #     item__id=id, stock_status="available"
+        # ).first()
+        # regular_item_record.available_quantity = int(instance.quantity)
+        # regular_item_record.save()
+        # if regular_item_record.available_quantity == 0:
+        #     regular_item_record.stock_status = "unavailable"
+        #     regular_item_record.date_perished = timezone.now()
+        #     regular_item_record.save()
 
 
 @receiver(post_save, sender=TekilaInventoryRecord)
-def set_tekila_available_quantity(sender, instance, created, **kwargs) -> NoReturn:
+def set_tekila_available_quantity(sender, instance, created, **kwargs):
     # sourcery skip: last-if-guard
     if created:
         instance.available_quantity -= instance.total_shots_per_tekila
@@ -46,7 +40,7 @@ def set_tekila_available_quantity(sender, instance, created, **kwargs) -> NoRetu
 
 
 @receiver(post_save, sender=RegularInventoryRecord)
-def set_regular_available_quantity(sender, instance, created, **kwargs) -> NoReturn:
+def set_regular_available_quantity(sender, instance, created, **kwargs):
     # sourcery skip: last-if-guard
     if created:
         instance.available_quantity = instance.total_items
@@ -54,7 +48,7 @@ def set_regular_available_quantity(sender, instance, created, **kwargs) -> NoRet
 
 
 @receiver(post_save, sender=CreditCustomerRegularTequilaOrderRecordPaymentHistory)
-def update_payment_amounts(sender, instance, created, **kwargs) -> NoReturn:
+def update_payment_amounts(sender, instance, created, **kwargs):
     if created:
         obj = instance.credit_customer_payment
         obj.amount_paid = obj.amount_paid + instance.amount_paid
@@ -65,7 +59,7 @@ def update_payment_amounts(sender, instance, created, **kwargs) -> NoReturn:
         obj2.date_updated = timezone.now()
         obj2.save()
 
-        total = CreditCustomerRegularTequilaOrderRecordPaymentHistory.objects.filter(
+        total: int = CreditCustomerRegularTequilaOrderRecordPaymentHistory.objects.filter(
             credit_customer_payment=instance.credit_customer_payment
         ).aggregate(total=Sum("amount_paid"))["total"]
 
@@ -78,29 +72,3 @@ def update_payment_amounts(sender, instance, created, **kwargs) -> NoReturn:
             obj2.payment_status = "partial"
 
         obj2.save()
-
-
-# @receiver(post_save, sender=CreditCustomerTequilaOrderRecordPaymentHistory)
-# def update_amounts_paid_for_tequila(sender, instance, created, **kwargs):
-#     if created:
-#         object = instance.credit_customer_payment
-#         object.amount_paid = object.amount_paid + instance.amount_paid
-#         object.save()
-
-#         object2 = instance.credit_customer_payment.record_order_payment_record
-#         object2.amount_paid = object2.amount_paid + instance.amount_paid
-#         object2.date_updated = timezone.now()
-#         object2.save()
-
-#         total = CreditCustomerTequilaOrderRecordPaymentHistory.objects.filter(
-#             credit_customer_payment=object
-#         ).aggregate(total=Sum("amount_paid"))["total"]
-
-#         if total == 0:
-#             object2.payment_status = "unpaid"
-#         elif total >= object2.get_total_amount_to_pay:
-#             object2.payment_status = "paid"
-#         else:
-#             object2.payment_status = "partial"
-
-#         object2.save()

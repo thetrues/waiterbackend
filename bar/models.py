@@ -28,6 +28,9 @@ class RegularInventoryRecord(BaseInventory):
     def __str__(self) -> str:
         return str(self.item)
 
+    def formatNameAndUnit(self) -> str:
+        return self.item.name + " " + self.item.unit.name
+
     def estimate_sales(self) -> float:
         return self.selling_price_per_item * self.total_items
 
@@ -51,6 +54,9 @@ class TekilaInventoryRecord(BaseInventory):
 
     def __str__(self) -> str:
         return self.item.name
+
+    def formatNameAndUnit(self) -> str:
+        return self.item.name + " " + self.item.unit.name
 
     def estimate_sales(self) -> float:
         return self.selling_price_per_shot * self.total_shots_per_tekila * self.quantity
@@ -195,8 +201,8 @@ class RegularOrderRecord(BaseOrderRecord):
         return self.item.item.name
 
     @property
-    def total(self) -> float:
-        return float(self.item.selling_price_per_item * self.quantity)
+    def total(self) -> int:
+        return self.item.selling_price_per_item * self.quantity
 
     class Meta:
         ordering: List[str] = ["-id"]
@@ -208,9 +214,9 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
     orders = models.ManyToManyField(RegularOrderRecord)
 
     @property
-    def get_total_price(self) -> float:
+    def get_total_price(self) -> int:
         """f(n) = n . Linear Function"""
-        res_: float = 0.0
+        res_: int = 0
         for order in self.orders.all():
             res_ += order.total
 
@@ -251,18 +257,18 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
 
         return payment_status
 
-    def get_paid_amount(self) -> float:
-        paid_amount: float = self.customerregularorderrecordpayment_set.aggregate(
+    def get_paid_amount(self) -> int:
+        paid_amount: int = self.customerregularorderrecordpayment_set.aggregate(
             total=Sum("amount_paid")
         )["total"]
 
         if paid_amount:
             return paid_amount
         else:
-            return 0.0
+            return 0
 
-    def get_remained_amount(self) -> float:
-        paid_amount: float = self.get_paid_amount()
+    def get_remained_amount(self) -> int:
+        paid_amount: int = self.get_paid_amount()
 
         if paid_amount:
             return self.get_total_price - self.get_paid_amount()
@@ -286,12 +292,12 @@ class CustomerRegularOrderRecordPayment(BasePayment):
         )
 
     @property
-    def get_total_amount_to_pay(self):
-        return float(self.customer_order_record.get_total_price)
+    def get_total_amount_to_pay(self) -> int:
+        return self.customer_order_record.get_total_price
 
     @property
-    def get_remaining_amount(self):
-        return float(self.get_total_amount_to_pay - self.amount_paid)
+    def get_remaining_amount(self) -> int:
+        return self.get_total_amount_to_pay - self.amount_paid
 
     class Meta:
         ordering: List[str] = ["-id"]
@@ -304,10 +310,8 @@ class CreditCustomerRegularOrderRecordPayment(BaseCreditCustomerPayment):
         CustomerRegularOrderRecordPayment, on_delete=models.CASCADE
     )
 
-    def get_credit_payable_amount(self) -> float:
-        dish_total_price: float = (
-            self.record_order_payment_record.customer_order_record.get_total_price
-        )
+    def get_credit_payable_amount(self) -> int:
+        dish_total_price: int = self.record_order_payment_record.customer_order_record.get_total_price
 
         return dish_total_price - self.amount_paid
 
@@ -374,8 +378,7 @@ class CreditCustomerTequilaOrderRecordPaymentHistory(models.Model):
         )
 
 
-### Start Major Changes
-
+# Start Major Changes
 
 class RegularTequilaOrderRecord(models.Model):
     regular_items = models.ManyToManyField(RegularOrderRecord)
@@ -389,8 +392,8 @@ class RegularTequilaOrderRecord(models.Model):
 
         return "Bar Order Number: %s" % self.order_number
 
-    def get_total_price(self) -> float:
-        res_: float = 0.0
+    def get_total_price(self) -> int:
+        res_: int = 0
         for r_order in self.regular_items.all():
             res_ += r_order.total
 

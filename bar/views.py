@@ -49,6 +49,8 @@ from bar.serializers import (
 from core.models import CreditCustomer, Item
 from core.serializers import InventoryItemSerializer
 from core.utils import get_date_objects, orders_number_generator, validate_dates
+from restaurant.models import MainInventoryItemRecord
+from restaurant.utils import get_recipients
 from user.models import User
 
 
@@ -705,8 +707,7 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         return Response(res, status.HTTP_200_OK)
 
 
-#### Sales Changes Starts
-
+# Sales Changes Starts
 
 class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     serializer_class = RegularTequilaOrderRecordSerializer
@@ -806,6 +807,23 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 date_created=timezone.now(),
             )
             object.tequila_items.add(tequila_order_object)
+            # Deduct tequila shots in the Inventory
+            tequila_item = tequila_order_object.item
+            tequila_item.total_shots_per_tequila -= tequila_order["shots_quantity"]
+            tequila_item.save()
+            if tequila_item.total_shots_per_tequila == 0:
+                tequila_item.stock_status = "unavailable"
+                tequila_item.date_perished = timezone.now()
+                tequila_item.save()
+                msg: str = "{} is out of stock.".format(tequila_item.item.name)
+                MainInventoryItemRecord.send_notification(message=msg, recipients=get_recipients())
+
+            elif tequila_item.threshold >= tequila_item.total_shots_per_tequila:
+                msg: str = "{} is nearly out of stock. The remained quantity is {}.".format(
+                    tequila_item.item.name,
+                    tequila_item.formatNameAndUnit()
+                )
+                MainInventoryItemRecord.send_notification(message=msg, recipients=get_recipients())
 
     def create_regular_orders(self, request, object, regular_orders):
         for regular_order in regular_orders:
@@ -819,6 +837,23 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 date_created=timezone.now(),
             )
             object.regular_items.add(regular_order_object)
+            # Deduct regular items in the Inventory
+            regular_item = regular_order_object.item
+            regular_item.available_quantity -= regular_order["quantity"]
+            regular_item.save()
+            if regular_item.available_quantity == 0:
+                regular_item.stock_status = "unavailable"
+                regular_item.date_perished = timezone.now()
+                regular_item.save()
+                msg: str = "{} is out of stock.".format(regular_item.item.name)
+                MainInventoryItemRecord.send_notification(message=msg, recipients=get_recipients())
+
+            elif regular_item.threshold >= regular_item.available_quantity:
+                msg: str = "{} is nearly out of stock. The remained quantity is {}.".format(
+                    regular_item.item.name,
+                    regular_item.formatNameAndUnit()
+                )
+                MainInventoryItemRecord.send_notification(message=msg, recipients=get_recipients())
 
     @action(
         detail=False,
