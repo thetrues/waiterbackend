@@ -237,7 +237,7 @@ class MonthlyReport(BaseReport, APIView):
 class CustomDateReport(BaseReport, APIView):
     """Get a custom date report"""
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         response: Dict = {}
         first_date = request.data.get("first_date")
         second_date = request.data.get("second_date")
@@ -264,7 +264,7 @@ class CustomDateReport(BaseReport, APIView):
 
         return Response(response, status.HTTP_200_OK)
 
-    def get_custom_dates(self, response: Dict, date1, date2) -> str:
+    def get_custom_dates(self, response: Dict, date1, date2):
         response["dates"] = "{} TO {}".format(str(date1), str(date2))
 
     def get_expenses_response(self, response: Dict, date1, date2) -> Dict:
