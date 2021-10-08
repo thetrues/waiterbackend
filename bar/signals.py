@@ -18,7 +18,7 @@ from typing import NoReturn
 def set_tekila_available_quantity(sender, instance, created, **kwargs):
     # sourcery skip: last-if-guard
     if created:
-        instance.available_quantity -= instance.total_shots_per_tekila
+        instance.available_quantity = instance.total_shots_per_tekila
         instance.save()
 
 
