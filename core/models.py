@@ -162,9 +162,9 @@ PAYMENT_STATUS_CHOICES = (
 )
 
 PAYMENT_METHODS = (
-    ("Cash", "Cash"),
-    ("Mobile", "Mobile Money"),
-    ("Card", "Credit Card"),
+    ("cash", "Cash"),
+    ("mobile", "Mobile Money"),
+    ("card", "Credit Card"),
 )
 
 
