@@ -21,13 +21,13 @@ def orders_number_generator(sender, field_name) -> int:
     """
 
     try:
-        object = sender.objects.first()
+        object_ = sender.objects.first()
         if field_name == "customer_orders_number":
-            number: int = int(object.customer_orders_number) + 1
+            number: int = int(object_.customer_orders_number) + 1
         elif field_name == "order_number":
-            number: int = int(object.order_number) + 1
+            number: int = int(object_.order_number) + 1
         elif field_name == "dish_number":
-            number: int = int(object.dish_number) + 1
+            number: int = int(object_.dish_number) + 1
     except:
         number: int = 100
 

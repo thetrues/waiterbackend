@@ -1,6 +1,8 @@
 from rest_framework.response import Response
 from django.db.models.aggregates import Sum
 from rest_framework.views import APIView
+
+from bar.models import CustomerRegularTequilaOrderRecordPayment
 from core.utils import get_date_objects
 from restaurant.models import (
     MainInventoryItemRecordStockOut,
@@ -101,9 +103,8 @@ class DailyReport(BaseReport, APIView):
 
     def get_queryset(self, todays_date):
         return (
-            CustomerDishPayment.objects.filter(date_paid__date=todays_date)
-            .select_related("customer_dish")
-            .prefetch_related("customer_dish__orders")
+            CustomerRegularTequilaOrderRecordPayment.objects.filter(date_paid__date=todays_date)
+            .select_related("customer_regular_tequila_order_record", "created_by")
         )
 
 

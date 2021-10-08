@@ -28,7 +28,7 @@ class RegularInventoryRecord(BaseInventory):
     def __str__(self) -> str:
         return str(self.item)
 
-    def formatNameAndUnit(self) -> str:
+    def format_name_unit(self) -> str:
         return self.item.name + " " + self.item.unit.name
 
     def estimate_sales(self) -> float:
@@ -55,7 +55,7 @@ class TekilaInventoryRecord(BaseInventory):
     def __str__(self) -> str:
         return self.item.name
 
-    def formatNameAndUnit(self) -> str:
+    def format_name_unit(self) -> str:
         return self.item.name + " " + self.item.unit.name
 
     def estimate_sales(self) -> float:
@@ -460,7 +460,7 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
         return "Customer Orders Number: %s" % self.customer_orders_number
 
     def get_payment_status(self) -> str:
-        total_payment: float = self.get_paid_amount()
+        total_payment: int = self.get_paid_amount()
 
         if (
                 total_payment
@@ -478,18 +478,17 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         return payment_status
 
-    def get_paid_amount(self) -> float:
-        paid_amount: float = (
+    def get_paid_amount(self) -> int:
+        paid_amount: int = (
             self.customerregulartequilaorderrecordpayment_set.aggregate(
                 total=Sum("amount_paid")
             )["total"]
         )
-        # if paid_amount and paid_amount
 
-        return paid_amount or 0.0
+        return paid_amount or 0
 
-    def get_remained_amount(self) -> float:
-        paid_amount: float = self.get_paid_amount()
+    def get_remained_amount(self) -> int:
+        paid_amount: int = self.get_paid_amount()
 
         if paid_amount:
             return (

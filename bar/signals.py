@@ -14,23 +14,6 @@ from django.utils import timezone
 from typing import NoReturn
 
 
-@receiver(post_save, sender=RegularOrderRecord)
-def alter_regular_inventory_record(sender, instance, created, **kwargs):
-    # sourcery skip: last-if-guard
-    if created:
-        pass
-        # id = instance.item.item.id
-        # regular_item_record = RegularInventoryRecord.objects.filter(
-        #     item__id=id, stock_status="available"
-        # ).first()
-        # regular_item_record.available_quantity = int(instance.quantity)
-        # regular_item_record.save()
-        # if regular_item_record.available_quantity == 0:
-        #     regular_item_record.stock_status = "unavailable"
-        #     regular_item_record.date_perished = timezone.now()
-        #     regular_item_record.save()
-
-
 @receiver(post_save, sender=TekilaInventoryRecord)
 def set_tekila_available_quantity(sender, instance, created, **kwargs):
     # sourcery skip: last-if-guard
