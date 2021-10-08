@@ -7,7 +7,7 @@ from django.utils import timezone
 from user.models import User
 
 
-STOKE_STATUS_CHOICES = (
+STOCK_STATUS_CHOICES = (
     ("available", "Available"),
     ("unavailable", "Unavailable"),
 )
@@ -21,7 +21,7 @@ class BaseInventory(models.Model):
     date_perished = models.DateField(null=True, blank=True)
     stock_status = models.CharField(
         max_length=11,
-        choices=STOKE_STATUS_CHOICES,
+        choices=STOCK_STATUS_CHOICES,
         null=True,
         blank=True,
         default="available",
