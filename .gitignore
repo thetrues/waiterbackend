@@ -120,3 +120,6 @@ media/
 media
 media/
 /media/
+
+# IntellJ IDEA files
+.idea/
