@@ -809,18 +809,18 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             self.deduct_tequila_inventory(tequila_order, tequila_item)
 
     def deduct_tequila_inventory(self, tequila_order, tequila_item):
-        tequila_item.total_shots_per_tequila = (
-            tequila_item.total_shots_per_tequila - tequila_order["shots_quantity"]
+        tequila_item.total_shots_per_tekila = (
+            tequila_item.total_shots_per_tekila - tequila_order["shots_quantity"]
         )
         tequila_item.save()
-        if tequila_item.total_shots_per_tequila == 0:
+        if tequila_item.total_shots_per_tekila == 0:
             tequila_item.stock_status = "unavailable"
             tequila_item.date_perished = timezone.now()
             tequila_item.save()
             msg: str = "{} is out of stock.".format(tequila_item.item.name)
             send_notification(message=msg, recipients=get_recipients())
 
-        elif tequila_item.threshold >= tequila_item.total_shots_per_tequila:
+        elif tequila_item.threshold >= tequila_item.total_shots_per_tekila:
             msg: str = "{} is nearly out of stock. The remained quantity is {}.".format(
                 tequila_item.item.name, tequila_item.format_name_unit()
             )
