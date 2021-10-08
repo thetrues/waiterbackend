@@ -809,7 +809,9 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             self.deduct_tequila_inventory(tequila_order, tequila_item)
 
     def deduct_tequila_inventory(self, tequila_order, tequila_item):
-        tequila_item.total_shots_per_tequila -= tequila_order["shots_quantity"]
+        tequila_item.total_shots_per_tequila = (
+            tequila_item.total_shots_per_tequila - tequila_order["shots_quantity"]
+        )
         tequila_item.save()
         if tequila_item.total_shots_per_tequila == 0:
             tequila_item.stock_status = "unavailable"
@@ -841,7 +843,9 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             self.deduct_regular_inventory(regular_item, regular_order)
 
     def deduct_regular_inventory(self, regular_item, regular_order):
-        regular_item.available_quantity -= regular_order["quantity"]
+        regular_item.available_quantity = (
+            regular_item.available_quantity - regular_order["quantity"]
+        )
         regular_item.save()
         if regular_item.available_quantity == 0:
             regular_item.stock_status = "unavailable"
