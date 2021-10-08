@@ -50,7 +50,7 @@ from core.models import CreditCustomer, Item
 from core.serializers import InventoryItemSerializer
 from core.utils import get_date_objects, orders_number_generator, validate_dates
 from restaurant.models import MainInventoryItemRecord
-from restaurant.utils import get_recipients
+from restaurant.utils import get_recipients, send_notification
 from user.models import User
 
 
@@ -816,18 +816,13 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             tequila_item.date_perished = timezone.now()
             tequila_item.save()
             msg: str = "{} is out of stock.".format(tequila_item.item.name)
-            self.send_notif(msg)
+            send_notification(message=msg, recipients=get_recipients())
 
         elif tequila_item.threshold >= tequila_item.total_shots_per_tequila:
             msg: str = "{} is nearly out of stock. The remained quantity is {}.".format(
                 tequila_item.item.name, tequila_item.format_name_unit()
             )
-            self.send_notif(msg)
-
-    def send_notif(self, msg):
-        MainInventoryItemRecord.send_notification(
-            message=msg, recipients=get_recipients()
-        )
+            send_notification(message=msg, recipients=get_recipients())
 
     def create_regular_orders(self, request, object_, regular_orders):
         for regular_order in regular_orders:
