@@ -848,13 +848,13 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             regular_item.date_perished = timezone.now()
             regular_item.save()
             msg: str = "{} is out of stock.".format(regular_item.item.name)
-            self.send_notif(msg)
+            send_notification(message=msg, recipients=get_recipients())
 
         elif regular_item.threshold >= regular_item.available_quantity:
             msg: str = "{} is nearly out of stock. The remained quantity is {}.".format(
                 regular_item.item.name, regular_item.format_name_unit()
             )
-            self.send_notif(msg)
+            send_notification(message=msg, recipients=get_recipients())
 
     @action(
         detail=False,
