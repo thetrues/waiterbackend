@@ -100,11 +100,14 @@ class MonthlyReport(APIView):
 
     def get_expenses_response(self, response: Dict, this_month) -> Dict:
         expenses: Dict = {}
-        monthly_payroll = self.get_monthly_payroll(this_month)
-        expenses["payrolls"] = monthly_payroll
-        response["expenses"] = expenses
+        # monthly_payroll = self.get_monthly_payroll(this_month)
+        expenses["payrolls"] = BarPayrol.objects.filter(
+            date_paid__month=this_month.month, date_paid__year=this_month.year
+        ).aggregate(total=Sum("amount_paid"))[
+                                   "total"
+                               ] or 0
 
-        return response
+        return expenses
 
     def get_monthly_payroll(self, this_month) -> Dict:
         monthly_payroll: Dict = {}
