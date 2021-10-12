@@ -300,7 +300,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             "created_by"
         ).prefetch_related("orders")
 
-    def retrieve(self, request, pk=None) -> Dict:
+    def retrieve(self, request, pk=None) -> Response:
         instance = self.get_object()
         response: Dict = {
             "id": instance.id,
@@ -315,7 +315,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
         }
         return Response(response, status.HTTP_200_OK)
 
-    def create(self, request, *args, **kwargs) -> Dict:
+    def create(self, request, *args, **kwargs) -> Response:
         try:
             data = self.perform_create(request)
 
@@ -361,7 +361,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             object.orders.add(order)
         object.save()
 
-    def list(self, request, *args, **kwargs) -> List[Dict]:
+    def list(self, request, *args, **kwargs) -> Response:
 
         return Response(self.get_list(self.queryset), status.HTTP_200_OK)
 
