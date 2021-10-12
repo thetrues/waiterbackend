@@ -7,7 +7,7 @@ from django.urls import path
 from rest_framework.schemas import get_schema_view
 
 from bar import views as bar_views
-from reports import bar_views as reports_bar_views
+from reports import combined_views as combined_views
 from reports import restaurant_views as reports_restaurant_views
 from restaurant import views as restaurant_views
 
@@ -42,15 +42,15 @@ urlpatterns = (
             # Reports Bar
             path(
                 "w/api/bar/reports/get-daily-report",
-                reports_bar_views.DailyReport.as_view(),
+                combined_views.DailyReport.as_view(),
             ),
             path(
                 "w/api/bar/reports/get-monthly-report",
-                reports_bar_views.MonthlyReport.as_view(),
+                combined_views.MonthlyReport.as_view(),
             ),
             path(
                 "w/api/bar/reports/get-custom-report",
-                reports_bar_views.CustomDateReport.as_view(),
+                combined_views.CustomDateReport.as_view(),
             ),
             path("waiterapi/", get_schema_view(
                 title="Waiter",

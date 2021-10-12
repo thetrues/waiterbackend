@@ -33,7 +33,7 @@ class DailyReport(BaseReport, APIView):
         total_sales = response["sales"]["total_sales"]
         total_expenses = response["expenses"]["total_expense"]
 
-        response["balance"] = total_sales or 0.0 - total_expenses
+        response["balance"] = total_sales or 0 - total_expenses
 
         return Response(response, status.HTTP_200_OK)
 
@@ -42,7 +42,7 @@ class DailyReport(BaseReport, APIView):
         total_misc_expense, misc_qs = self.get_total_misc_expense_and_misc_qs(
             todays_date
         )
-        total_main_expense, gabbage = self.get_total_main_expense_and_main_qs(
+        total_main_expense, garbage = self.get_total_main_expense_and_main_qs(
             todays_date
         )
         misc_inventory = self.assign_total_expense(

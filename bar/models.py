@@ -3,6 +3,8 @@ from abc import ABC
 from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
 from typing import Dict, List, Set
+
+from bar.managers import BarPayrolCustomManager
 from user.models import User
 from django.db import models
 from core.models import (
@@ -459,6 +461,9 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         return "Customer Orders Number: %s" % self.customer_orders_number
 
+    def get_total_price(self) -> float:
+        return self.regular_tequila_order_record.get_total_price()
+
     def get_payment_status(self) -> str:
         total_payment: int = self.get_paid_amount()
 
@@ -590,7 +595,7 @@ class CreditCustomerRegularTequilaOrderRecordPaymentHistory(models.Model):
 
 
 class BarPayrol(BasePayrol):
-    """Restaurant Payrol"""
+    """Bar Payroll"""
 
     bar_payee = models.ForeignKey(
         User, related_name="bar_payee", on_delete=models.CASCADE
@@ -598,6 +603,7 @@ class BarPayrol(BasePayrol):
     bar_payer = models.ForeignKey(
         User, related_name="bar_payer", on_delete=models.CASCADE
     )
+    objects = BarPayrolCustomManager()
 
     def __str__(self) -> str:
         return f"{self.bar_payee.username} Paid: {self.amount_paid}"
