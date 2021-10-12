@@ -188,7 +188,7 @@ class CustomDateReport(APIView):
         return expenses
 
     def get_custom_payrolls(self, date1, date2):
-        return BarPayrol.objects.filter(date_paid__date__range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
+        return BarPayrol.objects.filter(date_paid___range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
                    "total"] or 0
 
     def total_sales_and_orders(self, qs, sales):
