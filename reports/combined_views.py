@@ -93,7 +93,7 @@ class MonthlyReport(APIView):
         response["expenses"] = expenses
 
         total_sales = response["sales"]["total_sales"]
-        total_expenses = response["expenses"]
+        total_expenses = response["expenses"]["payrolls"]
         response["balance"] = total_sales - total_expenses
 
         return Response(response, status.HTTP_200_OK)
