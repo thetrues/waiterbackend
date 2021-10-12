@@ -51,7 +51,7 @@ class DailyReport(APIView):
 
     def get_queryset(self, today_date):
         return (
-            CustomerRegularTequilaOrderRecord.objects.filter(date_paid__date=today_date)
+            CustomerRegularTequilaOrderRecord.objects.filter(date_created__date=today_date)
                 .select_related("regular_tequila_order_record", "created_by")
         )
 
@@ -133,8 +133,8 @@ class MonthlyReport(APIView):
     def get_queryset(self, this_month):
         return (
             CustomerRegularTequilaOrderRecord.objects.filter(
-                date_paid__date__year=this_month.year,
-                date_paid__date__month=this_month.month,
+                date_created__date__year=this_month.year,
+                date_created__date__month=this_month.month,
             )
                 .select_related("regular_tequila_order_record", "created_by")
         )
@@ -198,7 +198,7 @@ class CustomDateReport(APIView):
     def get_queryset(self, date1, date2):
         return (
             CustomerRegularTequilaOrderRecord.objects.filter(
-                date_paid__date__range=(date1, date2),
+                date_created__date__range=(date1, date2),
             )
             .select_related("regular_tequila_order_record", "created_by")
         )
