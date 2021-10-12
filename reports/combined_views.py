@@ -102,7 +102,9 @@ class MonthlyReport(APIView):
         expenses: Dict = {}
         monthly_payroll = self.get_monthly_payroll(this_month)
         expenses["payrolls"] = monthly_payroll
-        return expenses
+        response["expenses"] = expenses
+
+        return response
 
     def get_monthly_payroll(self, this_month) -> Dict:
         monthly_payroll: Dict = {}
