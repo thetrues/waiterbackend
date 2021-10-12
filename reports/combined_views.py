@@ -35,6 +35,14 @@ def structure_orders(qs, sales):
     return sales["orders_structure"]
 
 
+def get_total_sales(qs):
+    total_sales: int = 0
+    for q in qs:
+        total_sales += q.customerregulartequilaorderrecordpayment_set.aggregate(total=Sum("amount_paid"))["total"] or 0
+
+    return total_sales
+
+
 class DailyReport(APIView):
     """ Get daily reports """
 
@@ -64,8 +72,7 @@ class DailyReport(APIView):
         return sales
 
     def total_sales_and_orders(self, qs, sales):
-        sales["total_sales"] = qs.customerregulartequilaorderrecordpayment_set.aggregate(total=Sum("amount_paid"))[
-                                   "total"] or 0
+        sales["total_sales"] = get_total_sales(qs)
         sales["total_orders"] = len(qs)
 
 
@@ -119,8 +126,7 @@ class MonthlyReport(APIView):
         return sales
 
     def total_sales_and_orders(self, qs, sales):
-        sales["total_sales"] = qs.customerregulartequilaorderrecordpayment_set.aggregate(total=Sum("amount_paid"))[
-                                   "total"] or 0
+        sales["total_sales"] = get_total_sales(qs)
         sales["total_orders"] = len(qs)
 
     def get_current_month(self, response: Dict) -> str:
@@ -181,8 +187,7 @@ class CustomDateReport(APIView):
                    "total"] or 0
 
     def total_sales_and_orders(self, qs, sales):
-        sales["total_sales"] = qs.customerregulartequilaorderrecordpayment_set.aggregate(total=Sum("amount_paid"))[
-                                   "total"] or 0
+        sales["total_sales"] = get_total_sales(qs)
         sales["total_orders"] = len(qs)
 
     def get_sales_response(self, qs) -> Dict:
@@ -200,5 +205,5 @@ class CustomDateReport(APIView):
             CustomerRegularTequilaOrderRecord.objects.filter(
                 date_created__date__range=(date1, date2),
             )
-            .select_related("regular_tequila_order_record", "created_by")
+                .select_related("regular_tequila_order_record", "created_by")
         )
