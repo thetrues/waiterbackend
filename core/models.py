@@ -272,7 +272,7 @@ class BaseCreditCustomerPayment(models.Model):
 
 
 class BasePayrol(models.Model):
-    """Base Payrol Class"""
+    """Base Payroll Class"""
 
     payment_method = models.CharField(
         max_length=6,
