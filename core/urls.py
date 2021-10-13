@@ -11,7 +11,7 @@ v1 = routers.DefaultRouter()  # a router instance
 # core endpoints
 v1.register("core/measurement-units", core_views.MeasurementUnitViewSet)
 v1.register("core/items", core_views.ItemViewSet)
-v1.register("core/credit-customers", core_views.CreditCustomerViewSet)
+v1.register("core/credit-customers", core_views.CreditCustomerViewSet, basename="CreditCustomer")
 
 # bar endpoints
 v1.register("bar/regular-inventory-record", bar_views.RegularInventoryRecordViewSet, basename="RegularInventoryRecord")
