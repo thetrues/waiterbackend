@@ -269,7 +269,7 @@ class CustomerDish(models.Model):
 
     @property
     def dish_detail(self) -> List[Dict]:
-        orders: List[Dict] = []
+        orders_structure: List[Dict] = []
         for order in self.orders.all():
             temp_order: Dict = {"order_id": order.id, "order_number": order.order_number}
             temp_sub_menu: Dict = {"sub_menu_id": order.sub_menu.id, "sub_menu_name": order.sub_menu.name,
@@ -281,9 +281,9 @@ class CustomerDish(models.Model):
             temp_sub_menu["sub_menu_additives"] = temp_sub_menu_additives
             temp_order["sub_menu"] = temp_sub_menu
             temp_order["quantity"] = order.quantity
-            orders.append(order)
+            orders_structure.append(temp_order)
 
-        return orders
+        return orders_structure
 
     @property
     def get_dish_detail(self) -> List[Dict]:
