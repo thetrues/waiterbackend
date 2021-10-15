@@ -3,7 +3,7 @@ from typing import Dict, List
 
 from django.db.models.aggregates import Sum
 from django.utils import timezone
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
@@ -29,6 +29,7 @@ from bar.models import (
     TequilaOrderRecord,
     BarPayrol,
 )
+from bar.pagination import CustomPagination
 from bar.serializers import (
     CreditCustomerRegularOrderRecordPaymentHistorySerializer,
     CreditCustomerRegularTequilaOrderRecordPaymentHistorySerializer,
@@ -66,6 +67,20 @@ class BarInventoryItemView(ListAPIView):
 
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
     serializer_class = RegularInventoryRecordSerializer
+
+    # class OutputSerializer(serializers.Serializer):
+    #     id = serializers.IntegerField()
+    #     quantity = serializers.IntegerField()
+    #     purchasing_price = serializers.IntegerField()
+    #     date_purchased = serializers.CharField()
+    #     total_items = serializers.IntegerField()
+    #     available_items = serializers.IntegerField()
+    #     threshold = serializers.IntegerField()
+    #     selling_price_per_item = serializers.IntegerField()
+    #     estimated_total_cash_after_sale = serializers.IntegerField()
+    #     estimated_profit_after_sale = serializers.IntegerField()
+    #     item = serializers.CharField()
+    #     measurement_unit = serializers.CharField()
 
     def get_queryset(self):
         return RegularInventoryRecord.objects.select_related("item", "item__unit")
@@ -961,6 +976,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
 
 class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
+    pagination_class = CustomPagination
+
     def get_queryset(self):
         return CustomerRegularTequilaOrderRecord.objects.select_related(
             "created_by",
