@@ -3,7 +3,7 @@ from typing import Dict, List, NoReturn, Tuple
 from django.db.models.aggregates import Sum
 from django.db.models.query import QuerySet
 from django.utils import timezone
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView
@@ -34,7 +34,6 @@ from restaurant.serializers import (
     CustomerDishPaymentSerializer,
     MainInventoryItemSerializer,
     RestaurantPayrolSerializer,
-    CustomerDishSerializer,
     AdditiveSerializer,
     MenuSerializer, ChangeMenuImageSerializer,
 )
@@ -458,70 +457,56 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
 
 
 class CustomerDishViewSet(viewsets.ModelViewSet):
-    serializer_class = CustomerDishSerializer
+    """ Customer Dish API """
+    authentication_classes = []
+    permission_classes = []
+
+    class OutputSerializer(serializers.ModelSerializer):
+        id = serializers.IntegerField()
+        customer_name = serializers.CharField()
+        customer_phone = serializers.CharField()
+        dish_number = serializers.CharField()
+        payable_amount = serializers.IntegerField()
+        paid_amount = serializers.IntegerField()
+        remained_amount = serializers.IntegerField()
+        payment_status = serializers.CharField()
+        orders = serializers.DictField(source="dish_detail")
+
+        class Meta:
+            model = CustomerDish
+            fields = [
+                "id",
+                "customer_name",
+                "customer_phone",
+                "dish_number",
+                "payable_amount",
+                "paid_amount",
+                "remained_amount",
+                "payment_status",
+                "orders",
+            ]
+
+    serializer_class = OutputSerializer
 
     def get_queryset(self):
         return CustomerDish.objects.prefetch_related("orders")
 
-    def list(self, request, *args, **kwargs):
-
-        return Response(self.get_list(), status=status.HTTP_200_OK)
-
-    def get_list(self) -> List[Dict]:
-        res: List[Dict] = []
-        [
-            res.append(
-                {
-                    "id": _.id,
-                    "customer_name": _.customer_name,
-                    "customer_phone": _.customer_phone,
-                    "dish_number": _.dish_number,
-                    "payable_amount": _.get_total_price,
-                    "paid_amount": _.get_paid_amount(),
-                    "remained_amount": _.get_remained_amount(),
-                    "payment_status": _.get_payment_status(),
-                    "orders": self.get_orders(_),
-                }
-            )
-            for _ in self.get_queryset()
-        ]
-
-        return res
-
-    def get_additives(self, object):
-        res: List = []
-        for order in object.orders.all():
-            res.append(
-                {
-                    "order_id": order.id,
-                    "additives": order.additives.values("name"),
-                }
-            )
-        return res
-
     def create(self, request, *args, **kwargs):
-        data = self.perform_create(request)
-        return Response(data, status.HTTP_201_CREATED)
+        object_ = self.perform_create(request)
+        return Response(data=self.OutputSerializer(object_).data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, request) -> Dict:
-        object = CustomerDish.objects.create(
+        object_ = CustomerDish.objects.create(
             customer_name=request.data.get("customer_name"),
             customer_phone=request.data.get("customer_phone"),
             dish_number=orders_number_generator(CustomerDish, "dish_number"),
             created_by=request.user,
         )
-        self.add_orders(request, object)
-        return {
-            "customer_name": object.customer_name,
-            "customer_phone": object.customer_phone,
-            "dish_number": object.dish_number,
-            "total_price": object.get_total_price,
-            "orders": self.get_orders(object),
-            "created_by": object.created_by.username,
-            "date_created": object.date_created,
-        }
+        self.add_orders(request, object_)
 
-    def add_orders(self, request, object):  # Performance Bottleneck 🕵
+        return object_
+
+    def add_orders(self, request, object_):  # Performance Bottleneck 🕵
         """f(n) = n^2 i.e Quadratic Function."""
         for _ in request.data.get("orders"):
             order = RestaurantCustomerOrder.objects.create(
@@ -535,45 +520,8 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             for ad_id in _["additives"]:
                 order.additives.add(Additive.objects.get(id=int(ad_id["id"])))
             order.save()
-            object.orders.add(order)
-            object.save()
-
-    def get_orders(self, object):
-        orders: List[Dict] = []
-
-        def _get_additives_by_order(order):
-            temp: List = []
-            for additive in order.additives.all():
-                temp.append(
-                    {
-                        "additive_id": additive.id,
-                        "additive_name": additive.name,
-                    }
-                )
-            return temp
-
-        try:  # Performance Bottleneck 🕵
-            for order in object.orders.all():
-                self.append_orders(orders, _get_additives_by_order, order)
-        except AttributeError:
-            for order in object.customer_dish.orders.all():
-                self.append_orders(orders, _get_additives_by_order, order)
-        return orders
-
-    def append_orders(self, orders, _get_additives_by_order, order):
-        orders.append(
-            {
-                "order_id": order.id,
-                "order_number": order.order_number,
-                "sub_menu": {
-                    "sub_menu_id": order.sub_menu.id,
-                    "sub_menu_name": order.sub_menu.name,
-                    "sub_menu_price": order.sub_menu.price,
-                    "sub_menu_additives": _get_additives_by_order(order),
-                },
-                "quantity": order.quantity,
-            },
-        )
+            object_.orders.add(order)
+            object_.save()
 
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):

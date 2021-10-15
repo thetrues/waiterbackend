@@ -1,8 +1,10 @@
-from restaurant.managers import RestaurantPayrolCustomManager
+from abc import abstractmethod
+from typing import Dict, List, Set
+
+from django.db import models
 from django.db.models.aggregates import Sum
 from django.db.models.manager import Manager
-from typing import Dict, List, Set
-from abc import abstractmethod
+
 from core.models import (
     BaseCreditCustomerPayment,
     BaseInventory,
@@ -11,8 +13,9 @@ from core.models import (
     BasePayrol,
     Item,
 )
-from django.db import models
+from restaurant.managers import RestaurantPayrolCustomManager
 from user.models import User
+
 
 # Inventory
 
@@ -220,11 +223,67 @@ class CustomerDish(models.Model):
         return f"{self.customer_name}: Dish #{self.dish_number}"
 
     @property
+    def payable_amount(self):
+        res_: int = 0
+        for order in self.orders.all():
+            res_ += order.total
+        return res_
+
+    @property
+    def paid_amount(self) -> int:
+        paid_amount: int = self.customerdishpayment_set.aggregate(
+            total=Sum("amount_paid")
+        )["total"]
+
+        if paid_amount:
+            return paid_amount
+        else:
+            return 0
+
+    @property
+    def remained_amount(self) -> int:
+        paid_amount: int = self.get_paid_amount()
+
+        if paid_amount:
+            return self.get_total_price - self.get_paid_amount()
+        return self.get_total_price
+
+    @property
     def get_total_price(self) -> int:
         res_: int = 0
         for order in self.orders.all():
             res_ += order.total
         return res_
+
+    @property
+    def payment_status(self) -> str:
+        total_payment = self.get_paid_amount()
+
+        if total_payment and total_payment >= self.get_total_price:
+            payment_status: str = "Fully Paid"
+        elif total_payment and self.get_total_price <= 0 or not total_payment:
+            payment_status: str = "Not Paid"
+        else:
+            payment_status: str = "Partially Paid"
+        return payment_status
+
+    @property
+    def dish_detail(self) -> List[Dict]:
+        orders: List[Dict] = []
+        for order in self.orders.all():
+            temp_order: Dict = {"order_id": order.id, "order_number": order.order_number}
+            temp_sub_menu: Dict = {"sub_menu_id": order.sub_menu.id, "sub_menu_name": order.sub_menu.name,
+                                   "sub_menu_price": order.sub_menu.price}
+            temp_sub_menu_additives: Dict = {}
+            for additive in order.sub_menu.additives.all():
+                temp_sub_menu_additives["additive_id"] = additive.id
+                temp_sub_menu_additives["additive_name"] = additive.name
+            temp_sub_menu["sub_menu_additives"] = temp_sub_menu_additives
+            temp_order["sub_menu"] = temp_sub_menu
+            temp_order["quantity"] = order.quantity
+            orders.append(order)
+
+        return orders
 
     @property
     def get_dish_detail(self) -> List[Dict]:
@@ -356,7 +415,6 @@ class RestaurantPayrol(BasePayrol):
     objects = RestaurantPayrolCustomManager()
 
     def __str__(self):
-
         return f"{self.restaurant_payee.username} Paid: {self.amount_paid}"
 
     # def get_monthly_payrolls(self):
