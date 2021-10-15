@@ -34,7 +34,6 @@ from restaurant.serializers import (
     CustomerDishPaymentSerializer,
     MainInventoryItemSerializer,
     RestaurantPayrolSerializer,
-    CustomerDishSerializer,
     AdditiveSerializer,
     MenuSerializer, ChangeMenuImageSerializer,
 )
@@ -458,46 +457,37 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
 
 
 class CustomerDishViewSet(viewsets.ModelViewSet):
-    serializer_class = CustomerDishSerializer
+    """ Customer Dish API """
+
+    class OutputSerializer(serializers.ModelSerializer):
+        id = serializers.IntegerField()
+        customer_name = serializers.CharField()
+        customer_phone = serializers.CharField()
+        dish_number = serializers.CharField()
+        payable_amount = serializers.IntegerField()
+        paid_amount = serializers.IntegerField()
+        remained_amount = serializers.IntegerField()
+        payment_status = serializers.CharField()
+        orders = serializers.ListField(source="dish_detail")
+
+        class Meta:
+            model = CustomerDish
+            fields = [
+                "id",
+                "customer_name",
+                "customer_phone",
+                "dish_number",
+                "payable_amount",
+                "paid_amount",
+                "remained_amount",
+                "payment_status",
+                "orders",
+            ]
+
+    serializer_class = OutputSerializer
 
     def get_queryset(self):
         return CustomerDish.objects.prefetch_related("orders")
-
-    def list(self, request, *args, **kwargs):
-
-        return Response(self.get_list(), status=status.HTTP_200_OK)
-
-    def get_list(self) -> List[Dict]:
-        res: List[Dict] = []
-        [
-            res.append(
-                {
-                    "id": _.id,
-                    "customer_name": _.customer_name,
-                    "customer_phone": _.customer_phone,
-                    "dish_number": _.dish_number,
-                    "payable_amount": _.get_total_price,
-                    "paid_amount": _.get_paid_amount(),
-                    "remained_amount": _.get_remained_amount(),
-                    "payment_status": _.get_payment_status(),
-                    "orders": self.get_orders(_),
-                }
-            )
-            for _ in self.get_queryset()
-        ]
-
-        return res
-
-    def get_additives(self, object_):
-        res: List = []
-        for order in object_.orders.all():
-            res.append(
-                {
-                    "order_id": order.id,
-                    "additives": order.additives.values("name"),
-                }
-            )
-        return res
 
     def create(self, request, *args, **kwargs):
         data = self.perform_create(request)

@@ -274,10 +274,10 @@ class CustomerDish(models.Model):
             temp_order: Dict = {"order_id": order.id, "order_number": order.order_number}
             temp_sub_menu: Dict = {"sub_menu_id": order.sub_menu.id, "sub_menu_name": order.sub_menu.name,
                                    "sub_menu_price": order.sub_menu.price}
-            temp_sub_menu_additives: Dict = {}
+            temp_sub_menu_additives: List = []
             for additive in order.additives.all():
-                temp_sub_menu_additives["additive_id"] = additive.id
-                temp_sub_menu_additives["additive_name"] = additive.name
+                temp_additive: Dict = {"additive_id": additive.id, "additive_name": additive.name}
+                temp_sub_menu_additives.append(temp_additive)
             temp_sub_menu["sub_menu_additives"] = temp_sub_menu_additives
             temp_order["sub_menu"] = temp_sub_menu
             temp_order["quantity"] = order.quantity
