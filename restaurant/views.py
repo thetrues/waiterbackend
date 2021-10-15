@@ -34,6 +34,7 @@ from restaurant.serializers import (
     CustomerDishPaymentSerializer,
     MainInventoryItemSerializer,
     RestaurantPayrolSerializer,
+    CustomerDishSerializer,
     AdditiveSerializer,
     MenuSerializer, ChangeMenuImageSerializer,
 )
@@ -457,43 +458,50 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
 
 
 class CustomerDishViewSet(viewsets.ModelViewSet):
-    """ Customer Dish API """
-    authentication_classes = []
-    permission_classes = []
-
-    class OutputSerializer(serializers.ModelSerializer):
-        id = serializers.IntegerField()
-        customer_name = serializers.CharField()
-        customer_phone = serializers.CharField()
-        dish_number = serializers.CharField()
-        payable_amount = serializers.IntegerField()
-        paid_amount = serializers.IntegerField()
-        remained_amount = serializers.IntegerField()
-        payment_status = serializers.CharField()
-        orders = serializers.ListField(source="dish_detail")
-
-        class Meta:
-            model = CustomerDish
-            fields = [
-                "id",
-                "customer_name",
-                "customer_phone",
-                "dish_number",
-                "payable_amount",
-                "paid_amount",
-                "remained_amount",
-                "payment_status",
-                "orders",
-            ]
-
-    serializer_class = OutputSerializer
+    serializer_class = CustomerDishSerializer
 
     def get_queryset(self):
         return CustomerDish.objects.prefetch_related("orders")
 
+    def list(self, request, *args, **kwargs):
+
+        return Response(self.get_list(), status=status.HTTP_200_OK)
+
+    def get_list(self) -> List[Dict]:
+        res: List[Dict] = []
+        [
+            res.append(
+                {
+                    "id": _.id,
+                    "customer_name": _.customer_name,
+                    "customer_phone": _.customer_phone,
+                    "dish_number": _.dish_number,
+                    "payable_amount": _.get_total_price,
+                    "paid_amount": _.get_paid_amount(),
+                    "remained_amount": _.get_remained_amount(),
+                    "payment_status": _.get_payment_status(),
+                    "orders": self.get_orders(_),
+                }
+            )
+            for _ in self.get_queryset()
+        ]
+
+        return res
+
+    def get_additives(self, object_):
+        res: List = []
+        for order in object_.orders.all():
+            res.append(
+                {
+                    "order_id": order.id,
+                    "additives": order.additives.values("name"),
+                }
+            )
+        return res
+
     def create(self, request, *args, **kwargs):
-        object_ = self.perform_create(request)
-        return Response(data=self.OutputSerializer(object_).data, status=status.HTTP_201_CREATED)
+        data = self.perform_create(request)
+        return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request) -> Dict:
         object_ = CustomerDish.objects.create(
@@ -503,8 +511,15 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             created_by=request.user,
         )
         self.add_orders(request, object_)
-
-        return object_
+        return {
+            "customer_name": object_.customer_name,
+            "customer_phone": object_.customer_phone,
+            "dish_number": object_.dish_number,
+            "total_price": object_.get_total_price,
+            "orders": self.get_orders(object_),
+            "created_by": object_.created_by.username,
+            "date_created": object_.date_created,
+        }
 
     def add_orders(self, request, object_):  # Performance Bottleneck 🕵
         """f(n) = n^2 i.e Quadratic Function."""
@@ -522,6 +537,43 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             order.save()
             object_.orders.add(order)
             object_.save()
+
+    def get_orders(self, object_):
+        orders: List[Dict] = []
+
+        def _get_additives_by_order(order):
+            temp: List = []
+            for additive in order.additives.all():
+                temp.append(
+                    {
+                        "additive_id": additive.id,
+                        "additive_name": additive.name,
+                    }
+                )
+            return temp
+
+        try:  # Performance Bottleneck 🕵
+            for order in object_.orders.all():
+                self.append_orders(orders, _get_additives_by_order, order)
+        except AttributeError:
+            for order in object_.customer_dish.orders.all():
+                self.append_orders(orders, _get_additives_by_order, order)
+        return orders
+
+    def append_orders(self, orders, _get_additives_by_order, order):
+        orders.append(
+            {
+                "order_id": order.id,
+                "order_number": order.order_number,
+                "sub_menu": {
+                    "sub_menu_id": order.sub_menu.id,
+                    "sub_menu_name": order.sub_menu.name,
+                    "sub_menu_price": order.sub_menu.price,
+                    "sub_menu_additives": _get_additives_by_order(order),
+                },
+                "quantity": order.quantity,
+            },
+        )
 
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
