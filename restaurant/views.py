@@ -470,7 +470,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
         paid_amount = serializers.IntegerField()
         remained_amount = serializers.IntegerField()
         payment_status = serializers.CharField()
-        orders = serializers.DictField(source="dish_detail")
+        orders = serializers.CharField(source="dish_detail")
 
         class Meta:
             model = CustomerDish
