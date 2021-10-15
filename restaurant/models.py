@@ -275,7 +275,7 @@ class CustomerDish(models.Model):
             temp_sub_menu: Dict = {"sub_menu_id": order.sub_menu.id, "sub_menu_name": order.sub_menu.name,
                                    "sub_menu_price": order.sub_menu.price}
             temp_sub_menu_additives: Dict = {}
-            for additive in order.sub_menu.additives.all():
+            for additive in order.additives.all():
                 temp_sub_menu_additives["additive_id"] = additive.id
                 temp_sub_menu_additives["additive_name"] = additive.name
             temp_sub_menu["sub_menu_additives"] = temp_sub_menu_additives
