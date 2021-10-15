@@ -29,13 +29,11 @@ from bar.models import (
     TequilaOrderRecord,
     BarPayrol,
 )
-from bar.pagination import CustomPagination
 from bar.serializers import (
     CreditCustomerRegularOrderRecordPaymentHistorySerializer,
     CreditCustomerRegularTequilaOrderRecordPaymentHistorySerializer,
     CreditCustomerTequilaOrderRecordPaymentHistorySerializer,
     CustomerRegularTequilaOrderRecordPaymentSerializer,
-    CustomerRegularTequilaOrderRecordSerializer,
     RegularTequilaOrderRecordSerializer,
     TequilaCustomerOrderRecordPaymentSerializer,
     CustomerOrderRecordPaymentSerializer,
@@ -50,7 +48,6 @@ from bar.serializers import (
 from core.models import CreditCustomer, Item
 from core.serializers import InventoryItemSerializer
 from core.utils import get_date_objects, orders_number_generator, validate_dates
-from restaurant.models import MainInventoryItemRecord
 from restaurant.utils import get_recipients, send_notification
 from user.models import User
 
@@ -272,8 +269,8 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
                     "created_by": record.created_by.username,
                     "date_created": str(record.date_created).split(" ")[0],
                     "time_created": str(record.date_created)
-                    .split(" ")[1]
-                    .split(".")[0],
+                        .split(" ")[1]
+                        .split(".")[0],
                 }
             )
             for record in self.queryset
@@ -558,16 +555,16 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             pass
 
         if (
-            by_credit
-            and self.get_advance_amount(customer_regular_order_record, amount_paid)
-            > customer.credit_limit
+                by_credit
+                and self.get_advance_amount(customer_regular_order_record, amount_paid)
+                > customer.credit_limit
         ):
             raise ValidationError(
                 "Can't perform this operation. Customer's credit is not enough."
             )
 
         elif by_credit and self.get_advance_amount(
-            customer_regular_order_record, amount_paid
+                customer_regular_order_record, amount_paid
         ) > self.get_remained_credit_for_today(customer):
             raise ValidationError(
                 "Can't perform this operation. Remained credit for {} is {}".format(
@@ -760,8 +757,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     "created_by": record.created_by.username,
                     "date_created": str(record.date_created).split(" ")[0],
                     "time_created": str(record.date_created)
-                    .split(" ")[1]
-                    .split(".")[0],
+                        .split(" ")[1]
+                        .split(".")[0],
                 }
             )
             for record in self.get_queryset()
@@ -825,7 +822,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
     def deduct_tequila_inventory(self, tequila_order, tequila_item):
         tequila_item.available_quantity = (
-            tequila_item.available_quantity - tequila_order["shots_quantity"]
+                tequila_item.available_quantity - tequila_order["shots_quantity"]
         )
         tequila_item.save()
         if tequila_item.available_quantity == 0:
@@ -859,7 +856,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
     def deduct_regular_inventory(self, regular_item, regular_order):
         regular_item.available_quantity = (
-            regular_item.available_quantity - regular_order["quantity"]
+                regular_item.available_quantity - regular_order["quantity"]
         )
         regular_item.save()
         if regular_item.available_quantity == 0:
@@ -928,7 +925,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     return Response(
                         {
                             "error": "There is only %d %s"
-                            % (regular_order.quantity, regular_order.item.item.name)
+                                     % (regular_order.quantity, regular_order.item.item.name)
                         },
                         status.HTTP_400_BAD_REQUEST,
                     )
@@ -976,7 +973,33 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
 
 class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
-    pagination_class = CustomPagination
+    """ Customer Regular And Tequila Order Record APIs """
+
+    class OutputSerializer(serializers.ModelSerializer):
+        id = serializers.IntegerField()
+        customer_name = serializers.CharField()
+        customer_phone = serializers.CharField()
+        dish_number = serializers.CharField()
+        payable_amount = serializers.IntegerField()
+        paid_amount = serializers.IntegerField()
+        remained_amount = serializers.IntegerField()
+        payment_status = serializers.CharField()
+
+        class Meta:
+            model = CustomerRegularTequilaOrderRecord
+            fields: List[str] = [
+                "id",
+                "customer_name",
+                "customer_phone",
+                "dish_number",
+                "payable_amount",
+                "paid_amount",
+                "remained_amount",
+                "payment_status",
+                "orders",
+            ]
+
+    serializer_class = OutputSerializer
 
     def get_queryset(self):
         return CustomerRegularTequilaOrderRecord.objects.select_related(
@@ -987,23 +1010,6 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             "regular_tequila_order_record__regular_items",
             "regular_tequila_order_record__tequila_items",
         )
-
-    serializer_class = CustomerRegularTequilaOrderRecordSerializer
-
-    def retrieve(self, request, pk=None) -> Response:
-        instance = self.get_object()
-        response: Dict = {
-            "id": instance.id,
-            "customer_name": instance.customer_name,
-            "customer_phone": instance.customer_phone,
-            "dish_number": instance.customer_orders_number,
-            "payable_amount": instance.regular_tequila_order_record.get_total_price(),
-            "paid_amount": instance.get_paid_amount(),
-            "remained_amount": instance.get_remained_amount(),
-            "payment_status": instance.get_payment_status(),
-            "orders": instance.get_orders_detail,
-        }
-        return Response(response, status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs) -> Response:
         try:
@@ -1040,24 +1046,17 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             "time_created": str(object_.date_created).split(" ")[1].split(".")[0],
         }
 
-    def list(self, request, *args, **kwargs) -> Response:
-
-        return Response(self.get_list(self.get_queryset()), status.HTTP_200_OK)
-
-    def get_list(self, objects):
-        return self.appending(objects)
-
     @action(
         detail=False,
         methods=["GET"],
     )
-    def search(self, request, *args, **kwargs):
+    def search(self, request):
         try:
             customer_name = request.data["customer_name"]
             results = CustomerRegularTequilaOrderRecord.objects.filter(
                 customer_name=customer_name
             )
-            return Response(self.get_list(results), status.HTTP_200_OK)
+            return Response(data=self.OutputSerializer(results, many=True).data, status=status.HTTP_200_OK)
         except KeyError:
             return Response(
                 {"message": "Field error"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -1070,9 +1069,8 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     def get_today_orders(self, request, *args, **kwargs):
         today_date = timezone.localdate()
         qs = self.get_queryset().filter(date_created__date=today_date)
-        response = self.append_orders(qs)
 
-        return Response(response, status.HTTP_200_OK)
+        return Response(data=self.OutputSerializer(qs, many=True).data, status=status.HTTP_200_OK)
 
     @action(
         detail=False,
@@ -1093,36 +1091,12 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             qs = self.get_queryset().filter(
                 date_created__date__range=[from_date, to_date]
             )
-            response = self.append_orders(qs)
-            return Response(response, status.HTTP_200_OK)
+
+            return Response(data=self.OutputSerializer(qs, many=True), status=status.HTTP_200_OK)
         except KeyError:
             return Response(
                 {"message": "Invalid dates."}, status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-    def append_orders(self, qs):
-        return self.appending(qs)
-
-    def appending(self, objects):
-        res: List[Dict] = []
-        [
-            res.append(
-                {
-                    "id": _.id,
-                    "customer_name": _.customer_name,
-                    "customer_phone": _.customer_phone,
-                    "dish_number": _.customer_orders_number,
-                    "payable_amount": _.regular_tequila_order_record.get_total_price(),
-                    "paid_amount": _.get_paid_amount(),
-                    "remained_amount": _.get_remained_amount(),
-                    "payment_status": _.get_payment_status(),
-                    "orders": _.get_orders_detail,
-                }
-            )
-            for _ in objects
-        ]
-
-        return res
 
 
 class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
@@ -1215,16 +1189,16 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             pass
 
         if (
-            by_credit
-            and self.get_advance_amount(customer_regular_order_record, amount_paid)
-            > customer.credit_limit
+                by_credit
+                and self.get_advance_amount(customer_regular_order_record, amount_paid)
+                > customer.credit_limit
         ):
             raise ValidationError(
                 "Can't perform this operation. Customer's credit is not enough."
             )
 
         elif by_credit and self.get_advance_amount(
-            customer_regular_order_record, amount_paid
+                customer_regular_order_record, amount_paid
         ) > self.get_remained_credit_for_today(customer):
             raise ValidationError(
                 "Can't perform this operation. Remained credit for {} is {}".format(
@@ -1339,8 +1313,8 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
         """This is the amount of money customer wants to pay in advance"""
 
         return (
-            customer_regular_order_record.regular_tequila_order_record.get_total_price()
-            - amount_paid
+                customer_regular_order_record.regular_tequila_order_record.get_total_price()
+                - amount_paid
         )
 
     @action(
@@ -1432,8 +1406,8 @@ class CreditCustomerRegularTequilaOrderRecordPaymentHistoryViewSet(
                 id=credit_customer_payment
             )
             if (
-                object.record_order_payment_record.payment_status == "paid"
-                or object.record_order_payment_record.by_credit is False
+                    object.record_order_payment_record.payment_status == "paid"
+                    or object.record_order_payment_record.by_credit is False
             ):
                 return Response(
                     {
@@ -1476,8 +1450,8 @@ class CreditCustomerRegularOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSe
                 id=credit_customer_payment
             )
             if (
-                object.record_order_payment_record.payment_status == "paid"
-                or object.record_order_payment_record.by_credit is False
+                    object.record_order_payment_record.payment_status == "paid"
+                    or object.record_order_payment_record.by_credit is False
             ):
                 return Response(
                     {
@@ -1565,7 +1539,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
         )
         response: Dict = {}
         response["total_amount_paid"] = (
-            payments_this_month.aggregate(total=Sum("amount_paid"))["total"] or 0
+                payments_this_month.aggregate(total=Sum("amount_paid"))["total"] or 0
         )
         payments: List[Dict] = []
         [
@@ -1653,8 +1627,8 @@ class TequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     "created_by": record.created_by.username,
                     "date_created": str(record.date_created).split(" ")[0],
                     "time_created": str(record.date_created)
-                    .split(" ")[1]
-                    .split(".")[0],
+                        .split(" ")[1]
+                        .split(".")[0],
                 }
             )
             for record in self.get_queryset()
@@ -1774,8 +1748,8 @@ class CustomerTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             customer_name = request.data["customer_name"]
             results = (
                 CustomerTequilaOrderRecord.objects.filter(customer_name=customer_name)
-                .select_related("orders")
-                .prefetch_related("orders")
+                    .select_related("orders")
+                    .prefetch_related("orders")
             )
             return Response(self.get_list(results), status.HTTP_200_OK)
         except KeyError:
@@ -1942,16 +1916,16 @@ class CustomerTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             pass
 
         if (
-            by_credit
-            and self.get_advance_amount(customer_order_record, amount_paid)
-            > customer.credit_limit
+                by_credit
+                and self.get_advance_amount(customer_order_record, amount_paid)
+                > customer.credit_limit
         ):
             raise ValidationError(
                 "Can't perform this operation. Customer's credit is not enough."
             )
 
         elif by_credit and self.get_advance_amount(
-            customer_order_record, amount_paid
+                customer_order_record, amount_paid
         ) > self.get_remained_credit_for_today(customer):
             raise ValidationError(
                 "Can't perform this operation. Remained credit for {} is {}".format(
@@ -2137,8 +2111,8 @@ class CreditCustomerTequilaOrderRecordPaymentHistoryViewSet(viewsets.ModelViewSe
                 id=credit_customer_payment
             )
             if (
-                object.record_order_payment_record.payment_status == "paid"
-                or object.record_order_payment_record.by_credit is False
+                    object.record_order_payment_record.payment_status == "paid"
+                    or object.record_order_payment_record.by_credit is False
             ):
                 return Response(
                     {

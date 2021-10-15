@@ -461,6 +461,62 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         return "Customer Orders Number: %s" % self.customer_orders_number
 
+    @property
+    def dish_number(self):
+        return self.customer_orders_number
+
+    @property
+    def paid_amount(self):
+        return self.get_paid_amount()
+
+    @property
+    def payable_amount(self):
+        return self.regular_tequila_order_record.get_total_price()
+
+    @property
+    def remained_amount(self) -> int:
+        paid_amount: int = self.get_paid_amount()
+
+        if paid_amount:
+            return (
+                    self.regular_tequila_order_record.get_total_price()
+                    - self.get_paid_amount()
+            )
+        return self.regular_tequila_order_record.get_total_price()
+
+    @property
+    def orders(self):
+        res: Dict = {"total_price": self.regular_tequila_order_record.get_total_price()}
+
+        orders: Dict = {
+            "drinks": self.regular_tequila_order_record.get_regular_items_details(),
+            "shots": self.regular_tequila_order_record.get_tequila_items_details()
+        }
+
+        res["order_structures"] = orders
+
+        return res
+
+    @property
+    def payment_status(self) -> str:
+        total_payment: int = self.get_paid_amount()
+
+        if (
+                total_payment
+                and total_payment >= self.regular_tequila_order_record.get_total_price()
+        ):
+            payment_status: str = "Fully Paid"
+        elif (
+                total_payment
+                and self.regular_tequila_order_record.get_total_price() <= 0
+                or not total_payment
+        ):
+            payment_status: str = "Not Paid"
+        else:
+            payment_status: str = "Partially Paid"
+
+        return payment_status
+
     def get_total_price(self) -> float:
         return self.regular_tequila_order_record.get_total_price()
 
