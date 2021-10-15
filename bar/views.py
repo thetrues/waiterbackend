@@ -1178,10 +1178,10 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             raise ValidationError("Order is already paid.")
 
         try:
-            object = self.get_crtorp(customer_regular_order_record)
-            self.alter_crtorp_amount_paid(amount_paid, object)
-            self.alter_crtrop_payment_status(object)
-            self.alter_ccrtrop_amount_paid(amount_paid, customer, object)
+            object_ = self.get_crtorp(customer_regular_order_record)
+            self.alter_crtorp_amount_paid(amount_paid, object_)
+            self.alter_crtrop_payment_status(object_)
+            self.alter_ccrtrop_amount_paid(amount_paid, customer, object_)
 
             return {"message": "Success"}
 
