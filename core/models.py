@@ -209,6 +209,7 @@ class CreditCustomer(models.Model):
     address = models.CharField(max_length=255)
     credit_limit = models.FloatField(null=True, blank=True)
 
+    @property
     def __str__(self) -> str:
 
         return self.name

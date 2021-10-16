@@ -1,17 +1,17 @@
 """
 This signal is for changing the item quantity inventory record.
 """
+from django.db.models.aggregates import Sum
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils import timezone
+
 from bar.models import (
     CreditCustomerRegularTequilaOrderRecordPaymentHistory,
     RegularInventoryRecord,
     TekilaInventoryRecord,
-    RegularOrderRecord,
+    RegularInventoryRecordsTrunk, TequilaInventoryRecordsTrunk,
 )
-from django.db.models.signals import post_save
-from django.db.models.aggregates import Sum
-from django.dispatch import receiver
-from django.utils import timezone
-from typing import NoReturn
 
 
 @receiver(post_save, sender=TekilaInventoryRecord)
@@ -24,10 +24,27 @@ def set_tekila_available_quantity(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=RegularInventoryRecord)
 def set_regular_available_quantity(sender, instance, created, **kwargs):
-    # sourcery skip: last-if-guard
     if created:
         instance.available_quantity = instance.total_items
         instance.save()
+
+
+@receiver(post_save, sender=RegularInventoryRecord)
+def regular_inventory_trunk(sender, instance, created, **kwargs):
+    if created:
+        trunk = RegularInventoryRecordsTrunk.objects.get(item=instance.item)
+        trunk.regular_inventory_record.add(instance)
+        trunk.updated_at = timezone.now()
+        trunk.save()
+
+
+@receiver(post_save, sender=TekilaInventoryRecord)
+def tequila_inventory_trunk(sender, instance, created, **kwargs):
+    if created:
+        trunk = TequilaInventoryRecordsTrunk.objects.get(item=instance.item)
+        trunk.tequila_inventory_record.add(instance)
+        trunk.updated_at = timezone.now()
+        trunk.save()
 
 
 @receiver(post_save, sender=CreditCustomerRegularTequilaOrderRecordPaymentHistory)

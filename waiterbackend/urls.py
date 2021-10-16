@@ -26,6 +26,7 @@ urlpatterns = (
                 "w/api/bar/inventory/get-items",
                 bar_views.BarInventoryItemView.as_view()
             ),
+
             # Reports Restaurant
             path(
                 "w/api/restaurant/reports/get-daily-report",

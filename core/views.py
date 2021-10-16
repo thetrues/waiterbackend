@@ -15,6 +15,8 @@ class MeasurementUnitViewSet(viewsets.ModelViewSet):
 
 
 class ItemViewSet(viewsets.ModelViewSet):
+    # authentication_classes = []
+    # permission_classes = []
     queryset = Item.objects.select_related("unit")
     serializer_class = ItemSerializer
 

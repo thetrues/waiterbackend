@@ -1,12 +1,10 @@
-from abc import ABC
-
-from django.db.models.aggregates import Sum
-from django.db.models.manager import Manager
 from typing import Dict, List, Set
 
-from bar.managers import BarPayrolCustomManager
-from user.models import User
 from django.db import models
+from django.db.models.aggregates import Sum
+from django.db.models.manager import Manager
+
+from bar.managers import BarPayrolCustomManager
 from core.models import (
     BaseCreditCustomerPayment,
     BaseCustomerOrderRecord,
@@ -16,6 +14,7 @@ from core.models import (
     BasePayrol,
     Item,
 )
+from user.models import User
 
 
 # Inventory Management
@@ -48,6 +47,90 @@ class RegularInventoryRecord(BaseInventory):
         verbose_name_plural: str = "Regular Inventory Records"
 
 
+class RegularInventoryRecordsTrunk(models.Model):
+    item = models.OneToOneField(Item, on_delete=models.CASCADE)
+    regular_inventory_record = models.ManyToManyField(RegularInventoryRecord)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True)
+    objects = Manager()
+
+    def __str__(self) -> str:
+        return f"Regular Inventory Record Trunk For {self.item.name}"
+
+    def get_last_inventory_record(self):  # -> RegularInventoryRecord
+        records = self.regular_inventory_record.select_related("item")[::-1]
+        for record in records:
+            if record.stock_status == "available" and record.available_quantity > 0:
+                return record
+            else:
+                continue
+
+    @property
+    def total_items_added(self) -> int:
+        return self.regular_inventory_record.aggregate(total=Sum("total_items"))["total"] or 0
+
+    @property
+    def total_items_available(self) -> int:
+        return self.get_total_available_items() or 0
+
+    @property  # This should be handled per request
+    def issued_stocks(self) -> Dict:
+        return {}
+
+    @property  # This should be handled per request
+    def stocks_in(self) -> Dict:
+        return {}
+
+    def get_total_available_items(self) -> int:
+        return self.regular_inventory_record.aggregate(total=Sum("available_quantity"))["total"]
+
+    @property
+    def stock_status(self) -> str:
+        return "Available" if self.get_total_available_items() else "Unavailable"
+
+    def get_stock_in(self) -> List[Dict]:
+        stock_in: List[Dict] = []
+        counter = 1
+        for record in self.regular_inventory_record.all():
+            temp_stock_in: Dict = {
+                "id": counter,
+                "total_items": record.total_items,
+                "selling_price_per_item": record.selling_price_per_item,
+                "available_items": record.available_quantity,
+                "threshold": record.threshold,
+                "estimated_sales": record.estimate_sales(),
+                "estimated_profit": record.estimate_profit(),
+                "stock_status": record.get_stock_status_display(),
+                "date_purchased": record.date_purchased.__str__(),
+                "date_perished": record.date_perished.__str__(),
+                "broken_items": record.regularinventoryrecordbroken_set.values("quantity_broken", "created_at"),
+            }
+            stock_in.append(temp_stock_in)
+            counter += 1
+
+        return stock_in
+
+    class Meta:
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Regular Inventory Records Trunk"
+        verbose_name_plural: str = "Regular Inventory Records Trunks"
+
+
+class RegularInventoryRecordBroken(models.Model):
+    regular_inventory_record = models.ForeignKey(RegularInventoryRecord, on_delete=models.CASCADE)
+    quantity_broken = models.PositiveIntegerField()
+    created_at = models.DateField(auto_now_add=True)
+    objects = Manager()
+
+    def __str__(self) -> str:
+        return f"Regular Inventory Record Broken For {self.regular_inventory_record.item.name}"
+
+    class Meta:
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Regular Inventory Record Broken"
+        verbose_name_plural: str = "Regular Inventory Records Broken"
+
+
 class TekilaInventoryRecord(BaseInventory):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     total_shots_per_tekila = models.IntegerField()
@@ -70,6 +153,90 @@ class TekilaInventoryRecord(BaseInventory):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Tequila Inventory Record"
         verbose_name_plural: str = "Tequila Inventory Records"
+
+
+class TequilaInventoryRecordsTrunk(models.Model):
+    item = models.OneToOneField(Item, on_delete=models.CASCADE)
+    tequila_inventory_record = models.ManyToManyField(TekilaInventoryRecord)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True)
+    objects = Manager()
+
+    def __str__(self) -> str:
+        return f"Tequila Inventory Record Trunk For {self.item.name}"
+
+    def get_last_inventory_record(self):  # -> TequilaInventoryRecord
+        records = self.tequila_inventory_record.select_related("item")[::-1]
+        for record in records:
+            if record.stock_status == "available" and record.available_quantity > 0:
+                return record
+            else:
+                continue
+
+    @property
+    def total_items_added(self) -> int:
+        return self.tequila_inventory_record.aggregate(total=Sum("total_shots_per_tekila"))["total"] or 0
+
+    @property
+    def total_items_available(self) -> int:
+        return self.get_total_available_items() or 0
+
+    @property  # This should be handled per request
+    def issued_stocks(self) -> Dict:
+        return {}
+
+    @property  # This should be handled per request
+    def stocks_in(self) -> Dict:
+        return {}
+
+    def get_total_available_items(self) -> int:
+        return self.tequila_inventory_record.aggregate(total=Sum("available_quantity"))["total"]
+
+    @property
+    def stock_status(self) -> str:
+        return "Available" if self.get_total_available_items() else "Unavailable"
+
+    def get_stock_in(self) -> List[Dict]:
+        stock_in: List[Dict] = []
+        counter = 1
+        for record in self.tequila_inventory_record.all():
+            temp_stock_in: Dict = {
+                "id": counter,
+                "total_shots": record.total_shots_per_tekila,
+                "selling_price_per_item": record.selling_price_per_item,
+                "available_items": record.available_quantity,
+                "threshold": record.threshold,
+                "estimated_sales": record.estimate_sales(),
+                "estimated_profit": record.estimate_profit(),
+                "stock_status": record.get_stock_status_display(),
+                "date_purchased": record.date_purchased.__str__(),
+                "date_perished": record.date_perished.__str__(),
+                "broken_items": record.tequilainventoryrecordbroken_set.values("quantity_broken", "created_at"),
+            }
+            stock_in.append(temp_stock_in)
+            counter += 1
+
+        return stock_in
+
+    class Meta:
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Tequila Inventory Records Trunk"
+        verbose_name_plural: str = "Tequila Inventory Records Trunks"
+
+
+class TequilaInventoryRecordBroken(models.Model):
+    tequila_inventory_record = models.ForeignKey(TekilaInventoryRecord, on_delete=models.CASCADE)
+    quantity_broken = models.PositiveIntegerField()
+    created_at = models.DateField(auto_now_add=True)
+    objects = Manager()
+
+    def __str__(self) -> str:
+        return f"Tequila Inventory Record Broken For {self.tequila_inventory_record.item.name}"
+
+    class Meta:
+        ordering: List[str] = ["-id"]
+        verbose_name: str = "Tequila Inventory Record Broken"
+        verbose_name_plural: str = "Tequila Inventory Records Broken"
 
 
 # Sale Management
@@ -644,10 +811,10 @@ class CreditCustomerRegularTequilaOrderRecordPaymentHistory(models.Model):
         )
 
 
-### End Major Changes
+# End Major Changes
 
 
-# Payrol Management
+# Payroll Management
 
 
 class BarPayrol(BasePayrol):

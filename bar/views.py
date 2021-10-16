@@ -27,7 +27,7 @@ from bar.models import (
     TekilaInventoryRecord,
     RegularOrderRecord,
     TequilaOrderRecord,
-    BarPayrol,
+    BarPayrol, RegularInventoryRecordsTrunk, RegularInventoryRecordBroken, TequilaInventoryRecordsTrunk,
 )
 from bar.serializers import (
     CreditCustomerRegularOrderRecordPaymentHistorySerializer,
@@ -62,7 +62,81 @@ class BarInventoryItemView(ListAPIView):
         return Item.objects.filter(item_for__in=["bar", "both"])
 
 
+class RegularInventoryRecordsTrunkView(viewsets.ModelViewSet):
+    """  """
+
+    class OutputSerializer(serializers.ModelSerializer):
+        id = serializers.IntegerField()
+        item = serializers.CharField()
+        total_items_available = serializers.IntegerField()
+        stock_status = serializers.CharField()
+
+        class Meta:
+            model = RegularInventoryRecordsTrunk
+            fields: List[str] = [
+                "id",
+                "item",
+                "total_items_available",
+                "stock_status",
+            ]
+
+    serializer_class = OutputSerializer
+
+    def get_queryset(self):
+        return RegularInventoryRecordsTrunk.objects.select_related("item").prefetch_related("regular_inventory_record")
+
+    def create(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["GET"],
+    )
+    def get_stocks_in(self, request, pk=None):
+        try:
+            trunk = RegularInventoryRecordsTrunk.objects.get(id=pk)
+            return Response(data=trunk.get_stock_in(), status=status.HTTP_200_OK)
+        except RegularInventoryRecordsTrunk.DoesNotExist:
+            return Response(data={"message": "Not Contents"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class RegularInventoryBrokenCreateView(viewsets.ModelViewSet):
+    """ Create Broken Items For Regular Inventory """
+
+    class InputSerializer(serializers.Serializer):
+        regular_inventory_record_id = serializers.IntegerField()
+        quantity_broken = serializers.IntegerField()
+
+        def validate_quantity_broken(self, quantity_broken) -> int:
+            if quantity_broken < 1:
+                raise serializers.ValidationError("Quantity must be greater than 0.")
+            return quantity_broken
+
+    serializer_class = InputSerializer
+
+    def get_queryset(self):
+        return RegularInventoryRecordBroken.objects.select_related("regular_inventory_record")
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        regular_inventory_record_id = serializer.validated_data.get("regular_inventory_record_id")
+        quantity_broken = serializer.validated_data.get("quantity_broken")
+        regular_inventory_record = RegularInventoryRecord.objects.get(id=regular_inventory_record_id)
+        if regular_inventory_record.available_quantity < quantity_broken:
+            raise serializers.ValidationError(
+                f"Quantity broken must be less than or equal to {regular_inventory_record.available_quantity}")
+        RegularInventoryRecordBroken.objects.create(
+            regular_inventory_record=regular_inventory_record,
+            quantity_broken=quantity_broken
+        )
+
+        return Response(status=status.HTTP_201_CREATED)
+
+
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
+    """  """
+
     serializer_class = RegularInventoryRecordSerializer
 
     # class OutputSerializer(serializers.Serializer):
@@ -721,6 +795,8 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 
 
 class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
+    """  """
+
     serializer_class = RegularTequilaOrderRecordSerializer
 
     def get_queryset(self):
@@ -774,6 +850,31 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request):
+        orders = request.data.get("orders")
+        # For Regular Orders
+        for regular_order in orders["regular_orders"]:
+            try:
+                regular_inv_record = RegularInventoryRecord.objects.get(id=regular_order["item_id"])
+                item = regular_inv_record.item
+                trunk = RegularInventoryRecordsTrunk.objects.get(item=item)
+                if regular_order["quantity"] > trunk.total_items_available:
+                    raise serializers.ValidationError(
+                        f"{item.name} quantity must not exceed {trunk.total_items_available}")
+            except Exception as e:
+                raise serializers.ValidationError(str(e))
+
+        # For Tequila Orders
+        for tequila_order in orders["tequila_orders"]:
+            try:
+                tequila_inv_record = RegularInventoryRecord.objects.get(id=tequila_order["item_id"])
+                item = tequila_inv_record.item
+                trunk = TequilaInventoryRecordsTrunk.objects.get(item=item)
+                if tequila_order["quantity"] > trunk.total_items_available:
+                    raise serializers.ValidationError(
+                        f"{item.name} quantity must not exceed {trunk.total_items_available}")
+            except Exception as e:
+                raise serializers.ValidationError(str(e))
+
         object_ = RegularTequilaOrderRecord.objects.create(
             order_number=str(
                 orders_number_generator(RegularTequilaOrderRecord, "order_number")
@@ -781,7 +882,6 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             created_by=request.user,
             date_created=timezone.now(),
         )
-        orders = request.data.get("orders")
 
         self.create_regular_orders(request, object_, orders["regular_orders"])
         self.create_tequila_orders(request, object_, orders["tequila_orders"])
@@ -806,40 +906,71 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
     def create_tequila_orders(self, request, object_, tequila_orders):
         for tequila_order in tequila_orders:
+            required_qty = tequila_order["quantity"]
+            tequila_inv_record = RegularInventoryRecord.objects.get(id=tequila_order["item_id"])
+            item = tequila_inv_record.item
+            trunk = TequilaInventoryRecordsTrunk.objects.get(item=item)
+
+            flag = True  # Loop controller
+            while flag:
+                last_tequila_inv_record = trunk.get_last_inventory_record()
+                res = last_tequila_inv_record.available_quantity - required_qty  # 2 - 8 = -6
+                if res < 0:
+                    last_tequila_inv_record.available_quantity = 0
+                    last_tequila_inv_record.stock_status = "unavailable"
+                    last_tequila_inv_record.save()
+                    required_qty = - res  # turn -ve to +ve
+                elif res == 0:
+                    last_tequila_inv_record.available_quantity = 0
+                    last_tequila_inv_record.stock_status = "unavailable"
+                    last_tequila_inv_record.save()
+                    flag = False
+                else:
+                    last_tequila_inv_record.available_quantity -= required_qty
+                    last_tequila_inv_record.save()
+                    flag = False
+            trunk.updated_at = timezone.now()
+            trunk.save()
+
             tequila_order_object = TequilaOrderRecord.objects.create(
                 item=TekilaInventoryRecord.objects.get(id=tequila_order["item_id"]),
-                quantity=tequila_order["shots_quantity"],
+                quantity=tequila_order["quantity"],
                 order_number=str(
-                    orders_number_generator(TequilaOrderRecord, "order_number")
+                    orders_number_generator(RegularOrderRecord, "order_number")
                 ),
                 created_by=request.user,
                 date_created=timezone.now(),
             )
             object_.tequila_items.add(tequila_order_object)
-            # Deduct tequila shots in the Inventory
-            tequila_item = tequila_order_object.item
-            self.deduct_tequila_inventory(tequila_order, tequila_item)
-
-    def deduct_tequila_inventory(self, tequila_order, tequila_item):
-        tequila_item.available_quantity = (
-                tequila_item.available_quantity - tequila_order["shots_quantity"]
-        )
-        tequila_item.save()
-        if tequila_item.available_quantity == 0:
-            tequila_item.stock_status = "unavailable"
-            tequila_item.date_perished = timezone.now()
-            tequila_item.save()
-            msg: str = "{} is out of stock.".format(tequila_item.item.name)
-            send_notification(message=msg, recipients=get_recipients())
-
-        elif tequila_item.threshold >= tequila_item.available_quantity:
-            msg: str = "{} is nearly out of stock. The remained quantity is {}.".format(
-                tequila_item.item.name, tequila_item.format_name_unit()
-            )
-            send_notification(message=msg, recipients=get_recipients())
 
     def create_regular_orders(self, request, object_, regular_orders):
         for regular_order in regular_orders:
+            required_qty = regular_order["quantity"]
+            regular_inv_record = RegularInventoryRecord.objects.get(id=regular_order["item_id"])
+            item = regular_inv_record.item
+            trunk = RegularInventoryRecordsTrunk.objects.get(item=item)
+
+            flag = True  # Loop controller
+            while flag:
+                last_regular_inv_record = trunk.get_last_inventory_record()
+                res = last_regular_inv_record.available_quantity - required_qty  # 2 - 8 = -6
+                if res < 0:
+                    last_regular_inv_record.available_quantity = 0
+                    last_regular_inv_record.stock_status = "unavailable"
+                    last_regular_inv_record.save()
+                    required_qty = - res  # turn -ve to +ve
+                elif res == 0:
+                    last_regular_inv_record.available_quantity = 0
+                    last_regular_inv_record.stock_status = "unavailable"
+                    last_regular_inv_record.save()
+                    flag = False
+                else:
+                    last_regular_inv_record.available_quantity -= required_qty
+                    last_regular_inv_record.save()
+                    flag = False
+            trunk.updated_at = timezone.now()
+            trunk.save()
+
             regular_order_object = RegularOrderRecord.objects.create(
                 item=RegularInventoryRecord.objects.get(id=regular_order["item_id"]),
                 quantity=regular_order["quantity"],
@@ -850,27 +981,6 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 date_created=timezone.now(),
             )
             object_.regular_items.add(regular_order_object)
-            # Deduct regular items in the Inventory
-            regular_item = regular_order_object.item
-            self.deduct_regular_inventory(regular_item, regular_order)
-
-    def deduct_regular_inventory(self, regular_item, regular_order):
-        regular_item.available_quantity = (
-                regular_item.available_quantity - regular_order["quantity"]
-        )
-        regular_item.save()
-        if regular_item.available_quantity == 0:
-            regular_item.stock_status = "unavailable"
-            regular_item.date_perished = timezone.now()
-            regular_item.save()
-            msg: str = "{} is out of stock.".format(regular_item.item.name)
-            send_notification(message=msg, recipients=get_recipients())
-
-        elif regular_item.threshold >= regular_item.available_quantity:
-            msg: str = "{} is nearly out of stock. The remained quantity is {}.".format(
-                regular_item.item.name, regular_item.format_name_unit()
-            )
-            send_notification(message=msg, recipients=get_recipients())
 
     @action(
         detail=False,

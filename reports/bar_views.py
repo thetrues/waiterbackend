@@ -78,7 +78,7 @@ class DailyReport(BaseReport, APIView):
 
     def get_todays_response(self, response: Dict) -> str:
         todays_date = timezone.localdate()
-        response["todays_date"] = todays_date.__str__()
+        response["todays_date"] = todays_date.__str__
 
         return todays_date
 

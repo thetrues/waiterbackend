@@ -13,7 +13,7 @@ from core.utils import get_date_objects
 
 def get_today_response(response: Dict) -> str:
     today_date = timezone.localdate()
-    response["today_date"] = today_date.__str__()
+    response["today_date"] = today_date.__str__
 
     return today_date
 

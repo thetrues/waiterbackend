@@ -7,7 +7,7 @@
       </database-info>
       <case-sensitivity plain-identifiers="lower" quoted-identifiers="exact" />
       <secret-storage>master_key</secret-storage>
-      <user-name>postgres</user-name>
+      <user-name>waiteradm</user-name>
       <schema-mapping>
         <introspection-scope>
           <node negative="1">
