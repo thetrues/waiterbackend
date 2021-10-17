@@ -290,7 +290,8 @@ class BarRegularItemViewSet(viewsets.ModelViewSet):
 
     def append_regular(self, response: List[Dict]):
         for item in self.get_queryset():
-            response.append(item.get_items_to_sale())
+            if item.get_items_to_sale():
+                response.append(item.get_items_to_sale())
         return response
 
 
