@@ -28,6 +28,7 @@ from bar.models import (
     RegularOrderRecord,
     TequilaOrderRecord,
     BarPayrol, RegularInventoryRecordsTrunk, RegularInventoryRecordBroken, TequilaInventoryRecordsTrunk,
+    TequilaInventoryRecordBroken,
 )
 from bar.serializers import (
     CreditCustomerRegularOrderRecordPaymentHistorySerializer,
@@ -133,24 +134,44 @@ class RegularInventoryBrokenCreateView(viewsets.ModelViewSet):
         return Response(status=status.HTTP_201_CREATED)
 
 
+class TequilaInventoryBrokenCreateView(viewsets.ModelViewSet):
+    """ Create Broken Items For Teqauila Inventory """
+
+    class InputSerializer(serializers.Serializer):
+        regular_inventory_record_id = serializers.IntegerField()
+        quantity_broken = serializers.IntegerField()
+
+        def validate_quantity_broken(self, quantity_broken) -> int:
+            if quantity_broken < 1:
+                raise serializers.ValidationError("Quantity must be greater than 0.")
+            return quantity_broken
+
+    serializer_class = InputSerializer
+
+    def get_queryset(self):
+        return TequilaInventoryRecordBroken.objects.select_related("tequila_inventory_record")
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        tequila_inventory_record_id = serializer.validated_data.get("tequila_inventory_record_id")
+        quantity_broken = serializer.validated_data.get("quantity_broken")
+        tequila_inventory_record = TekilaInventoryRecord.objects.get(id=tequila_inventory_record_id)
+        if tequila_inventory_record.available_quantity < quantity_broken:
+            raise serializers.ValidationError(
+                f"Quantity broken must be less than or equal to {tequila_inventory_record.available_quantity}")
+        TequilaInventoryRecordBroken.objects.create(
+            tequila_inventory_record=tequila_inventory_record,
+            quantity_broken=quantity_broken
+        )
+
+        return Response(status=status.HTTP_201_CREATED)
+
+
 class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
     """  """
 
     serializer_class = RegularInventoryRecordSerializer
-
-    # class OutputSerializer(serializers.Serializer):
-    #     id = serializers.IntegerField()
-    #     quantity = serializers.IntegerField()
-    #     purchasing_price = serializers.IntegerField()
-    #     date_purchased = serializers.CharField()
-    #     total_items = serializers.IntegerField()
-    #     available_items = serializers.IntegerField()
-    #     threshold = serializers.IntegerField()
-    #     selling_price_per_item = serializers.IntegerField()
-    #     estimated_total_cash_after_sale = serializers.IntegerField()
-    #     estimated_profit_after_sale = serializers.IntegerField()
-    #     item = serializers.CharField()
-    #     measurement_unit = serializers.CharField()
 
     def get_queryset(self):
         return RegularInventoryRecord.objects.select_related("item", "item__unit")
@@ -270,6 +291,44 @@ class TekilaInventoryRecordViewSet(viewsets.ModelViewSet):
             {"estimated_profit_after_sale": self.get_object().estimate_profit()},
             status.HTTP_200_OK,
         )
+
+
+class TequilaInventoryRecordsTrunkView(viewsets.ModelViewSet):
+    """ Tequila Inventory Records Trunk View """
+
+    class OutputSerializer(serializers.ModelSerializer):
+        id = serializers.IntegerField()
+        item = serializers.CharField()
+        total_items_available = serializers.IntegerField()
+        stock_status = serializers.CharField()
+
+        class Meta:
+            model = TequilaInventoryRecordsTrunk
+            fields: List[str] = [
+                "id",
+                "item",
+                "total_items_available",
+                "stock_status",
+            ]
+
+    serializer_class = OutputSerializer
+
+    def get_queryset(self):
+        return TequilaInventoryRecordsTrunk.objects.select_related("item").prefetch_related("tequila_inventory_record")
+
+    def create(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["GET"],
+    )
+    def get_stocks_in(self, request, pk=None):
+        try:
+            trunk = TequilaInventoryRecordsTrunk.objects.get(id=pk)
+            return Response(data=trunk.get_stock_in(), status=status.HTTP_200_OK)
+        except TequilaInventoryRecordsTrunk.DoesNotExist:
+            return Response(data={"message": "Not Contents"}, status=status.HTTP_204_NO_CONTENT)
 
 
 # Sales Management
