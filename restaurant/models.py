@@ -135,6 +135,10 @@ class MainInventoryItemRecordTrunk(models.Model):
     def stock_status(self) -> str:
         return "Available" if self.total_items_available else "Unavailable"
 
+    @property
+    def total_items_available_repr(self) -> str:
+        return str(self.total_items_available) + self.item.unit.name
+
     def get_stock_in(self) -> List[Dict]:
         stock_in: List[Dict] = []
         for record in self.inventory_items.select_related("item", "item__unit"):

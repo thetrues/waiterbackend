@@ -104,7 +104,7 @@ class MainInventoryItemRecordTrunkView(viewsets.ModelViewSet):
             fields: List[str] = [
                 "id",
                 "item",
-                "total_items_available",
+                "total_items_available_repr",
                 "stock_status",
             ]
 
