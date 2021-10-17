@@ -139,7 +139,7 @@ class TequilaInventoryBrokenCreateView(viewsets.ModelViewSet):
     """ Create Broken Items For Teqauila Inventory """
 
     class InputSerializer(serializers.Serializer):
-        regular_inventory_record_id = serializers.IntegerField()
+        tequila_inventory_record_id = serializers.IntegerField()
         quantity_broken = serializers.IntegerField()
 
         def validate_quantity_broken(self, quantity_broken) -> int:
