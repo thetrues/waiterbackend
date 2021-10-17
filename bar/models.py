@@ -33,10 +33,14 @@ class RegularInventoryRecord(BaseInventory):
         return self.item.name + " " + self.item.unit.name
 
     def estimate_sales(self) -> float:
-        return self.selling_price_per_item * self.total_items
+        return (self.selling_price_per_item * self.total_items) - self.total_cost_for_broken_item()
 
     def estimate_profit(self) -> float:
         return self.estimate_sales() - self.purchasing_price
+
+    def total_cost_for_broken_item(self) -> int:
+        return self.regularinventoryrecordbroken_set.aggregate(total=Sum("quantity_broken"))[
+                   "total"] * self.selling_price_per_item
 
     def get_price_of_items(self, item_quantity) -> float:
         return float(item_quantity * self.selling_price_per_item)
@@ -198,10 +202,10 @@ class TequilaInventoryRecordsTrunk(models.Model):
 
     def get_stock_in(self) -> List[Dict]:
         stock_in: List[Dict] = []
-        counter = 1
+        # counter = 1
         for record in self.tequila_inventory_record.all():
             temp_stock_in: Dict = {
-                "id": counter,
+                "id": record.id,
                 "total_shots": record.total_shots_per_tekila,
                 "selling_price_per_item": record.selling_price_per_item,
                 "available_items": record.available_quantity,
@@ -214,7 +218,7 @@ class TequilaInventoryRecordsTrunk(models.Model):
                 "broken_items": record.tequilainventoryrecordbroken_set.values("quantity_broken", "created_at"),
             }
             stock_in.append(temp_stock_in)
-            counter += 1
+            # counter += 1
 
         return stock_in
 
