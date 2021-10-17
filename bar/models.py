@@ -41,8 +41,8 @@ class RegularInventoryRecord(BaseInventory):
     def actual_items(self) -> int:  # 300 - 34 = 266
         return self.total_items - self.total_broken_items()
 
-    def estimate_profit(self) -> float:  # 450000 - 4717600 = 4267600
-        return self.estimate_sales() - self.purchasing_price
+    def estimate_profit(self) -> float:  # 4717600 - 450000 = 4267600
+        return self.purchasing_price - self.estimate_sales()
 
     def total_broken_items(self) -> int:  # 34
         return self.regularinventoryrecordbroken_set.aggregate(total=Sum("quantity_broken"))[
