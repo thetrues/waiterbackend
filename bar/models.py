@@ -81,6 +81,8 @@ class RegularInventoryRecordsTrunk(models.Model):
                         "id": item.id,
                         "name": item.item.name,
                         "selling_price_per_item": item.selling_price_per_item,
+                        "items_available": self.total_items_available,
+                        "stock_status": self.stock_status,
                         "item_type": "Regular"
                     }
                 )
