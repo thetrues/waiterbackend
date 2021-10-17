@@ -33,7 +33,7 @@ class RegularInventoryRecord(BaseInventory):
         return self.item.name + " " + self.item.unit.name
 
     def estimate_sales(self) -> float:
-        return (self.selling_price_per_item * (self.total_items - self.total_broken_items())) - self.total_cost_for_broken_item()
+        return (self.selling_price_per_item * self.total_items - self.total_broken_items()) - self.total_cost_for_broken_item()
 
     def estimate_profit(self) -> float:
         return self.purchasing_price - self.estimate_sales()
