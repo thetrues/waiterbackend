@@ -1,6 +1,6 @@
 from core.models import CreditCustomer, Item, MeasurementUnit
 from rest_framework.response import Response
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, serializers
 from typing import Dict, List
 from core.serializers import (
     CreditCustomerSerializer,
@@ -15,10 +15,35 @@ class MeasurementUnitViewSet(viewsets.ModelViewSet):
 
 
 class ItemViewSet(viewsets.ModelViewSet):
-    # authentication_classes = []
-    # permission_classes = []
+    """ Item View API """
+
+    class InputSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=128)
+        unit = serializers.IntegerField()
+        item_for = serializers.CharField(max_length=10)
+        tequila = serializers.BooleanField()
+
     queryset = Item.objects.select_related("unit")
-    serializer_class = ItemSerializer
+    serializer_class = InputSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            item = Item.objects.create(
+                name=serializer.validated_data.get("name"),
+                unit=MeasurementUnit.objects.get(id=serializer.validated_data.get("unit")),
+                item_for=serializer.validated_data.get("item_for")
+            )
+            if serializer.validated_data.get("tequila"):
+                item.tequila = True
+            else:
+                item.tequila = False
+            item.save()
+        except Exception as e:
+            raise serializers.ValidationError(str(e))
+
+        return Response({"message": "Item Created"}, status=status.HTTP_201_CREATED)
 
 
 class CreditCustomerViewSet(viewsets.ModelViewSet):

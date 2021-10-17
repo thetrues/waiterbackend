@@ -9,8 +9,9 @@ from core.models import Item
 @receiver(post_save, sender=Item)
 def create_inventory_trunk(sender, instance, created, **kwargs):
     if created:
-        if instance.item_for == "bar":
+        if instance.item_for == "bar" and not instance.tequila:
             RegularInventoryRecordsTrunk.objects.create(item=instance)
+        elif instance.item_for == "bar" and instance.tequila:
             TequilaInventoryRecordsTrunk.objects.create(item=instance)
         # elif instance.item_for == "restaurant":
         #     pass
