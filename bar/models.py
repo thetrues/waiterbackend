@@ -75,7 +75,7 @@ class RegularInventoryRecordsTrunk(models.Model):
         names = []
         response = []
         for item in qs:
-            if item.name not in names:
+            if item.item.name not in names:
                 response.append(
                     {
                         "id": item.id,
