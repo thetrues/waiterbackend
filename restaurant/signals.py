@@ -6,7 +6,7 @@ from restaurant.models import (
     CreditCustomerDishPaymentHistory,
     MainInventoryItemRecordStockOut,
     MiscellaneousInventoryRecord,
-    MainInventoryItemRecord,
+    MainInventoryItemRecord, MainInventoryItemRecordTrunk,
 )
 from django.utils import timezone
 
@@ -16,6 +16,9 @@ def set_available_quantity_for_main_inventory(sender, instance, created, **kwarg
     if created:
         instance.available_quantity = instance.quantity
         instance.save()
+        trunk = MainInventoryItemRecordTrunk.objects.get(item=instance.main_inventory_item.item)
+        trunk.inventory_items.add(instance)
+        trunk.save()
 
 
 @receiver(post_save, sender=MiscellaneousInventoryRecord)
