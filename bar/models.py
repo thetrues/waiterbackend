@@ -99,6 +99,7 @@ class RegularInventoryRecordsTrunk(models.Model):
             temp_stock_in: Dict = {
                 "id": record.id,
                 "total_items": record.total_items,
+                "purchasing_price": record.purchasing_price,
                 "selling_price_per_item": record.selling_price_per_item,
                 "available_items": record.available_quantity,
                 "threshold": record.threshold,
