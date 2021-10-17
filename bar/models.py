@@ -71,7 +71,7 @@ class RegularInventoryRecordsTrunk(models.Model):
         return f"Regular Inventory Record Trunk For {self.item.name}"
 
     def get_items_to_sale(self):
-        qs = self.regular_inventory_record.select_related("item").filter(item__stock_status="available")
+        qs = self.regular_inventory_record.select_related("item").filter(stock_status="available")
         names = []
         response = []
         for item in qs:
