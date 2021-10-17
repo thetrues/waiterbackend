@@ -103,7 +103,7 @@ class RegularInventoryRecordsTrunk(models.Model):
 
     def get_stock_in(self) -> List[Dict]:
         stock_in: List[Dict] = []
-        for record in self.regular_inventory_record.select_related("item","item__unit"):
+        for record in self.regular_inventory_record.select_related("item", "item__unit"):
             temp_stock_in: Dict = {
                 "id": record.id,
                 "quantity": record.item.unit.name + str(record.quantity),
