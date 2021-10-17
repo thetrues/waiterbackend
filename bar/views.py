@@ -916,7 +916,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         # For Tequila Orders
         for tequila_order in orders["tequila_orders"]:
             try:
-                tequila_inv_record = RegularInventoryRecord.objects.get(id=tequila_order["item_id"])
+                tequila_inv_record = TekilaInventoryRecord.objects.get(id=tequila_order["item_id"])
                 item = tequila_inv_record.item
                 trunk = TequilaInventoryRecordsTrunk.objects.get(item=item)
                 if tequila_order["quantity"] > trunk.total_items_available:
@@ -957,7 +957,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     def create_tequila_orders(self, request, object_, tequila_orders):
         for tequila_order in tequila_orders:
             required_qty = tequila_order["quantity"]
-            tequila_inv_record = RegularInventoryRecord.objects.get(id=tequila_order["item_id"])
+            tequila_inv_record = TekilaInventoryRecord.objects.get(id=tequila_order["item_id"])
             item = tequila_inv_record.item
             trunk = TequilaInventoryRecordsTrunk.objects.get(item=item)
 
