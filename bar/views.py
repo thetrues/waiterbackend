@@ -918,11 +918,13 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 if res < 0:
                     last_tequila_inv_record.available_quantity = 0
                     last_tequila_inv_record.stock_status = "unavailable"
+                    last_tequila_inv_record.date_perished = timezone.now()
                     last_tequila_inv_record.save()
                     required_qty = - res  # turn -ve to +ve
                 elif res == 0:
                     last_tequila_inv_record.available_quantity = 0
                     last_tequila_inv_record.stock_status = "unavailable"
+                    last_tequila_inv_record.date_perished = timezone.now()
                     last_tequila_inv_record.save()
                     flag = False
                 else:
