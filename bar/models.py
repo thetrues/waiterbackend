@@ -106,7 +106,7 @@ class RegularInventoryRecordsTrunk(models.Model):
         for record in self.regular_inventory_record.select_related("item", "item__unit"):
             temp_stock_in: Dict = {
                 "id": record.id,
-                "quantity": record.item.unit.name + str(record.quantity),
+                "quantity": str(record.quantity) + " " + record.item.unit.name,
                 "total_items": record.total_items,
                 "total_broken_items": record.total_broken_items(),
                 "purchasing_price": record.purchasing_price,
@@ -157,11 +157,21 @@ class TekilaInventoryRecord(BaseInventory):
     def format_name_unit(self) -> str:
         return self.item.name + " " + self.item.unit.name
 
-    def estimate_sales(self) -> float:
-        return self.selling_price_per_shot * self.total_shots_per_tekila * self.quantity
+    def estimate_sales(self) -> int:  # 4778800 - 61200 = 4717600
+        return self.actual_selling()
 
-    def estimate_profit(self) -> float:
+    def actual_selling(self) -> int:  # 1800 * 266 * 20 = 478800
+        return self.selling_price_per_shot * self.actual_items() * self.total_shots_per_tekila
+
+    def actual_items(self) -> int:  # 300 - 34 = 266
+        return self.total_shots_per_tekila - self.total_broken_items()
+
+    def estimate_profit(self) -> int:  # 450000 - 4717600 = 4267600
         return self.estimate_sales() - self.purchasing_price
+
+    def total_broken_items(self) -> int:  # 34
+        return self.tequilainventoryrecordbroken_set.aggregate(total=Sum("quantity_broken"))[
+                   "total"] or 0
 
     class Meta:
         ordering: List[str] = ["-id"]
@@ -212,11 +222,12 @@ class TequilaInventoryRecordsTrunk(models.Model):
 
     def get_stock_in(self) -> List[Dict]:
         stock_in: List[Dict] = []
-        # counter = 1
-        for record in self.tequila_inventory_record.all():
+        for record in self.tequila_inventory_record.select_related("item", "item__unit"):
             temp_stock_in: Dict = {
                 "id": record.id,
+                "quantity": str(record.quantity) + " " + record.item.unit.name,
                 "total_shots": record.total_shots_per_tekila,
+                "total_broken_items": record.total_broken_items(),
                 "selling_price_per_item": record.selling_price_per_item,
                 "available_items": record.available_quantity,
                 "threshold": record.threshold,
@@ -228,7 +239,6 @@ class TequilaInventoryRecordsTrunk(models.Model):
                 "broken_items": record.tequilainventoryrecordbroken_set.values("quantity_broken", "created_at"),
             }
             stock_in.append(temp_stock_in)
-            # counter += 1
 
         return stock_in
 
