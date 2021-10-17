@@ -48,7 +48,6 @@ from bar.serializers import (
 from core.models import CreditCustomer, Item
 from core.serializers import InventoryItemSerializer
 from core.utils import get_date_objects, orders_number_generator, validate_dates
-from restaurant.utils import get_recipients, send_notification
 from user.models import User
 
 
@@ -281,29 +280,18 @@ class BarRegularItemViewSet(viewsets.ModelViewSet):
     serializer_class = RegularInventoryRecordSerializer
 
     def get_queryset(self):
-        return RegularInventoryRecord.objects.filter(
-            stock_status="available"
-        ).select_related("item", "item__unit")
+        return RegularInventoryRecordsTrunk.objects.select_related("item", "item__unit").prefetch_related(
+            "regular_inventory_record")
 
     def list(self, request, *args, **kwargs):
         response: List[Dict] = []
         self.append_regular(response)
         return Response(data=response, status=status.HTTP_200_OK)
 
-    def append_regular(self, response: List[Dict]) -> List[Dict]:
-        [
-            response.append(
-                {
-                    "id": item.id,
-                    "name": item.item.name,
-                    "selling_price_per_item": item.selling_price_per_item,
-                    "items_available": item.available_quantity,
-                    "stock_status": item.stock_status,
-                    "item_type": "Regular",
-                }
-            )
-            for item in self.get_queryset()
-        ]
+    def append_regular(self, response: List[Dict]):
+        for item in self.get_queryset():
+            response.append(item.get_items_to_sale())
+        return response
 
 
 class RegularOrderRecordViewSet(viewsets.ModelViewSet):

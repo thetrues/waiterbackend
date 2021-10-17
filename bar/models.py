@@ -70,6 +70,23 @@ class RegularInventoryRecordsTrunk(models.Model):
     def __str__(self) -> str:
         return f"Regular Inventory Record Trunk For {self.item.name}"
 
+    def get_items_to_sale(self):
+        qs = self.regular_inventory_record.select_related("item").filter(item__stock_status="available")
+        names = []
+        response = []
+        for item in qs:
+            if item.name not in names:
+                response.append(
+                    {
+                        "id": item.id,
+                        "name": item.item.name,
+                        "selling_price_per_item": item.selling_price_per_item,
+                        "item_type": "Regular"
+                    }
+                )
+                names.append(item.item.name)
+        return response
+
     def get_last_inventory_record(self):  # -> RegularInventoryRecord
         records = self.regular_inventory_record.select_related("item")[::-1]
         for record in records:
