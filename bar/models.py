@@ -264,7 +264,7 @@ class TequilaInventoryRecordsTrunk(models.Model):
                 "quantity": str(record.quantity) + " " + record.item.unit.name,
                 "total_shots": record.total_shots_per_tekila,
                 "total_broken_items": record.total_broken_items(),
-                "selling_price_per_item": record.selling_price_per_item,
+                "selling_price_per_item": record.selling_price_per_shot,
                 "available_items": record.available_quantity,
                 "threshold": record.threshold,
                 "estimated_sales": record.estimate_sales(),
