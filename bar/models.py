@@ -90,10 +90,10 @@ class RegularInventoryRecordsTrunk(models.Model):
 
     def get_stock_in(self) -> List[Dict]:
         stock_in: List[Dict] = []
-        counter = 1
+        # counter = 1
         for record in self.regular_inventory_record.all():
             temp_stock_in: Dict = {
-                "id": counter,
+                "id": record.id,
                 "total_items": record.total_items,
                 "selling_price_per_item": record.selling_price_per_item,
                 "available_items": record.available_quantity,
@@ -106,7 +106,7 @@ class RegularInventoryRecordsTrunk(models.Model):
                 "broken_items": record.regularinventoryrecordbroken_set.values("quantity_broken", "created_at"),
             }
             stock_in.append(temp_stock_in)
-            counter += 1
+            # counter += 1
 
         return stock_in
 
