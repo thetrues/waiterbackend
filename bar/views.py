@@ -101,7 +101,7 @@ class RegularInventoryRecordsTrunkView(viewsets.ModelViewSet):
                 for order in record.regularorderrecord_set.values():
                     temp = {
                         "id": order["id"],
-                        "quantity": order["quantity"],
+                        "item_quantity": order["quantity"],
                         "order_number": order["order_number"],
                         "date_created": str(order["date_created"].date()),
                     }
@@ -341,6 +341,27 @@ class TequilaInventoryRecordsTrunkView(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         return Response(status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["GET"]
+    )
+    def get_orders_history(self, request, pk=None):
+        try:
+            trunk = TequilaInventoryRecordsTrunk.objects.get(id=pk)
+            orders_history: List[Dict] = []
+            for record in trunk.tequila_inventory_record.all():
+                for order in record.tequilaorderrecord_set.values():
+                    temp = {
+                        "id": order["id"],
+                        "shots_quantity": order["quantity"],
+                        "order_number": order["order_number"],
+                        "date_created": str(order["date_created"].date()),
+                    }
+                    orders_history.append(temp)
+            return Response(data=orders_history, status=status.HTTP_200_OK)
+        except TequilaInventoryRecordsTrunk.DoesNotExist:
+            return Response(data={"message": "Not Contents"}, status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
