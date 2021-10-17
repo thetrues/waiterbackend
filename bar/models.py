@@ -32,21 +32,27 @@ class RegularInventoryRecord(BaseInventory):
     def format_name_unit(self) -> str:
         return self.item.name + " " + self.item.unit.name
 
-    def estimate_sales(self) -> float:
-        return (self.selling_price_per_item * self.total_items - self.total_broken_items()) - self.total_cost_for_broken_item()
+    def estimate_sales(self) -> float:  # 4778800 - 61200 = 4717600
+        return self.actual_selling() - self.total_cost_for_broken_item()
 
-    def estimate_profit(self) -> float:
-        return self.purchasing_price - self.estimate_sales()
+    def actual_selling(self) -> int:  # 1800 * 266 = 478800
+        return self.selling_price_per_item * self.actual_items()
 
-    def total_broken_items(self) -> int:
+    def actual_items(self) -> int:  # 300 - 34 = 266
+        return self.total_items - self.total_broken_items()
+
+    def estimate_profit(self) -> float:  # 450000 - 4717600 = 4267600
+        return self.estimate_sales() - self.purchasing_price
+
+    def total_broken_items(self) -> int:  # 34
         return self.regularinventoryrecordbroken_set.aggregate(total=Sum("quantity_broken"))[
                    "total"] or 0
 
-    def total_cost_for_broken_item(self) -> int:
+    def total_cost_for_broken_item(self) -> int:  # 34 * 1800 = 61200
         return self.total_broken_items() * self.selling_price_per_item
 
-    def get_price_of_items(self, item_quantity) -> float:
-        return float(item_quantity * self.selling_price_per_item)
+    def get_price_of_items(self, item_quantity) -> int:
+        return int(item_quantity * self.selling_price_per_item)
 
     class Meta:
         ordering: List[str] = ["-id"]
@@ -97,11 +103,12 @@ class RegularInventoryRecordsTrunk(models.Model):
 
     def get_stock_in(self) -> List[Dict]:
         stock_in: List[Dict] = []
-        # counter = 1
         for record in self.regular_inventory_record.all():
             temp_stock_in: Dict = {
                 "id": record.id,
+                "quantity": record.quantity,
                 "total_items": record.total_items,
+                "total_broken_items": record.total_broken_items(),
                 "purchasing_price": record.purchasing_price,
                 "selling_price_per_item": record.selling_price_per_item,
                 "available_items": record.available_quantity,
@@ -114,7 +121,6 @@ class RegularInventoryRecordsTrunk(models.Model):
                 "broken_items": record.regularinventoryrecordbroken_set.values("quantity_broken", "created_at"),
             }
             stock_in.append(temp_stock_in)
-            # counter += 1
 
         return stock_in
 
