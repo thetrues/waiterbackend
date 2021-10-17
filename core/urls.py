@@ -15,10 +15,14 @@ v1.register("core/credit-customers", core_views.CreditCustomerViewSet, basename=
 
 # bar endpoints
 v1.register("bar/regular-inventory-record", bar_views.RegularInventoryRecordViewSet, basename="RegularInventoryRecord")
-v1.register("bar/regular/inventory-records", bar_views.RegularInventoryRecordsTrunkView, basename="RegularInventoryRecordsTrunk")
-v1.register("bar/tequila/inventory-records", bar_views.TequilaInventoryRecordsTrunkView, basename="TequilaInventoryRecordsTrunk")
-v1.register("bar/regular/inventory/add-broken-items", bar_views.RegularInventoryBrokenCreateView, basename="RegularInventoryRecordBroken")
-v1.register("bar/tequila/inventory/add-broken-items", bar_views.TequilaInventoryBrokenCreateView, basename="TequilaInventoryRecordBroken")
+v1.register("bar/regular/inventory-records", bar_views.RegularInventoryRecordsTrunkView,
+            basename="RegularInventoryRecordsTrunk")
+v1.register("bar/tequila/inventory-records", bar_views.TequilaInventoryRecordsTrunkView,
+            basename="TequilaInventoryRecordsTrunk")
+v1.register("bar/regular/inventory/add-broken-items", bar_views.RegularInventoryBrokenCreateView,
+            basename="RegularInventoryRecordBroken")
+v1.register("bar/tequila/inventory/add-broken-items", bar_views.TequilaInventoryBrokenCreateView,
+            basename="TequilaInventoryRecordBroken")
 v1.register("bar/tekila-inventory-record", bar_views.TekilaInventoryRecordViewSet, basename="TekilaInventoryRecord")
 v1.register("bar/sales/regular/items", bar_views.BarRegularItemViewSet, basename="RegularInventoryRecord")
 # v1.register("bar/sales/regular/order-records", bar_views.RegularOrderRecordViewSet)
@@ -86,6 +90,12 @@ v1.register(
     "restaurant/inventory/main-inventory-item",
     restaurant_views.MainInventoryItemViewSet,
 )
+
+# New Starts
+v1.register("restaurant/inventory/records", restaurant_views.MainInventoryItemRecordTrunkView,
+            basename="MainInventoryItemRecordTrunk")
+
+# New Ends
 v1.register(
     "restaurant/inventory/main-inventory-item-record",
     restaurant_views.MainInventoryItemRecordViewSet,

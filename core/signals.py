@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from bar.models import RegularInventoryRecordsTrunk, RegularInventoryRecordBroken, TequilaInventoryRecordsTrunk, \
     TequilaInventoryRecordBroken
 from core.models import Item
+from restaurant.models import MainInventoryItemRecordTrunk
 
 
 @receiver(post_save, sender=Item)
@@ -13,8 +14,8 @@ def create_inventory_trunk(sender, instance, created, **kwargs):
             RegularInventoryRecordsTrunk.objects.create(item=instance)
         elif instance.item_for == "bar" and instance.tequila:
             TequilaInventoryRecordsTrunk.objects.create(item=instance)
-        # elif instance.item_for == "restaurant":
-        #     pass
+        elif instance.item_for == "restaurant":
+            MainInventoryItemRecordTrunk.objects.create(item=instance)
 
 
 @receiver(post_save, sender=RegularInventoryRecordBroken)

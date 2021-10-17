@@ -43,10 +43,10 @@ class MainInventoryItemRecord(BaseInventory):
     threshold = models.IntegerField()
 
     @property
-    def ppu(self) -> float:
+    def ppu(self) -> int:
         """ppu -> price per unit"""
 
-        return float(self.purchasing_price / self.quantity)
+        return int(self.purchasing_price / self.quantity)
 
     def __str__(self) -> str:
         """String representation of object
@@ -57,8 +57,8 @@ class MainInventoryItemRecord(BaseInventory):
         return self.main_inventory_item.item.name
 
     @property
-    def estimate_sales(self) -> float:
-        return float(
+    def estimate_sales(self) -> int:
+        return int(
             self.main_inventory_item.amount_per_unit
             * self.main_inventory_item.price_per_unit
             * self.quantity
@@ -103,6 +103,61 @@ class MainInventoryItemRecord(BaseInventory):
         ]
 
         return response
+
+
+class MainInventoryItemRecordTrunk(models.Model):
+    item = models.OneToOneField(Item, on_delete=models.CASCADE)
+    inventory_items = models.ManyToManyField(MainInventoryItemRecord)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True)
+    objects = Manager()
+
+    def __str__(self) -> str:
+        return "%s Inventory Trunk" % self.item.name
+
+    def get_last_inventory_record(self):  # -> MainInventoryItem
+        records = self.inventory_items.select_related("main_inventory_item")[::-1]
+        for record in records:
+            if record.stock_status == "available" and record.available_quantity > 0:
+                return record
+            else:
+                continue
+
+    @property
+    def total_items_added(self) -> int:
+        return self.inventory_items.aggregate(total=Sum("quantity"))["total"] or 0
+
+    @property
+    def total_items_available(self) -> int:
+        return self.inventory_items.aggregate(total=Sum("available_quantity"))["total"] or 0
+
+    @property
+    def stock_status(self) -> str:
+        return "Available" if self.total_items_available else "Unavailable"
+
+    def get_stock_in(self) -> List[Dict]:
+        stock_in: List[Dict] = []
+        for record in self.inventory_items.select_related("item", "item__unit"):
+            temp_stock_in: Dict = {
+                "id": record.id,
+                "quantity": str(record.quantity) + " " + record.item.unit.name,
+                "purchasing_price": record.purchasing_price,
+                "selling_price_per_item": record.selling_price_per_item,
+                "available_items": record.available_quantity,
+                "estimated_sales": record.estimate_sales(),
+                "estimated_profit": record.estimate_profit(),
+                "stock_status": record.get_stock_status_display(),
+                "date_purchased": record.date_purchased.__str__(),
+                "date_perished": record.date_perished.__str__(),
+            }
+            stock_in.append(temp_stock_in)
+
+        return stock_in
+
+    class Meta:
+        ordering: Set = ("-id",)
+        verbose_name: str = "Main Inventory Item Record Trunk"
+        verbose_name_plural: str = "Main Inventory Item Records Trunk"
 
 
 class MainInventoryItemRecordStockOut(models.Model):

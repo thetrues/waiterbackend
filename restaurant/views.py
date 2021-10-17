@@ -24,7 +24,7 @@ from restaurant.models import (
     RestaurantPayrol,
     CustomerDish,
     Additive,
-    Menu,
+    Menu, MainInventoryItemRecordTrunk,
 )
 from restaurant.serializers import (
     CreditCustomerDishPaymentHistorySerializer,
@@ -88,6 +88,45 @@ class RestaurantInventoryItemView(ListAPIView):
 class MainInventoryItemViewSet(viewsets.ModelViewSet):
     queryset = MainInventoryItem.objects.select_related("item")
     serializer_class = MainInventoryItemSerializer
+
+
+class MainInventoryItemRecordTrunkView(viewsets.ModelViewSet):
+    """ Main Inventory Item Record Trunk """
+
+    class OutputSerializer(serializers.ModelSerializer):
+        id = serializers.IntegerField()
+        item = serializers.CharField()
+        total_items_available = serializers.IntegerField()
+        stock_status = serializers.CharField()
+
+        class Meta:
+            model = MainInventoryItemRecordTrunk
+            fields: List[str] = [
+                "id",
+                "item",
+                "total_items_available",
+                "stock_status",
+            ]
+
+    serializer_class = OutputSerializer
+
+    def get_queryset(self):
+        return MainInventoryItemRecordTrunk.objects.select_related("item").prefetch_related(
+            "inventory_items").filter(item__item_for="restaurant")
+
+    def create(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["GET"],
+    )
+    def get_stocks_in(self, request, pk=None):
+        try:
+            trunk = MainInventoryItemRecordTrunk.objects.get(id=pk)
+            return Response(data=trunk.get_stock_in(), status=status.HTTP_200_OK)
+        except MainInventoryItemRecordTrunk.DoesNotExist:
+            return Response(data={"message": "Not Contents"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
