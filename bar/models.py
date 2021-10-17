@@ -33,7 +33,7 @@ class RegularInventoryRecord(BaseInventory):
         return self.item.name + " " + self.item.unit.name
 
     def estimate_sales(self) -> float:  # 4778800 - 61200 = 4717600
-        return self.actual_selling() - self.get_price_of_items(self.total_broken_items())
+        return self.actual_selling()
 
     def actual_selling(self) -> int:  # 1800 * 266 = 478800
         return self.selling_price_per_item * self.actual_items()
@@ -106,7 +106,7 @@ class RegularInventoryRecordsTrunk(models.Model):
         for record in self.regular_inventory_record.all():
             temp_stock_in: Dict = {
                 "id": record.id,
-                "quantity": record.quantity,
+                "quantity": record.format_name_unit(),
                 "total_items": record.total_items,
                 "total_broken_items": record.total_broken_items(),
                 "purchasing_price": record.purchasing_price,
