@@ -96,7 +96,7 @@ class MainInventoryItemRecordTrunkView(viewsets.ModelViewSet):
     class OutputSerializer(serializers.ModelSerializer):
         id = serializers.IntegerField()
         item = serializers.CharField()
-        total_items_available = serializers.IntegerField()
+        total_items_available_repr = serializers.CharField()
         stock_status = serializers.CharField()
 
         class Meta:
