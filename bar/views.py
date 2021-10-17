@@ -103,7 +103,7 @@ class RegularInventoryRecordsTrunkView(viewsets.ModelViewSet):
                         "id": order["id"],
                         "quantity": order["quantity"],
                         "order_number": order["order_number"],
-                        "date_created": str(order["date_created"]),
+                        "date_created": str(order["date_created"].date()),
                     }
                     orders_history.append(temp)
             return Response(data=orders_history, status=status.HTTP_200_OK)
