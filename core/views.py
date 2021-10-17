@@ -24,10 +24,10 @@ class ItemViewSet(viewsets.ModelViewSet):
         tequila = serializers.BooleanField()
 
     queryset = Item.objects.select_related("unit")
-    serializer_class = InputSerializer
+    serializer_class = ItemSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+        serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             item = Item.objects.create(
