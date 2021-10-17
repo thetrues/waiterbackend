@@ -83,7 +83,8 @@ class RegularInventoryRecordsTrunkView(viewsets.ModelViewSet):
     serializer_class = OutputSerializer
 
     def get_queryset(self):
-        return RegularInventoryRecordsTrunk.objects.select_related("item").prefetch_related("regular_inventory_record")
+        return RegularInventoryRecordsTrunk.objects.select_related("item").prefetch_related(
+            "regular_inventory_record").filter(item__tequila=False)
 
     def create(self, request, *args, **kwargs):
         return Response(status=status.HTTP_201_CREATED)
