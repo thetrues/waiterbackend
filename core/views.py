@@ -30,16 +30,16 @@ class ItemViewSet(viewsets.ModelViewSet):
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
-            item = Item(
+            if serializer.validated_data.get("tequila"):
+                tequila = True
+            else:
+                tequila = False
+            Item.objects.create(
                 name=serializer.validated_data.get("name"),
                 unit=MeasurementUnit.objects.get(id=serializer.validated_data.get("unit")),
-                item_for=serializer.validated_data.get("item_for")
+                item_for=serializer.validated_data.get("item_for"),
+                tequila=tequila
             )
-            if serializer.validated_data.get("tequila"):
-                item.tequila = True
-            else:
-                item.tequila = False
-            item.save()
         except Exception as e:
             raise serializers.ValidationError(str(e))
 
