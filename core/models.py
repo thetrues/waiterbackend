@@ -153,7 +153,7 @@ class Item(BaseConfig):
 
     unit = models.ForeignKey(MeasurementUnit, on_delete=models.CASCADE)
     item_for = models.CharField(max_length=10, choices=ITEM_FOR_TYPE)
-    tequila = models.BooleanField()  # Regular
+    tequila = models.BooleanField(null=True)  # Regular
 
 
 PAYMENT_STATUS_CHOICES = (
