@@ -314,7 +314,8 @@ class TequilaInventoryRecordsTrunkView(viewsets.ModelViewSet):
     serializer_class = OutputSerializer
 
     def get_queryset(self):
-        return TequilaInventoryRecordsTrunk.objects.select_related("item").prefetch_related("tequila_inventory_record")
+        return TequilaInventoryRecordsTrunk.objects.select_related("item").prefetch_related(
+            "tequila_inventory_record").filter(item__tequila=True)
 
     def create(self, request, *args, **kwargs):
         return Response(status=status.HTTP_201_CREATED)
