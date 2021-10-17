@@ -1665,30 +1665,19 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
 
 class BarTequilaItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
-        return TekilaInventoryRecord.objects.filter(
-            stock_status="available"
-        ).select_related("item", "item__unit")
+        return TequilaInventoryRecordsTrunk.objects.select_related("item", "item__unit").prefetch_related(
+            "tequila_inventory_record")
 
     def list(self, request, *args, **kwargs):
         response: List[Dict] = []
         self.append_regular(response)
         return Response(data=response, status=status.HTTP_200_OK)
 
-    def append_regular(self, response):
-        [
-            response.append(
-                {
-                    "id": item.id,
-                    "name": item.item.name,
-                    "items_available": item.available_quantity,
-                    "total_shots_per_tekila": item.total_shots_per_tekila,
-                    "selling_price_per_shot": float(item.selling_price_per_shot),
-                    "stock_status": item.stock_status,
-                    "item_type": "Tequila",
-                }
-            )
-            for item in self.get_queryset()
-        ]
+    def append_regular(self, response: List[Dict]):
+        for item in self.get_queryset():
+            if item.get_items_to_sale():
+                response.append(item.get_items_to_sale())
+        return response
 
 
 class TequilaOrderRecordViewSet(viewsets.ModelViewSet):

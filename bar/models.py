@@ -208,6 +208,23 @@ class TequilaInventoryRecordsTrunk(models.Model):
     def __str__(self) -> str:
         return f"Tequila Inventory Record Trunk For {self.item.name}"
 
+    def get_items_to_sale(self):
+        qs = self.tequila_inventory_record.select_related("item").filter(stock_status="available")
+        names = []
+        # response = []
+        for item in qs:
+            if item.item.name not in names:
+                return (
+                    {
+                        "id": item.id,
+                        "name": item.item.name,
+                        "selling_price_per_item": item.selling_price_per_shot,
+                        "items_available": self.total_items_available,
+                        "stock_status": self.stock_status,
+                        "item_type": "Regular"
+                    }
+                )
+
     def get_last_inventory_record(self):  # -> TequilaInventoryRecord
         records = self.tequila_inventory_record.select_related("item")[::-1]
         for record in records:
