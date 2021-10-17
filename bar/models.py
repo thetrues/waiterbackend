@@ -33,7 +33,7 @@ class RegularInventoryRecord(BaseInventory):
         return self.item.name + " " + self.item.unit.name
 
     def estimate_sales(self) -> float:  # 4778800 - 61200 = 4717600
-        return self.actual_selling() - self.total_cost_for_broken_item()
+        return self.actual_selling() - self.get_price_of_items(self.total_broken_items())
 
     def actual_selling(self) -> int:  # 1800 * 266 = 478800
         return self.selling_price_per_item * self.actual_items()
@@ -41,15 +41,15 @@ class RegularInventoryRecord(BaseInventory):
     def actual_items(self) -> int:  # 300 - 34 = 266
         return self.total_items - self.total_broken_items()
 
-    def estimate_profit(self) -> float:  # 4717600 - 450000 = 4267600
-        return self.purchasing_price - self.estimate_sales()
+    def estimate_profit(self) -> float:  # 450000 - 4717600 = 4267600
+        return self.estimate_sales() - self.purchasing_price
 
     def total_broken_items(self) -> int:  # 34
         return self.regularinventoryrecordbroken_set.aggregate(total=Sum("quantity_broken"))[
                    "total"] or 0
 
-    def total_cost_for_broken_item(self) -> int:  # 34 * 1800 = 61200
-        return self.total_broken_items() * self.selling_price_per_item
+    # def total_cost_for_broken_item(self) -> int:  # 34 * 1800 = 61200
+    #     return self.total_broken_items() * self.selling_price_per_item
 
     def get_price_of_items(self, item_quantity) -> int:
         return int(item_quantity * self.selling_price_per_item)
