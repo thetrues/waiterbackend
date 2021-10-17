@@ -134,7 +134,7 @@ class MonthlyReport(APIView):
         sales["total_sales"] = get_total_sales(qs)
         sales["total_orders"] = len(qs)
 
-    def get_current_month(self, response: Dict) -> str:
+    def get_current_month(self, response: Dict):
         response["current_month"] = (
                 calendar.month_name[self.this_month.month]
                 + ", "

@@ -91,6 +91,27 @@ class RegularInventoryRecordsTrunkView(viewsets.ModelViewSet):
 
     @action(
         detail=True,
+        methods=["GET"]
+    )
+    def get_orders_history(self, request, pk=None):
+        try:
+            trunk = RegularInventoryRecordsTrunk.objects.get(id=pk)
+            orders_history: List[Dict] = []
+            for record in trunk.regular_inventory_record.all():
+                for order in record.regularorderrecord_set.values():
+                    temp = {
+                        "id": order["id"],
+                        "quantity": order["quantity"],
+                        "order_number": order["order_number"],
+                        "date_created": str(order["date_created"]),
+                    }
+                    orders_history.append(temp)
+            return Response(data=orders_history, status=status.HTTP_200_OK)
+        except RegularInventoryRecordsTrunk.DoesNotExist:
+            return Response(data={"message": "Not Contents"}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=True,
         methods=["GET"],
     )
     def get_stocks_in(self, request, pk=None):
@@ -409,7 +430,7 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
         return Response(data, status.HTTP_201_CREATED)
 
     def perform_create(self, request):
-        object = RegularOrderRecord.objects.create(
+        object_ = RegularOrderRecord.objects.create(
             item=RegularInventoryRecord.objects.get(id=request.data.get("item")),
             quantity=request.data.get("quantity"),
             order_number=str(
@@ -419,12 +440,12 @@ class RegularOrderRecordViewSet(viewsets.ModelViewSet):
             date_created=timezone.now(),
         )
         return {
-            "id": object.id,
-            "item": object.item.item.name,
-            "quantity": object.quantity,
-            "order_number": object.order_number,
-            "created_by": object.created_by.username,
-            "date_created": object.date_created,
+            "id": object_.id,
+            "item": object_.item.item.name,
+            "quantity": object_.quantity,
+            "order_number": object_.order_number,
+            "created_by": object_.created_by.username,
+            "date_created": object_.date_created,
         }
 
 
@@ -462,7 +483,7 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             return Response({"message": str(e)}, status.HTTP_400_BAD_REQUEST)
 
     def perform_create(self, request) -> Dict:
-        object = CustomerRegularOrderRecord.objects.create(
+        object_ = CustomerRegularOrderRecord.objects.create(
             customer_name=request.data.get("customer_name"),
             customer_phone=request.data.get("customer_phone"),
             customer_orders_number=str(
@@ -472,19 +493,18 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
             ),
             created_by=request.user,
         )
-        self.add_orders(request, object)
-        # object.save()
+        self.add_orders(request, object_)
         return {
-            "customer_name": object.customer_name,
-            "customer_phone": object.customer_phone,
-            "customer_orders_number": object.customer_orders_number,
-            "orders": object.get_orders_detail,
-            "created_by": object.created_by.username,
-            "date_created": str(object.date_created).split(" ")[0],
-            "time_created": str(object.date_created).split(" ")[1].split(".")[0],
+            "customer_name": object_.customer_name,
+            "customer_phone": object_.customer_phone,
+            "customer_orders_number": object_.customer_orders_number,
+            "orders": object_.get_orders_detail,
+            "created_by": object_.created_by.username,
+            "date_created": str(object_.date_created).split(" ")[0],
+            "time_created": str(object_.date_created).split(" ")[1].split(".")[0],
         }
 
-    def add_orders(self, request, object):
+    def add_orders(self, request, object_):
         for _ in request.data.get("orders"):
             order = RegularOrderRecord.objects.create(
                 item=RegularInventoryRecord.objects.get(id=int(_["menu_id"])),
@@ -494,8 +514,8 @@ class CustomerRegularOrderRecordViewSet(viewsets.ModelViewSet):
                 ),
                 created_by=request.user,
             )
-            object.orders.add(order)
-        object.save()
+            object_.orders.add(order)
+        object_.save()
 
     def list(self, request, *args, **kwargs) -> Response:
 
@@ -666,11 +686,11 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             object_.amount_paid += amount_paid
             object_.save()
             if object_.amount_paid >= object_.get_total_amount_to_pay:
-                object_.payment_status == "paid"
+                object_.payment_status = "paid"
             elif object_.amount_paid <= object_.get_total_amount_to_pay:
-                object_.payment_status == "partial"
+                object_.payment_status = "partial"
             else:
-                object_.payment_status == "unpaid"
+                object_.payment_status = "unpaid"
             object_.save()
 
             return Response(status.HTTP_200_OK)
