@@ -218,8 +218,8 @@ class TequilaInventoryRecordsTrunk(models.Model):
                     {
                         "id": item.id,
                         "name": item.item.name,
-                        "selling_price_per_item": item.selling_price_per_shot,
-                        "items_available": self.total_items_available,
+                        "selling_price_per_shot": item.selling_price_per_shot,
+                        "total_shots": self.total_items_available,
                         "stock_status": self.stock_status,
                         "item_type": "Tequila"
                     }
