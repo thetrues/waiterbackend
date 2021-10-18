@@ -145,8 +145,8 @@ class MainInventoryItemRecordTrunk(models.Model):
             temp_stock_in: Dict = {
                 "id": record.id,
                 "quantity": str(record.quantity) + " " + record.main_inventory_item.item.unit.name,
-                "purchasing_price": record.purchasing_price,
-                "selling_price_per_item": record.selling_price_per_item,
+                "purchasing_price": record.main_inventory_item.purchasing_price,
+                # "selling_price_per_item": record.selling_price_per_item,
                 "available_items": record.available_quantity,
                 "estimated_sales": record.estimate_sales(),
                 "estimated_profit": record.estimate_profit(),
