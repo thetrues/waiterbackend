@@ -65,8 +65,8 @@ class MainInventoryItemRecord(BaseInventory):
         )
 
     @property
-    def estimate_profit(self) -> float:
-        return float(self.estimate_sales - self.purchasing_price)
+    def estimate_profit(self) -> int:
+        return int(self.estimate_sales - self.purchasing_price)
 
     def send_notification(self, message: str, recipients: List[str]):
         from BeemAfrica import Authorize, SMS
@@ -148,8 +148,8 @@ class MainInventoryItemRecordTrunk(models.Model):
                 "purchasing_price": record.purchasing_price,
                 # "selling_price_per_item": record.selling_price_per_item,
                 "available_items": record.available_quantity,
-                "estimated_sales": record.estimate_sales(),
-                "estimated_profit": record.estimate_profit(),
+                "estimated_sales": record.estimate_sales,
+                "estimated_profit": record.estimate_profit,
                 "stock_status": record.get_stock_status_display(),
                 "date_purchased": record.date_purchased.__str__(),
                 "date_perished": record.date_perished.__str__(),
