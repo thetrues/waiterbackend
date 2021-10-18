@@ -137,7 +137,10 @@ class MainInventoryItemRecordTrunkView(viewsets.ModelViewSet):
             trunk = MainInventoryItemRecordTrunk.objects.get(id=pk)
             res = []
             for i in trunk.inventory_items.all():
-                res.append(i.stock_out_history[0])
+                try:
+                    res.append(i.stock_out_history[0])
+                except IndexError:
+                    continue
             return Response(data=res, status=status.HTTP_200_OK)
         except MainInventoryItemRecordTrunk.DoesNotExist:
             return Response(data={"message": "Not Contents"}, status=status.HTTP_204_NO_CONTENT)
