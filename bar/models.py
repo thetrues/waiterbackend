@@ -102,6 +102,10 @@ class RegularInventoryRecordsTrunk(models.Model):
         return self.regular_inventory_record.aggregate(total=Sum("total_items"))["total"] or 0
 
     @property
+    def item_id(self) -> int:
+        return self.regular_inventory_record.first().id
+
+    @property
     def total_items_available(self) -> int:
         return self.get_total_available_items() or 0
 
@@ -240,6 +244,10 @@ class TequilaInventoryRecordsTrunk(models.Model):
     @property
     def total_items_available(self) -> int:
         return self.get_total_available_items() or 0
+
+    @property
+    def item_id(self) -> int:
+        return self.tequila_inventory_record.first().id
 
     @property  # This should be handled per request
     def issued_stocks(self) -> Dict:
