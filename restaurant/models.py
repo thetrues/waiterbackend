@@ -95,8 +95,8 @@ class MainInventoryItemRecord(BaseInventory):
                 {
                     "history_id": _.id,
                     "quantity_out": f"{_.quantity_out} {_.item_record.main_inventory_item.item.unit.name}",
-                    "date_out": _.date_out,
-                    "created_by": str(_.created_by),
+                    "date_out": _.date_out.__str__(),
+                    "created_by": _.created_by.__str__(),
                 }
             )
             for _ in self.maininventoryitemrecordstockout_set.all()

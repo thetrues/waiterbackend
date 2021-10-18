@@ -128,6 +128,20 @@ class MainInventoryItemRecordTrunkView(viewsets.ModelViewSet):
         except MainInventoryItemRecordTrunk.DoesNotExist:
             return Response(data={"message": "Not Contents"}, status=status.HTTP_204_NO_CONTENT)
 
+    @action(
+        detail=True,
+        methods=["GET"],
+    )
+    def get_stocks_out(self, request, pk=None):
+        try:
+            trunk = MainInventoryItemRecordTrunk.objects.get(id=pk)
+            res = []
+            for i in trunk.inventory_items.all():
+                res.append(i.stock_out_history[0])
+            return Response(data=res, status=status.HTTP_200_OK)
+        except MainInventoryItemRecordTrunk.DoesNotExist:
+            return Response(data={"message": "Not Contents"}, status=status.HTTP_204_NO_CONTENT)
+
 
 class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
     serializer_class = MainInventoryItemRecordSerializer
