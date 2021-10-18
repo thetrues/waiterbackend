@@ -207,20 +207,20 @@ class RegularInventoryRecordViewSet(viewsets.ModelViewSet):
     def get_res(self, instance):
         return {
             "id": instance.id,
-            "quantity": instance.quantity,
-            "purchasing_price": instance.purchasing_price,
-            "date_purchased": instance.date_purchased,
-            "total_items": instance.total_items,
-            "available_items": instance.available_quantity,
-            "threshold": instance.threshold,
-            "selling_price_per_item": instance.selling_price_per_item,
-            "estimated_total_cash_after_sale": instance.estimate_sales(),
-            "estimated_profit_after_sale": instance.estimate_profit(),
+            # "quantity": instance.quantity,
+            # "purchasing_price": instance.purchasing_price,
+            # "date_purchased": instance.date_purchased,
+            # "total_items": instance.total_items,
+            # "available_items": instance.available_quantity,
+            # "threshold": instance.threshold,
+            # "selling_price_per_item": instance.selling_price_per_item,
+            # "estimated_total_cash_after_sale": instance.estimate_sales(),
+            # "estimated_profit_after_sale": instance.estimate_profit(),
             "item": instance.item.name,
-            "measurement_unit": instance.item.unit.name,
-            "orders_history": instance.get_orders_history(
-                qs=instance.regularorderrecord_set.select_related("created_by")
-            ),
+            # "measurement_unit": instance.item.unit.name,
+            # "orders_history": instance.get_orders_history(
+            #     qs=instance.regularorderrecord_set.select_related("created_by")
+            # ),
         }
 
     def list(self, request, *args, **kwargs):
