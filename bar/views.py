@@ -330,7 +330,7 @@ class TequilaInventoryRecordsTrunkView(viewsets.ModelViewSet):
             fields: List[str] = [
                 "id",
                 "item",
-                "main_inventory_item_id",
+                "main_item_id",
                 "total_items_available",
                 "stock_status",
             ]

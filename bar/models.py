@@ -246,7 +246,7 @@ class TequilaInventoryRecordsTrunk(models.Model):
         return self.get_total_available_items() or 0
 
     @property
-    def main_inventory_item_id(self) -> int:
+    def main_item_id(self) -> int:
         return self.tequila_inventory_record.first().id
 
     @property  # This should be handled per request
