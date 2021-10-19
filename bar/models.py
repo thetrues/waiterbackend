@@ -102,7 +102,7 @@ class RegularInventoryRecordsTrunk(models.Model):
         return self.regular_inventory_record.aggregate(total=Sum("total_items"))["total"] or 0
 
     @property
-    def main_inventory_item_id(self) -> int:
+    def main_item_id(self) -> int:
         return self.regular_inventory_record.first().id
 
     @property
