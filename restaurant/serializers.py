@@ -19,7 +19,12 @@ from restaurant.models import (
 class MainInventoryItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MainInventoryItem
-        fields = "__all__"
+        fields = [
+            "id",
+            "amount_per_unit",
+            "price_per_unit",
+            "unit"
+        ]
 
     def validate_item(self, item):
         if item.item_for not in ["restaurant", "both"]:
