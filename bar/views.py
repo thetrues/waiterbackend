@@ -890,9 +890,6 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     """  """
 
-    authentication_classes = []
-    permission_classes = []
-
     serializer_class = RegularTequilaOrderRecordSerializer
 
     def get_queryset(self):
