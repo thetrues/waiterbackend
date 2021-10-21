@@ -959,7 +959,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     raise serializers.ValidationError(
                         f"{item.name} quantity must not exceed {trunk.total_items_available}")
             except Exception as e:
-                return e.__str__()
+                raise serializers.ValidationError(e.__str__())
 
         # For Tequila Orders
         for tequila_order in orders["tequila_orders"]:
@@ -973,7 +973,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     raise serializers.ValidationError(
                         f"{item.name} quantity must not exceed {trunk.total_items_available}")
             except Exception as e:
-                return e.__str__()
+                raise serializers.ValidationError(e.__str__())
 
         object_ = RegularTequilaOrderRecord.objects.create(
             order_number=str(
