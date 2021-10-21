@@ -959,7 +959,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             except RegularInventoryRecordsTrunk.DoesNotExist:
                 raise serializers.ValidationError({"message": f"No inventory records found."})
             if regular_order["quantity"] > trunk.total_items_available:
-                raise serializers.ValidationError(f"{item.name} quantity must not exceed {trunk.total_items_available}")
+                raise serializers.ValidationError({"message": f"{item.name} quantity must not exceed {trunk.total_items_available}"})
 
         # For Tequila Orders
         for tequila_order in orders["tequila_orders"]:
@@ -973,7 +973,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             except TequilaInventoryRecordsTrunk.DoesNotExist:
                 raise serializers.ValidationError({"message": "Something went wrong."})
             if tequila_order["quantity"] > trunk.total_items_available:
-                raise serializers.ValidationError(f"{item.name} quantity must not exceed {trunk.total_items_available}")
+                raise serializers.ValidationError({"message": f"{item.name} quantity must not exceed {trunk.total_items_available}"})
 
         object_ = RegularTequilaOrderRecord.objects.create(
             order_number=str(
