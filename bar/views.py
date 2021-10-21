@@ -890,6 +890,9 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     """  """
 
+    authentication_classes = []
+    permission_classes = []
+
     serializer_class = RegularTequilaOrderRecordSerializer
 
     def get_queryset(self):
@@ -955,8 +958,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     # return Response(data={"message": message}, status=status.HTTP_200_OK)
                     raise serializers.ValidationError(
                         f"{item.name} quantity must not exceed {trunk.total_items_available}")
-            except Exception:
-                raise serializers.ValidationError("Something went wrong")
+            except Exception as e:
+                return e.__str__()
 
         # For Tequila Orders
         for tequila_order in orders["tequila_orders"]:
@@ -969,8 +972,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     # return Response(data={"message": message}, status=status.HTTP_200_OK)
                     raise serializers.ValidationError(
                         f"{item.name} quantity must not exceed {trunk.total_items_available}")
-            except Exception:
-                raise serializers.ValidationError("Something went wrong.")
+            except Exception as e:
+                return e.__str__()
 
         object_ = RegularTequilaOrderRecord.objects.create(
             order_number=str(
