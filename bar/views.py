@@ -956,10 +956,9 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 if regular_order["quantity"] > trunk.total_items_available:
                     # message: str = f"{item.name} quantity must not exceed {trunk.total_items_available}"
                     # return Response(data={"message": message}, status=status.HTTP_200_OK)
-                    raise serializers.ValidationError(
-                        f"{item.name} quantity must not exceed {trunk.total_items_available}")
+                    raise ValueError({"message": f"{item.name} quantity must not exceed {trunk.total_items_available}"})
             except Exception as e:
-                raise serializers.ValidationError(e.__str__())
+                raise ValueError({"message": e.__str__()})
 
         # For Tequila Orders
         for tequila_order in orders["tequila_orders"]:
@@ -970,10 +969,9 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 if tequila_order["quantity"] > trunk.total_items_available:
                     # message: str = f"{item.name} quantity must not exceed {trunk.total_items_available}"
                     # return Response(data={"message": message}, status=status.HTTP_200_OK)
-                    raise serializers.ValidationError(
-                        f"{item.name} quantity must not exceed {trunk.total_items_available}")
+                    raise ValueError({"message": f"{item.name} quantity must not exceed {trunk.total_items_available}"})
             except Exception as e:
-                raise serializers.ValidationError(e.__str__())
+                raise ValueError({"message": e.__str__()})
 
         object_ = RegularTequilaOrderRecord.objects.create(
             order_number=str(
