@@ -938,9 +938,9 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        data = self.perform_create(request)
+        self.perform_create(request)
 
-        return Response(data, status.HTTP_201_CREATED)
+        return Response(status.HTTP_201_CREATED)
 
     def perform_create(self, request):
         orders = request.data.get("orders")
