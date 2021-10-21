@@ -952,22 +952,28 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             try:
                 regular_inv_record = RegularInventoryRecord.objects.get(id=regular_order["item_id"])
                 item = regular_inv_record.item
+            except RegularInventoryRecord.DoesNotExist:
+                raise serializers.ValidationError({"message": f"No inventory records found."})
+            try:
                 trunk = RegularInventoryRecordsTrunk.objects.get(item=item)
-                if regular_order["quantity"] > trunk.total_items_available:
-                    raise serializers.ValidationError(f"{item.name} quantity must not exceed {trunk.total_items_available}")
-            except Exception as e:
-                raise serializers.ValidationError({"message": e.__str__()})
+            except RegularInventoryRecordsTrunk.DoesNotExist:
+                raise serializers.ValidationError({"message": f"No inventory records found."})
+            if regular_order["quantity"] > trunk.total_items_available:
+                raise serializers.ValidationError(f"{item.name} quantity must not exceed {trunk.total_items_available}")
 
         # For Tequila Orders
         for tequila_order in orders["tequila_orders"]:
             try:
                 tequila_inv_record = TekilaInventoryRecord.objects.get(id=tequila_order["item_id"])
                 item = tequila_inv_record.item
+            except TekilaInventoryRecord.DoesNotExist:
+                raise serializers.ValidationError({"message": "Something went wrong."})
+            try:
                 trunk = TequilaInventoryRecordsTrunk.objects.get(item=item)
-                if tequila_order["quantity"] > trunk.total_items_available:
-                    raise serializers.ValidationError(f"{item.name} quantity must not exceed {trunk.total_items_available}")
-            except Exception as e:
-                raise serializers.ValidationError({"message": e.__str__()})
+            except TequilaInventoryRecordsTrunk.DoesNotExist:
+                raise serializers.ValidationError({"message": "Something went wrong."})
+            if tequila_order["quantity"] > trunk.total_items_available:
+                raise serializers.ValidationError(f"{item.name} quantity must not exceed {trunk.total_items_available}")
 
         object_ = RegularTequilaOrderRecord.objects.create(
             order_number=str(
