@@ -34,6 +34,10 @@ class MainInventoryItem(models.Model):
         """
         return self.item.name
 
+    @property
+    def unit(self) -> str:
+        return self.item.unit.name
+
     class Meta:
         ordering: List[str] = ["-id"]
 
