@@ -967,7 +967,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 if tequila_order["quantity"] > trunk.total_items_available:
                     raise serializers.ValidationError(f"{item.name} quantity must not exceed {trunk.total_items_available}")
             except Exception as e:
-                raise ValueError({"message": e.__str__()})
+                raise serializers.ValidationError({"message": e.__str__()})
 
         object_ = RegularTequilaOrderRecord.objects.create(
             order_number=str(
