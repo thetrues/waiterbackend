@@ -80,7 +80,7 @@ class ExpenditureView(viewsets.ModelViewSet):
     class OutputSerializer(serializers.ModelSerializer):
         class Meta:
             model = Expenditure
-            exclude = ["date_created"]
+            fields = "__all__"
 
     class InputSerializer(serializers.Serializer):
         name = serializers.CharField(max_length=128)
