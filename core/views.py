@@ -100,6 +100,6 @@ class ExpenditureView(viewsets.ModelViewSet):
         return Response(status.HTTP_201_CREATED)
 
     def list(self, request, *args, **kwargs):
-        data = self.OutputSerializer(data=self.get_queryset(), many=True).data
+        data = self.OutputSerializer(self.get_queryset(), many=True).data
 
         return Response(data=data, status=status.HTTP_200_OK)
