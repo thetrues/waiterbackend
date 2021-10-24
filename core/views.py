@@ -82,6 +82,9 @@ class ExpenditureView(viewsets.ModelViewSet):
             model = Expenditure
             fields = "__all__"
 
+        def to_representation(self, instance):
+            return instance.date_created.timestamp()
+
     class InputSerializer(serializers.Serializer):
         name = serializers.CharField(max_length=128)
         amount = serializers.IntegerField()
