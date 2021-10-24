@@ -42,7 +42,7 @@ class TekilaInventoryRecordSerializer(serializers.ModelSerializer):
         """
         Check if item quantity is not less than threshold.
         """
-        if data["quantity"] <= data["threshold"]:
+        if data["total_shots_per_tekila"] <= data["threshold"]:
             raise serializers.ValidationError(
                 "Item threshold must be less than quantity"
             )
