@@ -211,10 +211,9 @@ class CreditCustomer(models.Model):
     address = models.CharField(max_length=255)
     credit_limit = models.FloatField(null=True, blank=True)
 
-    @property
     def __str__(self) -> str:
 
-        return self.name
+        return self.name.__str__()
 
     def get_today_balance(self) -> int:
         restaurant_today_spends = self.creditcustomerdishpayment_set.filter(
