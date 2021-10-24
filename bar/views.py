@@ -49,6 +49,7 @@ from bar.serializers import (
 from core.models import CreditCustomer, Item
 from core.serializers import InventoryItemSerializer
 from core.utils import get_date_objects, orders_number_generator, validate_dates
+from restaurant.utils import send_notification
 from user.models import User
 
 
@@ -950,13 +951,14 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 regular_inv_record = RegularInventoryRecord.objects.get(id=regular_order["item_id"])
                 item = regular_inv_record.item
             except RegularInventoryRecord.DoesNotExist:
-                raise serializers.ValidationError({"message": f"No inventory records found."})
+                raise serializers.ValidationError({"message": "No inventory records found."})
             try:
                 trunk = RegularInventoryRecordsTrunk.objects.get(item=item)
             except RegularInventoryRecordsTrunk.DoesNotExist:
-                raise serializers.ValidationError({"message": f"No inventory records found."})
+                raise serializers.ValidationError({"message": "No inventory records found."})
             if regular_order["quantity"] > trunk.total_items_available:
-                raise serializers.ValidationError({"message": f"{item.name} quantity must not exceed {trunk.total_items_available}"})
+                raise serializers.ValidationError(
+                    {"message": f"{item.name} quantity must not exceed {trunk.total_items_available}"})
 
         # For Tequila Orders
         for tequila_order in orders["tequila_orders"]:
@@ -970,7 +972,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             except TequilaInventoryRecordsTrunk.DoesNotExist:
                 raise serializers.ValidationError({"message": "Something went wrong."})
             if tequila_order["quantity"] > trunk.total_items_available:
-                raise serializers.ValidationError({"message": f"{item.name} quantity must not exceed {trunk.total_items_available}"})
+                raise serializers.ValidationError(
+                    {"message": f"{item.name} quantity must not exceed {trunk.total_items_available}"})
 
         object_ = RegularTequilaOrderRecord.objects.create(
             order_number=str(
@@ -1415,23 +1418,23 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                 )
             )
 
-        object = CustomerRegularTequilaOrderRecordPayment.objects.create(
+        object_ = CustomerRegularTequilaOrderRecordPayment.objects.create(
             customer_regular_tequila_order_record=customer_regular_order_record,
             amount_paid=amount_paid,
             created_by=request.user,
             payment_started=True,
         )
 
-        self.pay_by_credit(request, by_credit, amount_paid, object)
-        self.save_payment_status(request, object)
+        self.pay_by_credit(request, by_credit, amount_paid, object_)
+        self.save_payment_status(request, object_)
 
-        object.save()
+        object_.save()
         return {
-            "customer_order_record": str(object),
-            "payment_status": object.payment_status,
-            "amount_paid": object.amount_paid,
-            "date_paid": object.date_paid,
-            "created_by": str(object.created_by),
+            "customer_order_record": str(object_),
+            "payment_status": object_.payment_status,
+            "amount_paid": object_.amount_paid,
+            "date_paid": object_.date_paid,
+            "created_by": str(object_.created_by),
         }
 
     def alter_ccrtrop_amount_paid(self, amount_paid, customer, object):
@@ -1464,21 +1467,25 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             customer_regular_tequila_order_record=customer_regular_order_record,
         )
 
-    def pay_by_credit(self, request, by_credit, amount_paid, object):
+    def pay_by_credit(self, request, by_credit, amount_paid, object_):
         customer = self.get_customer(request)
         if by_credit and customer:
-            object.by_credit = True
-            object.save()
+            object_.by_credit = True
+            object_.save()
             CreditCustomerRegularTequilaOrderRecordPayment.objects.create(
-                record_order_payment_record=object,
+                record_order_payment_record=object_,
                 customer=customer,
                 amount_paid=amount_paid,
                 date_created=timezone.localdate(),
             )
-            self._change_customer_details(object, customer)
+            self._change_customer_details(object_, customer)
+            # todo: Send SMS Notification Credit Customer
+            send_notification(
+                f"Chakula cha gharama ya shilingi {object_.customer_regular_tequila_order_record.regular_tequila_order_record.get_total_price()}/= kimenunuliwa kwa jina lako. Umelipia shilingi {str(amount_paid)}/=. Asante na Karibu tena.",
+                customer.phone)
 
-    def _change_customer_details(self, object, customer):
-        customer_regular_order_record = object.customer_regular_tequila_order_record
+    def _change_customer_details(self, object_, customer):
+        customer_regular_order_record = object_.customer_regular_tequila_order_record
         customer_regular_order_record.customer_name = customer.name
         customer_regular_order_record.customer_phone = customer.phone
         customer_regular_order_record.save()
