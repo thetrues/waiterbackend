@@ -87,7 +87,7 @@ class ExpenditureView(viewsets.ModelViewSet):
                 "id": instance.id,
                 "name": instance.name,
                 "amount": instance.amount,
-                "expenditure_for": instance.expenditure_for,
+                "expenditure_for": instance.expenditure_for.capitalize(),
                 "date_created": instance.date_created.timestamp()
             }
 
