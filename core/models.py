@@ -1,11 +1,12 @@
-from django.db.models.manager import Manager
-from django.db.models.aggregates import Sum
-from typing import Dict, List, Set, Tuple
 from abc import abstractmethod
-from django.db import models
-from django.utils import timezone
-from user.models import User
+from typing import Dict, List, Set
 
+from django.db import models
+from django.db.models.aggregates import Sum
+from django.db.models.manager import Manager
+from django.utils import timezone
+
+from user.models import User
 
 STOCK_STATUS_CHOICES = (
     ("available", "Available"),
@@ -344,3 +345,17 @@ class BaseCustomerOrderRecord(models.Model):
         indexes: List = [
             models.Index(fields=["customer_name", "created_by"]),
         ]
+
+
+class Expenditure(models.Model):
+    name = models.CharField(max_length=128)
+    amount = models.IntegerField()
+    expenditure_for = models.CharField(max_length=10, choices=(("bar", "Bar"), ("restaurant", "Restaurant")))
+    date_created = models.DateTimeField(auto_now_add=True)
+    objects = Manager()
+
+    def __str__(self) -> str:
+        return str(self.name)
+
+    class Meta:
+        ordering = ["-id"]

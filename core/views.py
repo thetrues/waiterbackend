@@ -1,7 +1,9 @@
-from core.models import CreditCustomer, Item, MeasurementUnit
-from rest_framework.response import Response
-from rest_framework import status, viewsets, serializers
 from typing import Dict, List
+
+from rest_framework import status, viewsets, serializers
+from rest_framework.response import Response
+
+from core.models import CreditCustomer, Item, MeasurementUnit, Expenditure
 from core.serializers import (
     CreditCustomerSerializer,
     MeasurementUnitSerializer,
@@ -70,3 +72,34 @@ class CreditCustomerViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return CreditCustomer.objects.all()
+
+
+class ExpenditureView(viewsets.ModelViewSet):
+    """  """
+
+    class OutputSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = Expenditure
+            exclude = ["date_created"]
+
+    class InputSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=128)
+        amount = serializers.IntegerField()
+        expenditure_for = serializers.CharField(max_length=10)
+
+    serializer_class = InputSerializer
+
+    def get_queryset(self):
+        return Expenditure.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        Expenditure.objects.create(**serializer.validated_data)
+
+        return Response(status.HTTP_201_CREATED)
+
+    def list(self, request, *args, **kwargs):
+        data = self.OutputSerializer(data=self.get_queryset(), many=True).data
+
+        return Response(data=data, status=status.HTTP_200_OK)

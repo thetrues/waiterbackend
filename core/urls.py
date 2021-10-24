@@ -129,6 +129,12 @@ v1.register(
     basename="RestaurantPayrol"
 )
 
+v1.register(
+    "core/expenditure",
+    core_views.ExpenditureView,
+    basename="Expenditure"
+)
+
 urlpatterns = [
     path("", include(v1.urls)),
 ]
