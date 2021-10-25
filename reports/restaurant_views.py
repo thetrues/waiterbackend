@@ -296,7 +296,7 @@ class CustomDateReport(BaseReport, APIView):
         total_main_expense, gabbage = self.get_total_main_expense_and_main_qs(
             date1, date2
         )
-        response["total_inventory_cost"] = total_misc_expense + total_main_expense
+        response["total_inventory_cost"] = int(total_misc_expense + total_main_expense)
 
         response["net_profit"] = int(
             total_sales - (
