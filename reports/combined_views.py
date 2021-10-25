@@ -245,5 +245,5 @@ class CustomDateReport(APIView):
             CustomerRegularTequilaOrderRecordPayment.objects.filter(
                 date_paid__date__range=(date1, date2),
             )
-                .select_related("regular_tequila_order_record", "created_by")
+                .select_related("customer_regular_tequila_order_record__regular_tequila_order_record", "created_by")
         )
