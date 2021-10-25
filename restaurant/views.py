@@ -546,7 +546,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return CustomerDish.objects.prefetch_related("orders").filter(
-            status__in=["partial", "unpaid"],
+            status__in=["partial", "unpaid", "paid"],
             date_created__date=self.today.date()
         )
 
