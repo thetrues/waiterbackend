@@ -187,7 +187,7 @@ class BasePayment(models.Model):
         help_text="Leave blank",
     )
     amount_paid = models.IntegerField()
-    date_paid = models.DateTimeField(auto_now_add=True)
+    date_paid = models.DateTimeField()
     date_updated = models.DateTimeField(
         null=True,
         blank=True,
@@ -261,7 +261,7 @@ class CreditCustomer(models.Model):
 
 class BaseCreditCustomerPayment(models.Model):
     customer = models.ForeignKey(CreditCustomer, on_delete=models.CASCADE)
-    date_created = models.DateField(auto_now_add=True)
+    date_created = models.DateField()
     amount_paid = models.FloatField(null=True, blank=True)
     objects = Manager()
 

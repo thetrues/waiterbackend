@@ -631,8 +631,10 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
 
 
 class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
+    """ Customer Dish Payment API """
+
     serializer_class = CustomerDishPaymentSerializer
-    today = timezone.localdate()
+    today = timezone.localtime().date()
 
     def get_queryset(self):
         return CustomerDishPayment.objects.select_related(
@@ -833,6 +835,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             amount_paid=request.data.get("amount_paid"),
             created_by=request.user,
             payment_started=True,
+            date_paid=self.today
         )
         self.pay_by_credit(request, by_credit, amount_paid, object_)
         self.save_payment_status(object_, amount_paid, customer_dish)
@@ -861,11 +864,11 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             ccdph.date_paid = self.today
             ccdph.save()
 
-    def change_ccdp(self, object):
+    def change_ccdp(self, object_):
         ccdp = CreditCustomerDishPayment.objects.filter(
-            customer_dish_payment=object
+            customer_dish_payment=object_
         ).last()
-        ccdp.amount_paid += object.amount_paid
+        ccdp.amount_paid += object_.amount_paid
         ccdp.date_created = self.today
         ccdp.save()
         return ccdp
@@ -937,7 +940,7 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                 customer_dish_payment=object_,
                 customer=customer,
                 amount_paid=amount_paid,
-                date_created=timezone.localdate(),
+                date_created=self.today,
             )
             self._change_customer_details(object_, customer)
 
