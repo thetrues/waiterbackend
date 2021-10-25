@@ -275,8 +275,8 @@ class CustomDateReport(BaseReport, APIView):
         total_sales: int = 0
         total_unpaid: int = 0
         for i in qs:
-            total_sales += i.paid_amount
-            total_unpaid += i.remained_amount
+            total_sales += i.customer_dish.paid_amount
+            total_unpaid += i.customer_dish.remained_amount
         response["total_sales"] = total_sales
         response["total_unpaid"] = total_unpaid
         response["total_expenditure"] = Expenditure.objects.filter(
