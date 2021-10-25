@@ -174,7 +174,7 @@ class CustomDateReport(APIView):
         for q in qs:
             orders_list.append({
                 "order_number": q.customer_regular_tequila_order_record.dish_number,
-                "date": int(q.customer_regular_tequila_order_record.date_paid.timestamp()),
+                "date": int(q.date_paid.timestamp()),
                 "total_price": q.customer_regular_tequila_order_record.get_total_price(),
                 "total_paid": q.customer_regular_tequila_order_record.paid_amount,
                 "total_unpaid": q.customer_regular_tequila_order_record.remained_amount,
