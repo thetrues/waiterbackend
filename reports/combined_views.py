@@ -7,7 +7,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from bar.models import CustomerRegularTequilaOrderRecord, BarPayrol
+from bar.models import CustomerRegularTequilaOrderRecord, BarPayrol, RegularInventoryRecord, TekilaInventoryRecord
+from core.models import Expenditure
 from core.utils import get_date_objects
 
 
@@ -162,22 +163,55 @@ class CustomDateReport(APIView):
         try:
             date1, date2 = get_date_objects(first_date, second_date)
         except TypeError:
-            return Response({"message": "Please choose dates range."})
+            return Response({"message": "Choose dates."}, status.HTTP_400_BAD_REQUEST)
 
         qs = self.get_queryset(date1, date2)
 
         self.get_custom_dates(response, date1, date2)
+        # Orders
+        orders_list = []
+        for q in qs:
+            orders_list.append({
+                "order_number": q.customer_regular_tequila_order_record.dish_number,
+                "date": int(q.customer_regular_tequila_order_record.date_paid.timestamp()),
+                "total_price": q.customer_regular_tequila_order_record.get_total_price(),
+                "total_paid": q.customer_regular_tequila_order_record.paid_amount,
+                "total_unpaid": q.customer_regular_tequila_order_record.remained_amount,
+                "status": q.customer_regular_tequila_order_record.status.capitalize(),
+                "order_items": q.customer_regular_tequila_order_record.get_orders_detail
+            })
+        response["orders_list"] = orders_list
 
-        sales: Dict = self.get_sales_response(qs)
-        response["sales"] = sales
+        # Total Sales
+        total_sales: int = 0
+        total_unpaid: int = 0
+        for i in qs:
+            total_sales += i.customer_regular_tequila_order_record.paid_amount
+            total_unpaid += i.customer_regular_tequila_order_record.remained_amount
+        response["total_sales"] = total_sales
+        response["total_unpaid"] = total_unpaid
+        response["total_expenditure"] = Expenditure.objects.filter(
+            expenditure_for="bar", date_created__range=(date1, date2)
+        ).aggregate(total=Sum("amount"))["total"]
+        bar_payrolls: int = \
+            BarPayrol.objects.filter(date_paid__range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
+                "total"]
+        response["total_payroll"] = int(bar_payrolls)
+        total_regular_inv = RegularInventoryRecord.objects.filter(
+            date_purchased__range=(date1, date2)
+        ).aggregate(total=Sum("purchasing_price"))["total"]
 
-        expenses: Dict = self.get_expenses_response(response, date1, date2)
-        response["expenses"] = expenses
+        total_tequila_inv = TekilaInventoryRecord.objects.filter(
+            date_purchased__range=(date1, date2)
+        ).aggregate(total=Sum("purchasing_price"))["total"]
 
-        total_sales = response["sales"]["total_sales"]
-        total_expenses = response["expenses"]["total_payrolls"]
+        response["total_inventory_cost"] = int(total_regular_inv + total_tequila_inv)
 
-        response["balance"] = total_sales - total_expenses
+        response["net_profit"] = int(
+            total_sales - (
+                    total_unpaid + response["total_expenditure"] + response["total_payroll"] + response[
+                "total_inventory_cost"])
+        )
 
         return Response(response, status.HTTP_200_OK)
 

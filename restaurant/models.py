@@ -103,7 +103,8 @@ class MainInventoryItemRecord(BaseInventory):
                     "created_by": _.created_by.__str__(),
                 }
             )
-            for _ in self.maininventoryitemrecordstockout_set.all()
+            for _ in
+            self.maininventoryitemrecordstockout_set.select_related("item_record__main_inventory_item__item__unit")
         ]
 
         return response

@@ -48,9 +48,6 @@ class RegularInventoryRecord(BaseInventory):
         return self.regularinventoryrecordbroken_set.aggregate(total=Sum("quantity_broken"))[
                    "total"] or 0
 
-    # def total_cost_for_broken_item(self) -> int:  # 34 * 1800 = 61200
-    #     return self.total_broken_items() * self.selling_price_per_item
-
     def get_price_of_items(self, item_quantity) -> int:
         return int(item_quantity * self.selling_price_per_item)
 
@@ -73,7 +70,6 @@ class RegularInventoryRecordsTrunk(models.Model):
     def get_items_to_sale(self):
         qs = self.regular_inventory_record.select_related("item").filter(stock_status="available")
         names = []
-        # response = []
         for item in qs:
             if item.item.name not in names:
                 return (
@@ -86,8 +82,6 @@ class RegularInventoryRecordsTrunk(models.Model):
                         "item_type": "Regular"
                     }
                 )
-                # names.append(item.item.name)
-        # return response
 
     def get_last_inventory_record(self):  # -> RegularInventoryRecord
         records = self.regular_inventory_record.select_related("item")[::-1]
