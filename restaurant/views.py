@@ -553,24 +553,20 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         res: List = []
         for q in self.get_queryset():
-            temp_res: List = []
             if q.status == "paid" and q.date_created.date() != self.today.date():
                 pass
             else:
-                temp_res.append(
-                    {
-                        "id": q.id,
-                        "customer_name": q.customer_name,
-                        "customer_phone": q.customer_phone,
-                        "dish_number": q.dish_number,
-                        "payable_amount": q.payable_amount,
-                        "paid_amount": q.paid_amount,
-                        "remained_amount": q.remained_amount,
-                        "payment_status": q.payment_status,
-                        "orders": q.dish_detail,
-                    }
-                )
-            res.append(temp_res)
+                res.append({
+                    "id": q.id,
+                    "customer_name": q.customer_name,
+                    "customer_phone": q.customer_phone,
+                    "dish_number": q.dish_number,
+                    "payable_amount": q.payable_amount,
+                    "paid_amount": q.paid_amount,
+                    "remained_amount": q.remained_amount,
+                    "payment_status": q.payment_status,
+                    "orders": q.dish_detail,
+                })
         return Response(data=res, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
