@@ -1187,6 +1187,8 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     """ Customer Regular And Tequila Order Record APIs """
 
+    today = timezone.localtime()
+
     class OutputSerializer(serializers.ModelSerializer):
         id = serializers.IntegerField()
         customer_name = serializers.CharField()
@@ -1221,10 +1223,26 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         ).prefetch_related(
             "regular_tequila_order_record__regular_items",
             "regular_tequila_order_record__tequila_items",
-        ).filter(
-            status__in=["unpaid", "paid", "partial"],
-            date_created__lt=self.today
         )
+
+    def list(self, request, *args, **kwargs):
+        res: List = []
+        for q in self.get_queryset():
+            if q.status == "paid" and q.date_created.date() != self.today.date():
+                pass
+            else:
+                res.append({
+                    "id": q.id,
+                    "customer_name": q.customer_name,
+                    "customer_phone": q.customer_phone,
+                    "dish_number": q.dish_number,
+                    "payable_amount": q.payable_amount,
+                    "paid_amount": q.paid_amount,
+                    "remained_amount": q.remained_amount,
+                    "payment_status": q.payment_status,
+                    "orders": q.dish_detail,
+                })
+        return Response(data=res, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs) -> Response:
         try:
