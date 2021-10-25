@@ -7,7 +7,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from bar.models import CustomerRegularTequilaOrderRecord, BarPayrol, RegularInventoryRecord, TekilaInventoryRecord
+from bar.models import CustomerRegularTequilaOrderRecord, BarPayrol, RegularInventoryRecord, TekilaInventoryRecord, \
+    CustomerRegularTequilaOrderRecordPayment
 from core.models import Expenditure
 from core.utils import get_date_objects
 
@@ -241,7 +242,7 @@ class CustomDateReport(APIView):
 
     def get_queryset(self, date1, date2):
         return (
-            CustomerRegularTequilaOrderRecord.objects.filter(
+            CustomerRegularTequilaOrderRecordPayment.objects.filter(
                 date_created__date__range=(date1, date2),
             )
                 .select_related("regular_tequila_order_record", "created_by")
