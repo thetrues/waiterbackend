@@ -515,6 +515,8 @@ class RestaurantCustomerOrderViewSet(viewsets.ModelViewSet):
 class CustomerDishViewSet(viewsets.ModelViewSet):
     """ Customer Dish API """
 
+    today = timezone.localtime()
+
     class OutputSerializer(serializers.ModelSerializer):
         id = serializers.IntegerField()
         customer_name = serializers.CharField()
@@ -555,7 +557,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             customer_phone=request.data.get("customer_phone"),
             dish_number=orders_number_generator(CustomerDish, "dish_number"),
             created_by=request.user,
-            date_created=timezone.now(),
+            date_created=self.today,
             status="unpaid"
         )
         self.add_orders(request, object_)
@@ -579,7 +581,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
                     RestaurantCustomerOrder, "order_number"
                 ),
                 created_by=request.user,
-                date_created=timezone.now()
+                date_created=self.today
             )
             for ad_id in _["additives"]:
                 order.additives.add(Additive.objects.get(id=int(ad_id["id"])))
