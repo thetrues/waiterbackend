@@ -377,7 +377,7 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": order.date_created.timestamp()
+                    "date_created": int(order.date_created.timestamp())
                 },
             )
             for order in self.orders.all()
@@ -472,7 +472,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": order.date_created.timestamp()
+                    "date_created": int(order.date_created.timestamp())
                 },
             )
             for order in self.orders.all()
@@ -649,7 +649,7 @@ class RegularTequilaOrderRecord(models.Model):
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": order.date_created.timestamp()
+                    "date_created": int(order.date_created.timestamp())
                 },
             )
             for order in self.regular_items.all()
@@ -669,7 +669,7 @@ class RegularTequilaOrderRecord(models.Model):
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": order.date_created.timestamp()
+                    "date_created": int(order.date_created.timestamp())
                 },
             )
             for order in self.tequila_items.all()
