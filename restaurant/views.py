@@ -543,7 +543,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
     serializer_class = OutputSerializer
 
     def get_queryset(self):
-        return CustomerDish.objects.prefetch_related("orders")
+        return CustomerDish.objects.prefetch_related("orders").filter(status__in=["partial", "unpaid"])
 
     def create(self, request, *args, **kwargs):
         data = self.perform_create(request)
@@ -555,6 +555,8 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
             customer_phone=request.data.get("customer_phone"),
             dish_number=orders_number_generator(CustomerDish, "dish_number"),
             created_by=request.user,
+            date_created=timezone.now(),
+            status="unpaid"
         )
         self.add_orders(request, object_)
         return {
@@ -577,6 +579,7 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
                     RestaurantCustomerOrder, "order_number"
                 ),
                 created_by=request.user,
+                date_created=timezone.now()
             )
             for ad_id in _["additives"]:
                 order.additives.add(Additive.objects.get(id=int(ad_id["id"])))
@@ -817,16 +820,17 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
                     customer.name, self.get_remained_credit_for_today(customer)
                 )
             )
+        customer_dish = CustomerDish.objects.get(
+            id=request.data.get("customer_dish")
+        )
         object = CustomerDishPayment.objects.create(
-            customer_dish=CustomerDish.objects.get(
-                id=request.data.get("customer_dish")
-            ),
+            customer_dish=customer_dish,
             amount_paid=request.data.get("amount_paid"),
             created_by=request.user,
             payment_started=True,
         )
         self.pay_by_credit(request, by_credit, amount_paid, object)
-        self.save_payment_status(object, amount_paid)
+        self.save_payment_status(object, amount_paid, customer_dish)
         object.save()
 
         return {
@@ -941,13 +945,17 @@ class CustomerDishPaymentViewSet(viewsets.ModelViewSet):
             customer = None
         return customer
 
-    def save_payment_status(self, object, amount_paid):
+    def save_payment_status(self, object, amount_paid, customer_dish):
         if amount_paid == 0:
             object.payment_status = "unpaid"
+            customer_dish.status = "unpaid"
         elif amount_paid >= object.get_total_amount_to_pay:
             object.payment_status = "paid"
+            customer_dish.status = "paid"
         else:
             object.payment_status = "partial"
+            customer_dish.status = "partial"
+        customer_dish.save()
         object.save()
 
 

@@ -237,7 +237,7 @@ class BaseCustomerOrder(models.Model):
         max_length=255, null=True, blank=True, unique=True, help_text="Leave blank"
     )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    date_created = models.DateTimeField(auto_now_add=True)
+    date_created = models.DateTimeField()
     objects = Manager()
 
     @property
@@ -279,7 +279,14 @@ class CustomerDish(models.Model):
         max_length=255, null=True, blank=True, help_text="Leave blank"
     )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    date_created = models.DateTimeField(auto_now_add=True)
+    date_created = models.DateTimeField()
+    status = models.CharField(max_length=7,
+                              choices=(
+                                  ("unpaid", "Unpaid"),
+                                  ("partial", "Partially Paid"),
+                                  ("paid", "Fully Paid")
+                              )
+                              )
     objects = Manager()
 
     def __str__(self) -> str:
