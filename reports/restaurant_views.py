@@ -1,18 +1,22 @@
-from rest_framework.response import Response
+import calendar
+from typing import Dict
+
 from django.db.models.aggregates import Sum
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from bar.models import BarPayrol
+from core.models import Expenditure
 from core.utils import get_date_objects
+from reports.base import BaseReport
 from restaurant.models import (
     MainInventoryItemRecordStockOut,
     MiscellaneousInventoryRecord,
     CustomerDishPayment,
     RestaurantPayrol,
 )
-from reports.base import BaseReport
-from rest_framework import status
-from django.utils import timezone
-from typing import Dict
-import calendar
 
 
 class DailyReport(BaseReport, APIView):
@@ -102,8 +106,8 @@ class DailyReport(BaseReport, APIView):
     def get_queryset(self, todays_date):
         return (
             CustomerDishPayment.objects.filter(date_paid__date=todays_date)
-            .select_related("customer_dish")
-            .prefetch_related("customer_dish__orders")
+                .select_related("customer_dish")
+                .prefetch_related("customer_dish__orders")
         )
 
 
@@ -132,9 +136,9 @@ class MonthlyReport(BaseReport, APIView):
 
     def get_current_month(self, response: Dict) -> str:
         response["current_month"] = (
-            calendar.month_name[self.this_month.month]
-            + ", "
-            + str(self.this_month.year)
+                calendar.month_name[self.this_month.month]
+                + ", "
+                + str(self.this_month.year)
         )
 
     def get_expenses_response(self, response: Dict, this_month) -> Dict:
@@ -185,8 +189,8 @@ class MonthlyReport(BaseReport, APIView):
             date_paid__month=this_month.month, date_paid__year=this_month.year
         ).select_related("restaurant_payee")
         monthly_payrol["total_payment"] = qs.aggregate(total=Sum("amount_paid"))[
-            "total"
-        ] or 0.0
+                                              "total"
+                                          ] or 0.0
         monthly_payrol[
             "payments_structure"
         ] = RestaurantPayrol.objects.get_monthly_payments(qs)
@@ -194,10 +198,10 @@ class MonthlyReport(BaseReport, APIView):
         return monthly_payrol
 
     def assign_total_expense(
-        self, expenses, total_misc_expense, total_main_expense, total_payrol
+            self, expenses, total_misc_expense, total_main_expense, total_payrol
     ):
         expenses["total_expense"] = (
-            total_misc_expense + total_main_expense + total_payrol
+                total_misc_expense + total_main_expense + total_payrol
         )
         misc_inventory: Dict = {}
 
@@ -229,8 +233,8 @@ class MonthlyReport(BaseReport, APIView):
                 date_paid__date__year=this_month.year,
                 date_paid__date__month=this_month.month,
             )
-            .select_related("customer_dish")
-            .prefetch_related("customer_dish__orders")
+                .select_related("customer_dish")
+                .prefetch_related("customer_dish__orders")
         )
 
 
@@ -247,20 +251,56 @@ class CustomDateReport(BaseReport, APIView):
         except TypeError:
             return Response({"message": "Please choose dates range."})
 
+        # Get queryset
         qs = self.get_queryset(date1, date2)
 
+        # Get the posted custom dates
         self.get_custom_dates(response, date1, date2)
 
-        sales: Dict = self.get_sales_response(qs)
-        response["sales"] = sales
+        # Orders
+        orders_list = []
+        for q in qs:
+            orders_list.append({
+                "dish_number": q.dish_number,
+                "date": q.date_created,
+                "total_price": q.get_total_price,
+                "total_paid": q.paid_amount,
+                "total_unpaid": q.remained_amount,
+                "status": q.status.capitalize(),
+                "order_items": q.dish_detail
+            })
+        response["orders_list"] = orders_list
 
-        expenses: Dict = self.get_expenses_response(response, date1, date2)
-        response["expenses"] = expenses
+        # Total Sales
+        total_sales: int = 0
+        total_unpaid: int = 0
+        for i in qs:
+            total_sales += i.paid_amount
+            total_unpaid += i.remained_amount
+        response["total_sales"] = total_sales
+        response["total_unpaid"] = total_unpaid
+        response["total_expenditure"] = Expenditure.objects.filter(
+            expenditure_for="restaurant", date_paid__range=(date1, date2)
+        ).aggregates(total=Sum("amount"))["total"]
+        bar_payrolls: int = \
+            BarPayrol.objects.filter(date_paid__range=(date1, date2)).aggregates(total=Sum("amount_paid"))[
+                "total"]
+        restaurant_payrolls: int = \
+            RestaurantPayrol.objects.filter(date_paid__range=(date1, date2)).aggregates(total=Sum("amount_paid"))[
+                "total"]
 
-        total_sales = response["sales"]["total_sales"]
-        total_expenses = response["expenses"]["total_expense"]
+        response["total_payroll"] = bar_payrolls + restaurant_payrolls
+        total_misc_expense, misc_qs = self.get_total_misc_expense_and_misc_qs(
+            date1, date2
+        )
+        total_main_expense, gabbage = self.get_total_main_expense_and_main_qs(
+            date1, date2
+        )
+        response["total_inventory_cost"] = total_misc_expense + total_main_expense
 
-        response["balance"] = total_sales - total_expenses
+        response["net_profit"] = total_sales - (
+                total_unpaid + response["total_expenditure"] + response["total_payroll"] + response[
+            "total_inventory_cost"])
 
         return Response(response, status.HTTP_200_OK)
 
@@ -280,15 +320,15 @@ class CustomDateReport(BaseReport, APIView):
             expenses, total_misc_expense, total_main_expense, total_payrol
         )
 
-        misc_inventory["total_miscellenous_purchases"] = total_misc_expense
+        misc_inventory["total_miscellaneous_purchases"] = total_misc_expense
 
         expenses["misc_inventory"] = misc_inventory
-        temp_miscellenous_items = self.append_misc_items(misc_qs)
-        misc_inventory["miscellenous_items"] = temp_miscellenous_items
+        temp_miscellaneous_items = self.append_misc_items(misc_qs)
+        misc_inventory["miscellaneous_items"] = temp_miscellaneous_items
 
         main_inventory: Dict = {}
         (
-            main_inventory["total_consuption_estimation"],
+            main_inventory["total_consumption_estimation"],
             main_qs,
         ) = self.get_total_main_expense_and_main_qs(date1, date2)
         temp_issued_items = self.append_temp_issued_items(main_qs)
@@ -297,10 +337,10 @@ class CustomDateReport(BaseReport, APIView):
 
         expenses["main_inventory"] = main_inventory
 
-        # Payrols
+        # Payrolls
         monthly_payrol = self.get_monthly_payrol(date1, date2)
 
-        expenses["payrols"] = monthly_payrol
+        expenses["payrolls"] = monthly_payrol
 
         return expenses
 
@@ -315,8 +355,8 @@ class CustomDateReport(BaseReport, APIView):
             date_paid__range=(date1, date2)
         ).select_related("restaurant_payee")
         monthly_payrol["total_payment"] = qs.aggregate(total=Sum("amount_paid"))[
-            "total"
-        ] or 0.0
+                                              "total"
+                                          ] or 0.0
         monthly_payrol[
             "payments_structure"
         ] = RestaurantPayrol.objects.get_monthly_payments(qs)
@@ -324,10 +364,10 @@ class CustomDateReport(BaseReport, APIView):
         return monthly_payrol
 
     def assign_total_expense(
-        self, expenses, total_misc_expense, total_main_expense, total_payrol
+            self, expenses, total_misc_expense, total_main_expense, total_payrol
     ):
         expenses["total_expense"] = (
-            total_misc_expense + total_main_expense + total_payrol or 0
+                total_misc_expense + total_main_expense + total_payrol or 0
         )
         misc_inventory: Dict = {}
 
@@ -357,6 +397,6 @@ class CustomDateReport(BaseReport, APIView):
             CustomerDishPayment.objects.filter(
                 date_paid__date__range=(date1, date2),
             )
-            .select_related("customer_dish")
-            .prefetch_related("customer_dish__orders")
+                .select_related("customer_dish")
+                .prefetch_related("customer_dish__orders")
         )
