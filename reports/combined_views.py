@@ -243,7 +243,7 @@ class CustomDateReport(APIView):
     def get_queryset(self, date1, date2):
         return (
             CustomerRegularTequilaOrderRecordPayment.objects.filter(
-                date_created__date__range=(date1, date2),
+                date_paid__date__range=(date1, date2),
             )
                 .select_related("regular_tequila_order_record", "created_by")
         )
