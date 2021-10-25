@@ -545,7 +545,10 @@ class CustomerDishViewSet(viewsets.ModelViewSet):
     serializer_class = OutputSerializer
 
     def get_queryset(self):
-        return CustomerDish.objects.prefetch_related("orders").filter(status__in=["partial", "unpaid"])
+        return CustomerDish.objects.prefetch_related("orders").filter(
+            # status__in=["partial", "unpaid"],
+            date_created__date=self.today.date()
+        )
 
     def create(self, request, *args, **kwargs):
         data = self.perform_create(request)
