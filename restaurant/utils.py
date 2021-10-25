@@ -21,7 +21,7 @@ def send_notification(message: str, recipients: List[str]):
     Authorize(api_key, secret_key)
 
     try:
-        SMS.send_sms(message, recipients, source_addr="RESTAURANT")
+        SMS.send_sms(message, recipients)
     except Exception as e:
         error_name: str = str(e)
         return requests.models.Response(

@@ -891,6 +891,8 @@ class CustomerRegularOrderRecordPaymentViewSet(viewsets.ModelViewSet):
 class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
     """  """
 
+    today = timezone.localtime()
+
     serializer_class = RegularTequilaOrderRecordSerializer
 
     def get_queryset(self):
@@ -980,7 +982,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 orders_number_generator(RegularTequilaOrderRecord, "order_number")
             ),
             created_by=request.user,
-            date_created=timezone.now(),
+            date_created=self.today,
         )
 
         self.create_regular_orders(request, object_, orders["regular_orders"])
@@ -1002,6 +1004,7 @@ class RegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 )
             ),
             created_by=request.user,
+            date_created=self.today
         )
 
     def create_tequila_orders(self, request, object_, tequila_orders):
@@ -1267,6 +1270,7 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                 )
             ),
             created_by=request.user,
+            date_created=self.today
         )
 
         return {
@@ -1275,8 +1279,7 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
             "customer_orders_number": object_.customer_orders_number,
             "orders": object_.get_orders_detail,
             "created_by": object_.created_by.username,
-            "date_created": str(object_.date_created).split(" ")[0],
-            "time_created": str(object_.date_created).split(" ")[1].split(".")[0],
+            "date_created": object_.date_created.timestamp()
         }
 
     @action(
@@ -1334,7 +1337,7 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
 
 class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
     serializer_class = CustomerRegularTequilaOrderRecordPaymentSerializer
-    today = timezone.localdate()
+    today = timezone.localtime()
 
     def get_queryset(self):
         return CustomerRegularTequilaOrderRecordPayment.objects.select_related(
@@ -1444,6 +1447,7 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             amount_paid=amount_paid,
             created_by=request.user,
             payment_started=True,
+            date_paid=self.today
         )
 
         self.pay_by_credit(request, by_credit, amount_paid, object_)
@@ -1454,13 +1458,13 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             "customer_order_record": str(object_),
             "payment_status": object_.payment_status,
             "amount_paid": object_.amount_paid,
-            "date_paid": object_.date_paid,
+            "date_paid": object_.date_paid.timestamp(),
             "created_by": str(object_.created_by),
         }
 
-    def alter_ccrtrop_amount_paid(self, amount_paid, customer, object):
+    def alter_ccrtrop_amount_paid(self, amount_paid, customer, object_):
         ccrtorp = CreditCustomerRegularTequilaOrderRecordPayment.objects.filter(
-            record_order_payment_record=object,
+            record_order_payment_record=object_,
             customer=customer,
             record_order_payment_record__by_credit=True,
         ).first()
@@ -1469,18 +1473,18 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
             ccrtorp.amount_paid += amount_paid
             ccrtorp.save()
 
-    def alter_crtrop_payment_status(self, object):
-        if object.amount_paid >= object.get_total_amount_to_pay:
-            object.payment_status = "paid"
-        elif object.amount_paid <= object.get_total_amount_to_pay:
-            object.payment_status = "partial"
+    def alter_crtrop_payment_status(self, object_):
+        if object_.amount_paid >= object_.get_total_amount_to_pay:
+            object_.payment_status = "paid"
+        elif object_.amount_paid <= object_.get_total_amount_to_pay:
+            object_.payment_status = "partial"
         else:
-            object.payment_status = "unpaid"
-        object.save()
+            object_.payment_status = "unpaid"
+        object_.save()
 
-    def alter_crtorp_amount_paid(self, amount_paid, object):
-        object.amount_paid += amount_paid
-        object.save()
+    def alter_crtorp_amount_paid(self, amount_paid, object_):
+        object_.amount_paid += amount_paid
+        object_.save()
 
     def get_crtorp(self, customer_regular_order_record):
         return CustomerRegularTequilaOrderRecordPayment.objects.get(
@@ -1497,10 +1501,9 @@ class CustomerRegularTequilaOrderRecordPaymentViewSet(viewsets.ModelViewSet):
                 record_order_payment_record=object_,
                 customer=customer,
                 amount_paid=amount_paid,
-                date_created=timezone.localdate(),
+                date_created=self.today,
             )
             self._change_customer_details(object_, customer)
-            # todo: Send SMS Notification Credit Customer
             send_notification(
                 f"Chakula cha gharama ya shilingi {object_.customer_regular_tequila_order_record.regular_tequila_order_record.get_total_price()}/= kimenunuliwa kwa jina lako. Umelipia shilingi {str(amount_paid)}/=. Asante na Karibu tena.",
                 customer.phone)
