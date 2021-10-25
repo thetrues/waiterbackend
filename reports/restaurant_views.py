@@ -261,13 +261,13 @@ class CustomDateReport(BaseReport, APIView):
         orders_list = []
         for q in qs:
             orders_list.append({
-                "dish_number": q.dish_number,
-                "date": q.date_created,
-                "total_price": q.get_total_price,
-                "total_paid": q.paid_amount,
-                "total_unpaid": q.remained_amount,
-                "status": q.status.capitalize(),
-                "order_items": q.dish_detail
+                "dish_number": q.customer_dish.dish_number,
+                "date": q.customer_dish.date_created,
+                "total_price": q.customer_dish.get_total_price,
+                "total_paid": q.customer_dish.paid_amount,
+                "total_unpaid": q.customer_dish.remained_amount,
+                "status": q.customer_dish.status.capitalize(),
+                "order_items": q.customer_dish.dish_detail
             })
         response["orders_list"] = orders_list
 
