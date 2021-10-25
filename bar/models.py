@@ -330,9 +330,9 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
     orders = models.ManyToManyField(TequilaOrderRecord)
 
     @property
-    def get_total_price(self) -> float:
+    def get_total_price(self) -> int:
         """f(n) = n . Linear Function"""
-        res_: float = 0.0
+        res_: int = 0
         for order in self.orders.all():
             res_ += order.total
         return res_
@@ -349,15 +349,15 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
 
         return payment_status
 
-    def get_paid_amount(self) -> float:
-        paid_amount: float = self.customertequilaorderrecordpayment_set.aggregate(
+    def get_paid_amount(self) -> int:
+        paid_amount: int = self.customertequilaorderrecordpayment_set.aggregate(
             total=Sum("amount_paid")
         )["total"]
 
-        return paid_amount or 0.0
+        return paid_amount or 0
 
-    def get_remained_amount(self) -> float:
-        paid_amount: float = self.get_paid_amount()
+    def get_remained_amount(self) -> int:
+        paid_amount: int = self.get_paid_amount()
 
         if paid_amount:
             return self.get_total_price - self.get_paid_amount()
@@ -373,12 +373,11 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
                     "order_id": order.id,
                     "item_name": order.item.item.name,
                     "ordered_quantity": order.quantity,
-                    "price_per_shot": float(order.item.selling_price_per_shot),
+                    "price_per_shot": order.item.selling_price_per_shot,
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": str(order.date_created).split(" ")[0],
-                    "time_created": str(order.date_created).split(" ")[1].split(".")[0],
+                    "date_created": order.date_created.timestamp()
                 },
             )
             for order in self.orders.all()
