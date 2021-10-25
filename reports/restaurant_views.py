@@ -249,7 +249,7 @@ class CustomDateReport(BaseReport, APIView):
         try:
             date1, date2 = get_date_objects(first_date, second_date)
         except TypeError:
-            return Response({"message": "Please choose dates range."})
+            return Response({"message": "Choose dates."}, status.HTTP_400_BAD_REQUEST)
 
         # Get queryset
         qs = self.get_queryset(date1, date2)
