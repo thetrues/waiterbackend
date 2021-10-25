@@ -283,10 +283,10 @@ class CustomDateReport(BaseReport, APIView):
             expenditure_for="restaurant", date_created__range=(date1, date2)
         ).aggregates(total=Sum("amount"))["total"]
         bar_payrolls: int = \
-            BarPayrol.objects.filter(date_paid__range=(date1, date2)).aggregates(total=Sum("amount_paid"))[
+            BarPayrol.objects.filter(date_paid__range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
                 "total"]
         restaurant_payrolls: int = \
-            RestaurantPayrol.objects.filter(date_paid__range=(date1, date2)).aggregates(total=Sum("amount_paid"))[
+            RestaurantPayrol.objects.filter(date_paid__range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
                 "total"]
 
         response["total_payroll"] = bar_payrolls + restaurant_payrolls
