@@ -691,6 +691,11 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
     regular_tequila_order_record = models.ForeignKey(
         RegularTequilaOrderRecord, on_delete=models.CASCADE
     )
+    status = models.CharField(max_length=7, choices=(
+        ("unpaid", "Not Paid"),
+        ("partial", "Partial Paid"),
+        ("paid", "Fully Paid")
+    ))
 
     def __str__(self) -> str:
 

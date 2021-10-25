@@ -1221,6 +1221,9 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
         ).prefetch_related(
             "regular_tequila_order_record__regular_items",
             "regular_tequila_order_record__tequila_items",
+        ).filter(
+            status__in=["unpaid", "paid", "partial"],
+            date_created__lt=self.today
         )
 
     def create(self, request, *args, **kwargs) -> Response:

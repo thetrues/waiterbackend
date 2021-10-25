@@ -319,7 +319,7 @@ class BaseCustomerOrderRecord(models.Model):
     customer_phone = models.CharField(max_length=14, null=True, blank=True)
     customer_orders_number = models.CharField(max_length=8, null=True, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    date_created = models.DateTimeField(auto_now_add=True)
+    date_created = models.DateTimeField()
     objects = Manager()
 
     @property
