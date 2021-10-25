@@ -1240,7 +1240,7 @@ class CustomerRegularTequilaOrderRecordViewSet(viewsets.ModelViewSet):
                     "paid_amount": q.paid_amount,
                     "remained_amount": q.remained_amount,
                     "payment_status": q.payment_status,
-                    "orders": q.dish_detail,
+                    "orders": q.orders,
                 })
         return Response(data=res, status=status.HTTP_200_OK)
 
