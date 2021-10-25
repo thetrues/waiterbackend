@@ -262,7 +262,7 @@ class CustomDateReport(BaseReport, APIView):
         for q in qs:
             orders_list.append({
                 "dish_number": q.customer_dish.dish_number,
-                "date": q.customer_dish.date_created,
+                "date": int(q.customer_dish.date_created.timestamp()),
                 "total_price": q.customer_dish.get_total_price,
                 "total_paid": q.customer_dish.paid_amount,
                 "total_unpaid": q.customer_dish.remained_amount,
@@ -289,7 +289,7 @@ class CustomDateReport(BaseReport, APIView):
             RestaurantPayrol.objects.filter(date_paid__range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
                 "total"]
 
-        response["total_payroll"] = bar_payrolls + restaurant_payrolls
+        response["total_payroll"] = int(bar_payrolls + restaurant_payrolls)
         total_misc_expense, misc_qs = self.get_total_misc_expense_and_misc_qs(
             date1, date2
         )
@@ -298,9 +298,11 @@ class CustomDateReport(BaseReport, APIView):
         )
         response["total_inventory_cost"] = total_misc_expense + total_main_expense
 
-        response["net_profit"] = total_sales - (
-                total_unpaid + response["total_expenditure"] + response["total_payroll"] + response[
-            "total_inventory_cost"])
+        response["net_profit"] = int(
+            total_sales - (
+                    total_unpaid + response["total_expenditure"] + response["total_payroll"] + response[
+                "total_inventory_cost"])
+        )
 
         return Response(response, status.HTTP_200_OK)
 
