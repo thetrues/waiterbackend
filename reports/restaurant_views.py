@@ -7,7 +7,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from bar.models import BarPayrol
 from core.models import Expenditure
 from core.utils import get_date_objects
 from reports.base import BaseReport
@@ -286,20 +285,18 @@ class CustomDateReport(BaseReport, APIView):
             RestaurantPayrol.objects.filter(date_paid__range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
                 "total"]
 
-        response["total_payroll"] = int(restaurant_payrolls)
+        response["total_payroll"] = restaurant_payrolls
         total_misc_expense, misc_qs = self.get_total_misc_expense_and_misc_qs(
             date1, date2
         )
         total_main_expense, gabbage = self.get_total_main_expense_and_main_qs(
             date1, date2
         )
-        response["total_inventory_cost"] = int(total_misc_expense + total_main_expense)
+        response["total_inventory_cost"] = total_misc_expense + total_main_expense
 
-        response["net_profit"] = int(
-            total_sales - (
-                    total_unpaid + response["total_expenditure"] + response["total_payroll"] + response[
-                "total_inventory_cost"])
-        )
+        response["net_profit"] = total_sales - (
+                total_unpaid + response["total_expenditure"] + response["total_payroll"] + response[
+            "total_inventory_cost"])
 
         return Response(response, status.HTTP_200_OK)
 
