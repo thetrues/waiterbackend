@@ -189,22 +189,22 @@ class CustomDateReport(APIView):
         for i in qs:
             total_sales += i.customer_regular_tequila_order_record.paid_amount
             total_unpaid += i.customer_regular_tequila_order_record.remained_amount
-        response["total_sales"] = total_sales
-        response["total_unpaid"] = total_unpaid
+        response["total_sales"] = total_sales or 0
+        response["total_unpaid"] = total_unpaid or 0
         response["total_expenditure"] = Expenditure.objects.filter(
             expenditure_for="bar", date_created__range=(date1, date2)
-        ).aggregate(total=Sum("amount"))["total"]
+        ).aggregate(total=Sum("amount"))["total"] or 0
         bar_payrolls: int = \
             BarPayrol.objects.filter(date_paid__range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
                 "total"]
-        response["total_payroll"] = bar_payrolls
+        response["total_payroll"] = bar_payrolls or 0
         total_regular_inv = RegularInventoryRecord.objects.filter(
             date_purchased__range=(date1, date2)
-        ).aggregate(total=Sum("purchasing_price"))["total"]
+        ).aggregate(total=Sum("purchasing_price"))["total"] or 0
 
         total_tequila_inv = TekilaInventoryRecord.objects.filter(
             date_purchased__range=(date1, date2)
-        ).aggregate(total=Sum("purchasing_price"))["total"]
+        ).aggregate(total=Sum("purchasing_price"))["total"] or 0
 
         response["total_inventory_cost"] = total_regular_inv + total_tequila_inv
 
