@@ -214,40 +214,34 @@ class CustomDateReport(APIView):
 
         return Response(response, status.HTTP_200_OK)
 
+    def get_expenses_response(self, response: Dict, date1, date2) -> Dict:
+        expenses: Dict = {}
+        custom_payroll = self.get_custom_payrolls(date1, date2)
+        expenses["total_payrolls"] = custom_payroll
+        return expenses
 
-def get_expenses_response(self, response: Dict, date1, date2) -> Dict:
-    expenses: Dict = {}
-    custom_payroll = self.get_custom_payrolls(date1, date2)
-    expenses["total_payrolls"] = custom_payroll
-    return expenses
+    def get_custom_payrolls(self, date1, date2):
+        return BarPayrol.objects.filter(date_paid__range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
+                   "total"] or 0
 
+    def total_sales_and_orders(self, qs, sales):
+        sales["total_sales"] = get_total_sales(qs)
+        sales["total_orders"] = len(qs)
 
-def get_custom_payrolls(self, date1, date2):
-    return BarPayrol.objects.filter(date_paid__range=(date1, date2)).aggregate(total=Sum("amount_paid"))[
-               "total"] or 0
+    def get_sales_response(self, qs) -> Dict:
+        sales: Dict = {}
+        self.total_sales_and_orders(qs, sales)
+        sales["orders_structure"] = structure_orders(qs, sales)
 
+        return sales
 
-def total_sales_and_orders(self, qs, sales):
-    sales["total_sales"] = get_total_sales(qs)
-    sales["total_orders"] = len(qs)
+    def get_custom_dates(self, response: Dict, date1, date2):
+        response["dates"] = "{} TO {}".format(str(date1), str(date2))
 
-
-def get_sales_response(self, qs) -> Dict:
-    sales: Dict = {}
-    self.total_sales_and_orders(qs, sales)
-    sales["orders_structure"] = structure_orders(qs, sales)
-
-    return sales
-
-
-def get_custom_dates(self, response: Dict, date1, date2):
-    response["dates"] = "{} TO {}".format(str(date1), str(date2))
-
-
-def get_queryset(self, date1, date2):
-    return (
-        CustomerRegularTequilaOrderRecordPayment.objects.filter(
-            date_paid__date__range=(date1, date2),
+    def get_queryset(self, date1, date2):
+        return (
+            CustomerRegularTequilaOrderRecordPayment.objects.filter(
+                date_paid__date__range=(date1, date2),
+            )
+                .select_related("customer_regular_tequila_order_record__regular_tequila_order_record", "created_by")
         )
-            .select_related("customer_regular_tequila_order_record__regular_tequila_order_record", "created_by")
-    )
