@@ -69,7 +69,7 @@ class MenuViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = self.menu_image_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        instance.image = request.data.get("image")
+        # instance.image = request.data.get("image")
         instance.save()
 
         return Response({"message": "Operation success"}, status.HTTP_200_OK)

@@ -211,8 +211,8 @@ class Menu(BaseConfig):
             models ([type]): [description]
     """
 
-    description = models.CharField(max_length=255)
-    image = models.FileField(upload_to="menu/images/", null=True, blank=True)
+    # description = models.CharField(max_length=255)
+    # image = models.FileField(upload_to="menu/images/", null=True, blank=True)
     price = models.IntegerField()
 
 

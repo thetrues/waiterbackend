@@ -74,11 +74,11 @@ class MiscellaneousInventoryRecordSerializer(serializers.ModelSerializer):
 
 
 class MenuSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField()
+    # image = serializers.ImageField()
 
     class Meta:
         model = Menu
-        fields = ["id", "name", "description", "price", "image"]
+        fields = ["id", "name", "price"]
 
 
 class ChangeMenuImageSerializer(serializers.Serializer):
