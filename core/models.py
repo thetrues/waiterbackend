@@ -349,7 +349,8 @@ class BaseCustomerOrderRecord(models.Model):
 class Expenditure(models.Model):
     name = models.CharField(max_length=128)
     amount = models.IntegerField()
-    expenditure_for = models.CharField(max_length=10, choices=(("bar", "Bar"), ("restaurant", "Restaurant")))
+    expenditure_for = models.CharField(max_length=10, choices=(
+    ("bar", "Bar"), ("restaurant", "Restaurant"), ("both", "Both")))
     date_created = models.DateTimeField(auto_now_add=True)
     objects = Manager()
 
