@@ -12,7 +12,7 @@ class BarPayrolCustomManager(Manager):
             response.append(
                 {
                     "id": q.id,
-                    "payee": q.bar_payee.username,
+                    "payee": q.name,
                     "amount": q.amount_paid,
                 }
             )

@@ -477,16 +477,17 @@ class CreditCustomerDishPaymentHistory(models.Model):
 class RestaurantPayrol(BasePayrol):
     """Restaurant Payrol"""
 
-    restaurant_payee = models.ForeignKey(
-        User, related_name="restaurant_payee", on_delete=models.CASCADE
-    )
+    # restaurant_payee = models.ForeignKey(
+    #     User, related_name="restaurant_payee", on_delete=models.CASCADE
+    # )
+    name = models.CharField(max_length=128)
     restaurant_payer = models.ForeignKey(
         User, related_name="restaurant_payer", on_delete=models.CASCADE
     )
     objects = RestaurantPayrolCustomManager()
 
     def __str__(self):
-        return f"{self.restaurant_payee.username} Paid: {self.amount_paid}"
+        return f"{self.name} Paid: {self.amount_paid}"
 
     # def get_monthly_payrolls(self):
     #     start_of_month = datetime.date.today().replace(

@@ -12,7 +12,7 @@ class RestaurantPayrolCustomManager(Manager):
             response.append(
                 {
                     "id": q.id,
-                    "payee": q.restaurant_payee.username,
+                    "payee": q.name,
                     "amount": q.amount_paid,
                 }
             )

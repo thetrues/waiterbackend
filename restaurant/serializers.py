@@ -134,18 +134,19 @@ class CreditCustomerDishPaymentHistorySerializer(serializers.ModelSerializer):
 
 
 class RestaurantPayrolSerializer(serializers.ModelSerializer):
-    def validate_restaurant_payee(self, user):
-        if user.user_type not in ["restaurant_waiter", "restaurant_cashier"]:
-            raise serializers.ValidationError(
-                f"{user.username} is a {user.get_user_type_display()}. Choose restaurant worker"
-            )
-        return user
+    # def validate_restaurant_payee(self, user):
+    #     if user.user_type not in ["restaurant_waiter", "restaurant_cashier"]:
+    #         raise serializers.ValidationError(
+    #             f"{user.username} is a {user.get_user_type_display()}. Choose restaurant worker"
+    #         )
+    #     return user
 
     class Meta:
         model = RestaurantPayrol
-        exclude = ["restaurant_payer"]
+        fields = "__all__"
+        # exclude = ["restaurant_payer"]
 
-    def to_representation(self, instance):
-        rep = super(RestaurantPayrolSerializer, self).to_representation(instance)
-        rep["restaurant_payee"] = instance.restaurant_payee.username
-        return rep
+    # def to_representation(self, instance):
+    #     rep = super(RestaurantPayrolSerializer, self).to_representation(instance)
+    #     rep["restaurant_payee"] = instance.restaurant_payee.username
+    #     return rep

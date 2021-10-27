@@ -1036,7 +1036,7 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return RestaurantPayrol.objects.select_related(
-            "restaurant_payee", "restaurant_payer"
+            "name", "restaurant_payer"
         )
 
     def update(self, request, pk=None):
@@ -1045,7 +1045,7 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
         amount_paid = request.data.get("amount_paid")
         payment_method = request.data.get("payment_method")
         if restaurant_payee:
-            instance.restaurant_payee = User.objects.get(id=int(restaurant_payee))
+            instance.name = restaurant_payee
         if amount_paid:
             instance.amount_paid = amount_paid
         if payment_method:
@@ -1057,13 +1057,13 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            object = serializer.save(restaurant_payer=request.user)
+            object_ = serializer.save(restaurant_payer=request.user)
             data = {
-                "payee": object.restaurant_payee.username,
-                "payer": object.restaurant_payer.username,
-                "amount_paid": object.amount_paid,
-                "date_paid": object.date_paid,
-                "payment_method": object.payment_method,
+                "payee": object_.name,
+                "payer": object_.restaurant_payer.username,
+                "amount_paid": object_.amount_paid,
+                "date_paid": object_.date_paid,
+                "payment_method": object_.payment_method,
             }
         else:
             data = {"message": serializer.errors}
@@ -1100,7 +1100,7 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
         payments_this_month = RestaurantPayrol.objects.filter(
             date_paid__year=today.year,
             date_paid__month=today.month,
-        ).select_related("restaurant_payee", "restaurant_payer")
+        ).select_related("restaurant_payer")
         response: Dict = {}
         response["total_paid_amount"] = (
                 payments_this_month.aggregate(total=Sum("amount_paid"))["total"] or 0
@@ -1110,7 +1110,7 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
             payments.append(
                 {
                     "id": payment.id,
-                    "payee": payment.restaurant_payee.username,
+                    "payee": payment.name,
                     "payer": payment.restaurant_payer.username,
                     "amount_paid": payment.amount_paid,
                     "date_paid": payment.date_paid,

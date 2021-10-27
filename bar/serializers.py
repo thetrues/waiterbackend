@@ -102,21 +102,22 @@ class CustomerRegularTequilaOrderRecordPaymentSerializer(serializers.ModelSerial
 
 
 class BarPayrolSerializer(serializers.ModelSerializer):
-    def validate_bar_payee(self, user):
-        if user.user_type not in ["bar_waiter", "bar_cashier"]:
-            raise serializers.ValidationError(
-                f"{user.username} is a {user.get_user_type_display()}. Choose bar worker"
-            )
-        return user
+    # def validate_bar_payee(self, user):
+    #     if user.user_type not in ["bar_waiter", "bar_cashier"]:
+    #         raise serializers.ValidationError(
+    #             f"{user.username} is a {user.get_user_type_display()}. Choose bar worker"
+    #         )
+    #     return user
 
     class Meta:
         model = BarPayrol
-        exclude = ["bar_payer"]
+        fields = "__all__"
+        # exclude = ["bar_payer"]
 
-    def to_representation(self, instance):
-        rep = super(BarPayrolSerializer, self).to_representation(instance)
-        rep["bar_payee"] = instance.bar_payee.username
-        return rep
+    # def to_representation(self, instance):
+    #     rep = super(BarPayrolSerializer, self).to_representation(instance)
+    #     rep["bar_payee"] = instance.bar_payee.username
+    #     return rep
 
 
 class CreditCustomerRegularOrderRecordPaymentHistorySerializer(

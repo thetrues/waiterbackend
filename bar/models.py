@@ -883,13 +883,14 @@ class CreditCustomerRegularTequilaOrderRecordPaymentHistory(models.Model):
 class BarPayrol(BasePayrol):
     """Bar Payroll"""
 
-    bar_payee = models.ForeignKey(
-        User, related_name="bar_payee", on_delete=models.CASCADE
-    )
+    # bar_payee = models.ForeignKey(
+    #     User, related_name="bar_payee", on_delete=models.CASCADE
+    # )
+    name = models.CharField(max_length=128)
     bar_payer = models.ForeignKey(
         User, related_name="bar_payer", on_delete=models.CASCADE
     )
     objects = BarPayrolCustomManager()
 
     def __str__(self) -> str:
-        return f"{self.bar_payee.username} Paid: {self.amount_paid}"
+        return f"{self.name} Paid: {self.amount_paid}"

@@ -1715,7 +1715,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
     serializer_class = BarPayrolSerializer
 
     def get_queryset(self):
-        return BarPayrol.objects.select_related("bar_payer", "bar_payee")
+        return BarPayrol.objects.select_related("bar_payer")
 
     def update(self, request, pk=None):
         instance = self.get_object()
@@ -1723,7 +1723,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
         amount_paid = request.data.get("amount_paid")
         payment_method = request.data.get("payment_method")
         if bar_payee:
-            instance.bar_payee = User.objects.get(id=int(bar_payee))
+            instance.name = request.data.get("name")
         if amount_paid:
             instance.amount_paid = amount_paid
         if payment_method:
@@ -1735,13 +1735,13 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            object = serializer.save(bar_payer=request.user)
+            object_ = serializer.save(bar_payer=request.user)
             data = {
-                "payee": object.bar_payee.username,
-                "payer": object.bar_payer.username,
-                "amount_paid": object.amount_paid,
-                "date_paid": object.date_paid,
-                "payment_method": object.payment_method,
+                "payee": object_.name,
+                "payer": object_.bar_payer.username,
+                "amount_paid": object_.amount_paid,
+                "date_paid": object_.date_paid,
+                "payment_method": object_.payment_method,
             }
         else:
             data = {"message": serializer.errors}
@@ -1752,7 +1752,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
         methods=["GET"],
     )
     def get_payees(self, request, *args, **kwargs):
-        response: list = []
+        response: List = []
         users = User.objects.filter(user_type__in=["bar_waiter", "bar_cashier"])
         [
             response.append(
@@ -1786,7 +1786,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
             payments.append(
                 {
                     "id": payment.id,
-                    "payee": payment.bar_payee.username,
+                    "payee": payment.name,
                     "payer": payment.bar_payer.username,
                     "amount_paid": payment.amount_paid,
                     "date_paid": payment.date_paid,
@@ -1799,7 +1799,7 @@ class BarPayrolViewSet(viewsets.ModelViewSet):
         return Response(response, status.HTTP_200_OK)
 
 
-## Sale Tequilas
+# Sale Tequilas
 
 
 class BarTequilaItemViewSet(viewsets.ModelViewSet):
