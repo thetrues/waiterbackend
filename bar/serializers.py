@@ -111,8 +111,8 @@ class BarPayrolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BarPayrol
-        fields = "__all__"
-        # exclude = ["bar_payer"]
+        # fields = "__all__"
+        exclude = ["bar_payer"]
 
     # def to_representation(self, instance):
     #     rep = super(BarPayrolSerializer, self).to_representation(instance)

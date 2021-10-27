@@ -143,8 +143,8 @@ class RestaurantPayrolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RestaurantPayrol
-        fields = "__all__"
-        # exclude = ["restaurant_payer"]
+        # fields = "__all__"
+        exclude = ["restaurant_payer"]
 
     # def to_representation(self, instance):
     #     rep = super(RestaurantPayrolSerializer, self).to_representation(instance)
