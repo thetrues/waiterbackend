@@ -292,8 +292,8 @@ class CustomDateReport(BaseReport, APIView):
         total_main_expense, gabbage = self.get_total_main_expense_and_main_qs(
             date1, date2
         )
-        response["total_inventory_cost"] = total_misc_expense or 0 + total_main_expense or 0
-        costs = total_unpaid + response["total_expenditure"] + response["total_payroll"] + response["total_inventory_cost"]
+        response["total_inventory_cost"] = total_misc_expense + total_main_expense
+        costs: int = total_unpaid + response["total_expenditure"] + response["total_payroll"] + response["total_inventory_cost"]
         response["net_profit"] = total_sales - costs
 
         return Response(response, status.HTTP_200_OK)
