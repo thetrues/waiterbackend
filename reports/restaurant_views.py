@@ -276,8 +276,8 @@ class CustomDateReport(BaseReport, APIView):
         for i in qs:
             total_sales += i.customer_dish.paid_amount
             total_unpaid += i.customer_dish.remained_amount
-        response["total_sales"] = total_sales or 0
-        response["total_unpaid"] = total_unpaid or 0
+        response["total_sales"] = total_sales
+        response["total_unpaid"] = total_unpaid
         response["total_expenditure"] = Expenditure.objects.filter(
             expenditure_for__in=["restaurant", "both"], date_created__range=(date1, date2)
         ).aggregate(total=Sum("amount"))["total"] or 0
@@ -294,9 +294,9 @@ class CustomDateReport(BaseReport, APIView):
         )
         response["total_inventory_cost"] = total_misc_expense or 0 + total_main_expense or 0
 
-        response["net_profit"] = total_sales or 0 - (
-                total_unpaid or 0 + response["total_expenditure"] or 0 + response["total_payroll"] or 0 + response[
-            "total_inventory_cost"] or 0)
+        response["net_profit"] = total_sales - (
+                total_unpaid + response["total_expenditure"] + response["total_payroll"] + response[
+            "total_inventory_cost"])
 
         return Response(response, status.HTTP_200_OK)
 
