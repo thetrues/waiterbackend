@@ -1036,7 +1036,7 @@ class RestaurantPayrolViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return RestaurantPayrol.objects.select_related(
-            "name", "restaurant_payer"
+            "restaurant_payer"
         )
 
     def update(self, request, pk=None):
