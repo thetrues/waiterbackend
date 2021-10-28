@@ -23,6 +23,7 @@ class MainInventoryItemSerializer(serializers.ModelSerializer):
             "id",
             "amount_per_unit",
             "price_per_unit",
+            "item",
             "unit"
         ]
 

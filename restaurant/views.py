@@ -166,7 +166,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
         return Response(data=data, status=status.HTTP_201_CREATED)
 
     def perform_create(self, request) -> Dict:
-        object = MainInventoryItemRecord.objects.create(
+        object_ = MainInventoryItemRecord.objects.create(
             quantity=request.data.get("quantity"),
             purchasing_price=request.data.get("purchasing_price"),
             date_purchased=request.data.get("date_purchased"),
@@ -176,12 +176,12 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
             ),
         )
         return {
-            "id": object.id,
-            "item": object.main_inventory_item.item.name,
-            "quantity": object.quantity,
-            "threshold": object.threshold,
-            "purchasing_price": object.purchasing_price,
-            "date_purchased": object.date_purchased,
+            "id": object_.id,
+            "item": object_.main_inventory_item.item.name,
+            "quantity": object_.quantity,
+            "threshold": object_.threshold,
+            "purchasing_price": object_.purchasing_price,
+            "date_purchased": object_.date_purchased,
         }
 
     def list(self, request, *args, **kwargs):
