@@ -293,10 +293,8 @@ class CustomDateReport(BaseReport, APIView):
             date1, date2
         )
         response["total_inventory_cost"] = total_misc_expense or 0 + total_main_expense or 0
-
-        response["net_profit"] = total_sales - (
-                total_unpaid + response["total_expenditure"] + response["total_payroll"] + response[
-            "total_inventory_cost"])
+        costs = total_unpaid + response["total_expenditure"] + response["total_payroll"] + response["total_inventory_cost"]
+        response["net_profit"] = total_sales - costs
 
         return Response(response, status.HTTP_200_OK)
 
