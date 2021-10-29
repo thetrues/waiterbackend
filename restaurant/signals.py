@@ -25,9 +25,7 @@ def set_available_quantity_for_main_inventory(sender, instance, created, **kwarg
 
 @receiver(pre_delete, sender=MainInventoryItemRecord)
 def del_main_inv_record(sender, instance, **kwargs):
-    if not instance.maininventoryitemrecordstockout_set.exists():
-        instance.delete()
-    else:
+    if instance.maininventoryitemrecordstockout_set.exists():
         raise serializers.ValidationError("Operation failed")
 
 
