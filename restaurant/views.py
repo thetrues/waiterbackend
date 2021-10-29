@@ -221,9 +221,7 @@ class MainInventoryItemRecordViewSet(viewsets.ModelViewSet):
 
     def get_response(self, names, response):
         for index in range(len(names)):
-            temp_response: Dict = {}
-            temp_response["id"] = index + 1
-            temp_response["item_name"] = names[index]
+            temp_response: Dict = {"id": index + 1, "item_name": names[index]}
             item_qs, available_quantity, unit = self.get_items_available_quantity_unit(
                 names, index
             )
@@ -421,15 +419,11 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
 
     def get_response(self, names: list, response: list) -> List:
         for i in range(len(names)):
-            temp_resp: Dict = {}
-            temp_resp["id"] = i + 1
-            temp_resp["name"] = names[i]
-            temp_resp["stock_status"] = self.get_stock_status(names[i])
-            temp_resp["items"] = []
+            temp_resp: Dict = {"id": i + 1, "name": names[i], "stock_status": self.get_stock_status(names[i]),
+                               "items": []}
             qs = self.queryset.filter(item__name=names[i])
             temp: Dict = {}
             self.append_items(temp_resp, qs, temp)
-
             response.append(temp_resp)
 
         return response
@@ -438,12 +432,9 @@ class MiscellaneousInventoryRecordViewSet(viewsets.ModelViewSet):
         counter: int = 0
         for j in qs:
             counter += 1
-            temp: Dict = {}
-            temp["item_id"] = counter
-            temp["purchased_quantity"] = j.quantity
-            temp["available_quantity"] = j.available_quantity
-            temp["purchasing_price"] = j.purchasing_price
-            temp["date_purchased"] = j.date_purchased
+            temp: Dict = {"item_id": counter, "purchased_quantity": j.quantity,
+                          "available_quantity": j.available_quantity, "purchasing_price": j.purchasing_price,
+                          "date_purchased": j.date_purchased}
             temp_resp["items"].append(temp)
 
     def get_stock_status(self, item_name: str) -> str:

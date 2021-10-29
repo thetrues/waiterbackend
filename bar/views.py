@@ -159,7 +159,7 @@ class RegularInventoryBrokenCreateView(viewsets.ModelViewSet):
 
 
 class TequilaInventoryBrokenCreateView(viewsets.ModelViewSet):
-    """ Create Broken Items For Teqauila Inventory """
+    """ Create Broken Items For Tequila Inventory """
 
     class InputSerializer(serializers.Serializer):
         tequila_inventory_record_id = serializers.IntegerField()

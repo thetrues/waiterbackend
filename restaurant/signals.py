@@ -1,14 +1,16 @@
-from django.db.models.signals import post_save
 from django.db.models.aggregates import Sum
-from restaurant.utils import get_recipients
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+from django.utils import timezone
+from rest_framework import serializers
+
 from restaurant.models import (
     CreditCustomerDishPaymentHistory,
     MainInventoryItemRecordStockOut,
     MiscellaneousInventoryRecord,
     MainInventoryItemRecord, MainInventoryItemRecordTrunk,
 )
-from django.utils import timezone
+from restaurant.utils import get_recipients
 
 
 @receiver(post_save, sender=MainInventoryItemRecord)
@@ -19,6 +21,14 @@ def set_available_quantity_for_main_inventory(sender, instance, created, **kwarg
         trunk = MainInventoryItemRecordTrunk.objects.get(item=instance.main_inventory_item.item)
         trunk.inventory_items.add(instance)
         trunk.save()
+
+
+@receiver(pre_delete, sender=MainInventoryItemRecord)
+def del_main_inv_record(sender, instance, **kwargs):
+    if not instance.maininventoryitemrecordstockout_set.exists():
+        instance.delete()
+    else:
+        raise serializers.ValidationError("Operation failed")
 
 
 @receiver(post_save, sender=MiscellaneousInventoryRecord)
@@ -39,8 +49,8 @@ def set_update_misc_inventory(sender, instance, created, **kwargs):
 @receiver(post_save, sender=MainInventoryItemRecordStockOut)
 def send_notification(sender, instance, created, **kwargs):
     if (
-        created
-        and instance.item_record.threshold >= instance.item_record.available_quantity
+            created
+            and instance.item_record.threshold >= instance.item_record.available_quantity
     ):
         # Send notification
         message: str = (
