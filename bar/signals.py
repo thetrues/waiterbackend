@@ -2,9 +2,10 @@
 This signal is for changing the item quantity inventory record.
 """
 from django.db.models.aggregates import Sum
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
+from rest_framework import serializers
 
 from bar.models import (
     CreditCustomerRegularTequilaOrderRecordPaymentHistory,
@@ -22,11 +23,23 @@ def set_tekila_available_quantity(sender, instance, created, **kwargs):
         instance.save()
 
 
+@receiver(pre_delete, sender=TekilaInventoryRecord)
+def pre_del_tequila_inv_record(sender, instance, **kwargs):
+    if instance.tequilaorderrecord_set.exists():
+        raise serializers.ValidationError("Operation failed")
+
+
 @receiver(post_save, sender=RegularInventoryRecord)
 def set_regular_available_quantity(sender, instance, created, **kwargs):
     if created:
         instance.available_quantity = instance.total_items
         instance.save()
+
+
+@receiver(pre_delete, sender=RegularInventoryRecord)
+def pre_del_regular_inv_record(sender, instance, **kwargs):
+    if instance.regularorderrecord_set.exists():
+        raise serializers.ValidationError("Operation failed")
 
 
 @receiver(post_save, sender=RegularInventoryRecord)
