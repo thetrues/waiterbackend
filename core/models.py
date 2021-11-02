@@ -17,15 +17,16 @@ STOCK_STATUS_CHOICES = (
 class BaseInventory(models.Model):
     quantity = models.PositiveIntegerField()
     available_quantity = models.PositiveIntegerField(null=True, blank=True)
-    purchasing_price = models.PositiveIntegerField()
-    date_purchased = models.DateField()
-    date_perished = models.DateField(null=True, blank=True)
+    purchasing_price = models.PositiveIntegerField(db_index=True)
+    date_purchased = models.DateField(db_index=True)
+    date_perished = models.DateField(null=True, blank=True, db_index=True)
     stock_status = models.CharField(
         max_length=11,
         choices=STOCK_STATUS_CHOICES,
         null=True,
         blank=True,
         default="available",
+        db_index=True
     )
     objects = Manager()
 
@@ -91,7 +92,7 @@ class MeasurementUnit(models.Model):
             [str]: [String representation of object name]
     """
 
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=True, db_index=True)
     objects = Manager()
 
     class Meta:
@@ -115,7 +116,7 @@ class BaseConfig(models.Model):
             [str]: [String representation of object name]
     """
 
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255, unique=True, db_index=True)
     objects = Manager()
 
     def __str__(self) -> str:
@@ -129,7 +130,7 @@ class BaseConfig(models.Model):
     class Meta:
         abstract: bool = True
         ordering: Set[str] = ("-id",)
-        indexes: list = [
+        indexes: List = [
             models.Index(
                 fields=[
                     "name",
@@ -152,9 +153,9 @@ class Item(BaseConfig):
             models ([type]): [description]
     """
 
-    unit = models.ForeignKey(MeasurementUnit, on_delete=models.CASCADE)
-    item_for = models.CharField(max_length=10, choices=ITEM_FOR_TYPE)
-    tequila = models.BooleanField(null=True)  # Regular
+    unit = models.ForeignKey(MeasurementUnit, on_delete=models.CASCADE, db_index=True)
+    item_for = models.CharField(max_length=10, choices=ITEM_FOR_TYPE, db_index=True)
+    tequila = models.BooleanField(null=True, db_index=True)  # Regular
 
 
 PAYMENT_STATUS_CHOICES = (
@@ -257,6 +258,7 @@ class CreditCustomer(models.Model):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer"
         verbose_name_plural: str = "Credit Customers"
+        indexes = [models.Index(fields=["name", "phone", "address", "credit_limit"])]
 
 
 class BaseCreditCustomerPayment(models.Model):
@@ -297,6 +299,15 @@ class BasePayrol(models.Model):
     class Meta:
         abstract: bool = True
         ordering: List[str] = ["-id"]
+        indexes = [
+            models.Index(
+                fields=[
+                    "payment_method",
+                    "amount_paid",
+                    "date_paid",
+                ]
+            )
+        ]
 
 
 class BaseOrderRecord(models.Model):
@@ -349,8 +360,10 @@ class BaseCustomerOrderRecord(models.Model):
 class Expenditure(models.Model):
     name = models.CharField(max_length=128)
     amount = models.IntegerField()
-    expenditure_for = models.CharField(max_length=10, choices=(
-    ("bar", "Bar"), ("restaurant", "Restaurant"), ("both", "Both")))
+    expenditure_for = models.CharField(
+        max_length=10,
+        choices=(("bar", "Bar"), ("restaurant", "Restaurant"), ("both", "Both")),
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     objects = Manager()
 
@@ -359,3 +372,6 @@ class Expenditure(models.Model):
 
     class Meta:
         ordering = ["-id"]
+        indexes = [
+            models.Index(fields=["name", "amount", "expenditure_for", "date_created"])
+        ]

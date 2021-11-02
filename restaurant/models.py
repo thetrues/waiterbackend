@@ -40,6 +40,15 @@ class MainInventoryItem(models.Model):
 
     class Meta:
         ordering: List[str] = ["-id"]
+        indexes = [
+            models.Index(
+                fields=[
+                    "item",
+                    "amount_per_unit",
+                    "price_per_unit",
+                ]
+            )
+        ]
 
 
 class MainInventoryItemRecord(BaseInventory):
@@ -103,8 +112,9 @@ class MainInventoryItemRecord(BaseInventory):
                     "created_by": _.created_by.__str__(),
                 }
             )
-            for _ in
-            self.maininventoryitemrecordstockout_set.select_related("item_record__main_inventory_item__item__unit")
+            for _ in self.maininventoryitemrecordstockout_set.select_related(
+                "item_record__main_inventory_item__item__unit"
+            )
         ]
 
         return response
@@ -134,7 +144,10 @@ class MainInventoryItemRecordTrunk(models.Model):
 
     @property
     def total_items_available(self) -> int:
-        return self.inventory_items.aggregate(total=Sum("available_quantity"))["total"] or 0
+        return (
+            self.inventory_items.aggregate(total=Sum("available_quantity"))["total"]
+            or 0
+        )
 
     @property
     def stock_status(self) -> str:
@@ -146,10 +159,14 @@ class MainInventoryItemRecordTrunk(models.Model):
 
     def get_stock_in(self) -> List[Dict]:
         stock_in: List[Dict] = []
-        for record in self.inventory_items.select_related("main_inventory_item", "main_inventory_item__item__unit"):
+        for record in self.inventory_items.select_related(
+            "main_inventory_item", "main_inventory_item__item__unit"
+        ):
             temp_stock_in: Dict = {
                 "id": record.id,
-                "quantity": str(record.quantity) + " " + record.main_inventory_item.item.unit.name,
+                "quantity": str(record.quantity)
+                + " "
+                + record.main_inventory_item.item.unit.name,
                 "purchasing_price": record.purchasing_price,
                 # "selling_price_per_item": record.selling_price_per_item,
                 "available_items": record.available_quantity,
@@ -167,6 +184,15 @@ class MainInventoryItemRecordTrunk(models.Model):
         ordering: Set = ("-id",)
         verbose_name: str = "Main Inventory Item Record Trunk"
         verbose_name_plural: str = "Main Inventory Item Records Trunk"
+        indexes = [
+            models.Index(
+                fields=[
+                    "item",
+                    "updated_at",
+                    "created_at",
+                ]
+            )
+        ]
 
 
 class MainInventoryItemRecordStockOut(models.Model):
@@ -190,6 +216,11 @@ class MainInventoryItemRecordStockOut(models.Model):
         ordering = ["-id"]
         verbose_name = "Main Inventory Item Record Stock Out"
         verbose_name_plural = "Main Inventory Item Records Stock Out"
+        indexes = [
+            models.Index(
+                fields=["item_record", "quantity_out", "date_out", "created_by"]
+            )
+        ]
 
 
 class MiscellaneousInventoryRecord(BaseInventory):
@@ -213,7 +244,7 @@ class Menu(BaseConfig):
 
     # description = models.CharField(max_length=255)
     # image = models.FileField(upload_to="menu/images/", null=True, blank=True)
-    price = models.IntegerField()
+    price = models.IntegerField(db_index=True)
 
 
 class Additive(BaseConfig):
@@ -232,13 +263,18 @@ class Additive(BaseConfig):
 class BaseCustomerOrder(models.Model):
     """Base customer order class"""
 
-    quantity = models.PositiveIntegerField()
+    quantity = models.PositiveIntegerField(db_index=True)
     additives = models.ManyToManyField(Additive)
     order_number = models.CharField(
-        max_length=255, null=True, blank=True, unique=True, help_text="Leave blank"
+        max_length=255,
+        null=True,
+        blank=True,
+        unique=True,
+        help_text="Leave blank",
+        db_index=True,
     )
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    date_created = models.DateTimeField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
+    date_created = models.DateTimeField(db_index=True)
     objects = Manager()
 
     @property
@@ -248,12 +284,17 @@ class BaseCustomerOrder(models.Model):
 
     class Meta:
         abstract: bool = True
+        indexes = [
+            models.Index(
+                fields=["quantity", "order_number", "date_created", "created_by"]
+            )
+        ]
 
 
 class RestaurantCustomerOrder(BaseCustomerOrder):
     """single customer order"""
 
-    sub_menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    sub_menu = models.ForeignKey(Menu, on_delete=models.CASCADE, db_index=True)
 
     @property
     def total(self) -> int:
@@ -281,13 +322,14 @@ class CustomerDish(models.Model):
     )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     date_created = models.DateTimeField()
-    status = models.CharField(max_length=7,
-                              choices=(
-                                  ("unpaid", "Unpaid"),
-                                  ("partial", "Partially Paid"),
-                                  ("paid", "Fully Paid")
-                              )
-                              )
+    status = models.CharField(
+        max_length=7,
+        choices=(
+            ("unpaid", "Unpaid"),
+            ("partial", "Partially Paid"),
+            ("paid", "Fully Paid"),
+        ),
+    )
     objects = Manager()
 
     def __str__(self) -> str:
@@ -342,12 +384,21 @@ class CustomerDish(models.Model):
     def dish_detail(self) -> List[Dict]:
         orders_structure: List[Dict] = []
         for order in self.orders.all():
-            temp_order: Dict = {"order_id": order.id, "order_number": order.order_number}
-            temp_sub_menu: Dict = {"sub_menu_id": order.sub_menu.id, "sub_menu_name": order.sub_menu.name,
-                                   "sub_menu_price": order.sub_menu.price}
+            temp_order: Dict = {
+                "order_id": order.id,
+                "order_number": order.order_number,
+            }
+            temp_sub_menu: Dict = {
+                "sub_menu_id": order.sub_menu.id,
+                "sub_menu_name": order.sub_menu.name,
+                "sub_menu_price": order.sub_menu.price,
+            }
             temp_sub_menu_additives: List = []
             for additive in order.additives.all():
-                temp_additive: Dict = {"additive_id": additive.id, "additive_name": additive.name}
+                temp_additive: Dict = {
+                    "additive_id": additive.id,
+                    "additive_name": additive.name,
+                }
                 temp_sub_menu_additives.append(temp_additive)
             temp_sub_menu["sub_menu_additives"] = temp_sub_menu_additives
             temp_order["sub_menu"] = temp_sub_menu
@@ -405,12 +456,26 @@ class CustomerDish(models.Model):
         verbose_name: str = "Customer Dish"
         verbose_name_plural: str = "Customer Dishes"
         unique_together: Set[Set[str]] = (("customer_name", "dish_number"),)
+        indexes = [
+            models.Index(
+                fields=[
+                    "customer_name",
+                    "customer_phone",
+                    "dish_number",
+                    "date_created",
+                    "created_by",
+                    "status",
+                ]
+            )
+        ]
 
 
 class CustomerDishPayment(BasePayment):
     """customer dish payment class"""
 
-    customer_dish = models.ForeignKey(CustomerDish, on_delete=models.CASCADE)
+    customer_dish = models.ForeignKey(
+        CustomerDish, on_delete=models.CASCADE, db_index=True
+    )
 
     def __str__(self) -> str:
         return f"{self.customer_dish}: Payment Status - {self.payment_status}"
@@ -439,7 +504,7 @@ class CustomerDishPayment(BasePayment):
 
 class CreditCustomerDishPayment(BaseCreditCustomerPayment):
     customer_dish_payment = models.ForeignKey(
-        CustomerDishPayment, on_delete=models.CASCADE
+        CustomerDishPayment, on_delete=models.CASCADE, db_index=True
     )
 
     def get_credit_dish_payable_amount(self) -> float:
@@ -456,10 +521,10 @@ class CreditCustomerDishPayment(BaseCreditCustomerPayment):
 
 class CreditCustomerDishPaymentHistory(models.Model):
     credit_customer_dish_payment = models.ForeignKey(
-        CreditCustomerDishPayment, on_delete=models.CASCADE
+        CreditCustomerDishPayment, on_delete=models.CASCADE, db_index=True
     )  # Filter all dishes with 'by_credit'=True and 'customer_dish_payment__payment_status' !="paid"
-    amount_paid = models.PositiveIntegerField()
-    date_paid = models.DateField()
+    amount_paid = models.PositiveIntegerField(db_index=True)
+    date_paid = models.DateField(db_index=True)
     objects = Manager()
 
     def __str__(self):
@@ -480,9 +545,9 @@ class RestaurantPayrol(BasePayrol):
     # restaurant_payee = models.ForeignKey(
     #     User, related_name="restaurant_payee", on_delete=models.CASCADE
     # )
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, db_index=True)
     restaurant_payer = models.ForeignKey(
-        User, related_name="restaurant_payer", on_delete=models.CASCADE
+        User, related_name="restaurant_payer", on_delete=models.CASCADE, db_index=True
     )
     objects = RestaurantPayrolCustomManager()
 

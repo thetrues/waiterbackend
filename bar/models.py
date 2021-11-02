@@ -45,8 +45,12 @@ class RegularInventoryRecord(BaseInventory):
         return self.estimate_sales() - self.purchasing_price
 
     def total_broken_items(self) -> int:  # 34
-        return self.regularinventoryrecordbroken_set.aggregate(total=Sum("quantity_broken"))[
-                   "total"] or 0
+        return (
+            self.regularinventoryrecordbroken_set.aggregate(
+                total=Sum("quantity_broken")
+            )["total"]
+            or 0
+        )
 
     def get_price_of_items(self, item_quantity) -> int:
         return int(item_quantity * self.selling_price_per_item)
@@ -55,6 +59,21 @@ class RegularInventoryRecord(BaseInventory):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Regular Inventory Record"
         verbose_name_plural: str = "Regular Inventory Records"
+        indexes = [
+            models.Index(
+                fields=[
+                    "item",
+                    "total_items",
+                    "selling_price_per_item",
+                    "quantity",
+                    "available_quantity",
+                    "purchasing_price",
+                    "date_purchased",
+                    "date_perished",
+                    "stock_status",
+                ]
+            )
+        ]
 
 
 class RegularInventoryRecordsTrunk(models.Model):
@@ -68,20 +87,20 @@ class RegularInventoryRecordsTrunk(models.Model):
         return f"Regular Inventory Record Trunk For {self.item.name}"
 
     def get_items_to_sale(self):
-        qs = self.regular_inventory_record.select_related("item").filter(stock_status="available")
+        qs = self.regular_inventory_record.select_related("item").filter(
+            stock_status="available"
+        )
         names = []
         for item in qs:
             if item.item.name not in names:
-                return (
-                    {
-                        "id": item.id,
-                        "name": item.item.name,
-                        "selling_price_per_item": item.selling_price_per_item,
-                        "items_available": self.total_items_available,
-                        "stock_status": self.stock_status,
-                        "item_type": "Regular"
-                    }
-                )
+                return {
+                    "id": item.id,
+                    "name": item.item.name,
+                    "selling_price_per_item": item.selling_price_per_item,
+                    "items_available": self.total_items_available,
+                    "stock_status": self.stock_status,
+                    "item_type": "Regular",
+                }
 
     def get_last_inventory_record(self):  # -> RegularInventoryRecord
         records = self.regular_inventory_record.select_related("item")[::-1]
@@ -93,7 +112,10 @@ class RegularInventoryRecordsTrunk(models.Model):
 
     @property
     def total_items_added(self) -> int:
-        return self.regular_inventory_record.aggregate(total=Sum("total_items"))["total"] or 0
+        return (
+            self.regular_inventory_record.aggregate(total=Sum("total_items"))["total"]
+            or 0
+        )
 
     @property
     def main_item_id(self) -> int:
@@ -112,7 +134,9 @@ class RegularInventoryRecordsTrunk(models.Model):
         return {}
 
     def get_total_available_items(self) -> int:
-        return self.regular_inventory_record.aggregate(total=Sum("available_quantity"))["total"]
+        return self.regular_inventory_record.aggregate(total=Sum("available_quantity"))[
+            "total"
+        ]
 
     @property
     def stock_status(self) -> str:
@@ -120,7 +144,9 @@ class RegularInventoryRecordsTrunk(models.Model):
 
     def get_stock_in(self) -> List[Dict]:
         stock_in: List[Dict] = []
-        for record in self.regular_inventory_record.select_related("item", "item__unit"):
+        for record in self.regular_inventory_record.select_related(
+            "item", "item__unit"
+        ):
             temp_stock_in: Dict = {
                 "id": record.id,
                 "quantity": str(record.quantity) + " " + record.item.unit.name,
@@ -135,7 +161,9 @@ class RegularInventoryRecordsTrunk(models.Model):
                 "stock_status": record.get_stock_status_display(),
                 "date_purchased": record.date_purchased.__str__(),
                 "date_perished": record.date_perished.__str__(),
-                "broken_items": record.regularinventoryrecordbroken_set.values("quantity_broken", "created_at"),
+                "broken_items": record.regularinventoryrecordbroken_set.values(
+                    "quantity_broken", "created_at"
+                ),
             }
             stock_in.append(temp_stock_in)
 
@@ -145,10 +173,21 @@ class RegularInventoryRecordsTrunk(models.Model):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Regular Inventory Records Trunk"
         verbose_name_plural: str = "Regular Inventory Records Trunks"
+        indexes = [
+            models.Index(
+                fields=[
+                    "item",
+                    "created_at",
+                    "updated_at",
+                ]
+            )
+        ]
 
 
 class RegularInventoryRecordBroken(models.Model):
-    regular_inventory_record = models.ForeignKey(RegularInventoryRecord, on_delete=models.CASCADE)
+    regular_inventory_record = models.ForeignKey(
+        RegularInventoryRecord, on_delete=models.CASCADE
+    )
     quantity_broken = models.PositiveIntegerField()
     created_at = models.DateField(auto_now_add=True)
     objects = Manager()
@@ -160,6 +199,15 @@ class RegularInventoryRecordBroken(models.Model):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Regular Inventory Record Broken"
         verbose_name_plural: str = "Regular Inventory Records Broken"
+        indexes = [
+            models.Index(
+                fields=[
+                    "regular_inventory_record",
+                    "quantity_broken",
+                    "created_at",
+                ]
+            )
+        ]
 
 
 class TekilaInventoryRecord(BaseInventory):
@@ -178,7 +226,11 @@ class TekilaInventoryRecord(BaseInventory):
         return self.actual_selling()
 
     def actual_selling(self) -> int:  # 1800 * 266 * 20 = 478800
-        return self.selling_price_per_shot * self.actual_items() * self.total_shots_per_tekila
+        return (
+            self.selling_price_per_shot
+            * self.actual_items()
+            * self.total_shots_per_tekila
+        )
 
     def actual_items(self) -> int:  # 300 - 34 = 266
         return self.total_shots_per_tekila - self.total_broken_items()
@@ -187,13 +239,27 @@ class TekilaInventoryRecord(BaseInventory):
         return self.estimate_sales() - self.purchasing_price
 
     def total_broken_items(self) -> int:  # 34
-        return self.tequilainventoryrecordbroken_set.aggregate(total=Sum("quantity_broken"))[
-                   "total"] or 0
+        return (
+            self.tequilainventoryrecordbroken_set.aggregate(
+                total=Sum("quantity_broken")
+            )["total"]
+            or 0
+        )
 
     class Meta:
         ordering: List[str] = ["-id"]
         verbose_name: str = "Tequila Inventory Record"
         verbose_name_plural: str = "Tequila Inventory Records"
+        indexes = [
+            models.Index(
+                fields=[
+                    "item",
+                    "total_shots_per_tekila",
+                    "selling_price_per_shot",
+                    "threshold",
+                ]
+            )
+        ]
 
 
 class TequilaInventoryRecordsTrunk(models.Model):
@@ -207,21 +273,21 @@ class TequilaInventoryRecordsTrunk(models.Model):
         return f"Tequila Inventory Record Trunk For {self.item.name}"
 
     def get_items_to_sale(self):
-        qs = self.tequila_inventory_record.select_related("item").filter(stock_status="available")
+        qs = self.tequila_inventory_record.select_related("item").filter(
+            stock_status="available"
+        )
         names = []
         # response = []
         for item in qs:
             if item.item.name not in names:
-                return (
-                    {
-                        "id": item.id,
-                        "name": item.item.name,
-                        "selling_price_per_shot": item.selling_price_per_shot,
-                        "total_shots": self.total_items_available,
-                        "stock_status": self.stock_status,
-                        "item_type": "Tequila"
-                    }
-                )
+                return {
+                    "id": item.id,
+                    "name": item.item.name,
+                    "selling_price_per_shot": item.selling_price_per_shot,
+                    "total_shots": self.total_items_available,
+                    "stock_status": self.stock_status,
+                    "item_type": "Tequila",
+                }
 
     def get_last_inventory_record(self):  # -> TequilaInventoryRecord
         records = self.tequila_inventory_record.select_related("item")[::-1]
@@ -233,7 +299,12 @@ class TequilaInventoryRecordsTrunk(models.Model):
 
     @property
     def total_items_added(self) -> int:
-        return self.tequila_inventory_record.aggregate(total=Sum("total_shots_per_tekila"))["total"] or 0
+        return (
+            self.tequila_inventory_record.aggregate(
+                total=Sum("total_shots_per_tekila")
+            )["total"]
+            or 0
+        )
 
     @property
     def total_items_available(self) -> int:
@@ -252,7 +323,9 @@ class TequilaInventoryRecordsTrunk(models.Model):
         return {}
 
     def get_total_available_items(self) -> int:
-        return self.tequila_inventory_record.aggregate(total=Sum("available_quantity"))["total"]
+        return self.tequila_inventory_record.aggregate(total=Sum("available_quantity"))[
+            "total"
+        ]
 
     @property
     def stock_status(self) -> str:
@@ -260,7 +333,9 @@ class TequilaInventoryRecordsTrunk(models.Model):
 
     def get_stock_in(self) -> List[Dict]:
         stock_in: List[Dict] = []
-        for record in self.tequila_inventory_record.select_related("item", "item__unit"):
+        for record in self.tequila_inventory_record.select_related(
+            "item", "item__unit"
+        ):
             temp_stock_in: Dict = {
                 "id": record.id,
                 "quantity": str(record.quantity) + " " + record.item.unit.name,
@@ -274,7 +349,9 @@ class TequilaInventoryRecordsTrunk(models.Model):
                 "stock_status": record.get_stock_status_display(),
                 "date_purchased": record.date_purchased.__str__(),
                 "date_perished": record.date_perished.__str__(),
-                "broken_items": record.tequilainventoryrecordbroken_set.values("quantity_broken", "created_at"),
+                "broken_items": record.tequilainventoryrecordbroken_set.values(
+                    "quantity_broken", "created_at"
+                ),
             }
             stock_in.append(temp_stock_in)
 
@@ -284,10 +361,13 @@ class TequilaInventoryRecordsTrunk(models.Model):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Tequila Inventory Records Trunk"
         verbose_name_plural: str = "Tequila Inventory Records Trunks"
+        indexes = [models.Index(fields=["item", "created_at", "updated_at"])]
 
 
 class TequilaInventoryRecordBroken(models.Model):
-    tequila_inventory_record = models.ForeignKey(TekilaInventoryRecord, on_delete=models.CASCADE)
+    tequila_inventory_record = models.ForeignKey(
+        TekilaInventoryRecord, on_delete=models.CASCADE
+    )
     quantity_broken = models.PositiveIntegerField()
     created_at = models.DateField(auto_now_add=True)
     objects = Manager()
@@ -299,6 +379,15 @@ class TequilaInventoryRecordBroken(models.Model):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Tequila Inventory Record Broken"
         verbose_name_plural: str = "Tequila Inventory Records Broken"
+        indexes = [
+            models.Index(
+                fields=[
+                    "tequila_inventory_record",
+                    "quantity_broken",
+                    "created_at",
+                ]
+            )
+        ]
 
 
 # Sale Management
@@ -318,6 +407,17 @@ class TequilaOrderRecord(BaseOrderRecord):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Tequila Order Record"
         verbose_name_plural: str = "Tequila Order Records"
+        indexes = [
+            models.Index(
+                fields=[
+                    "item",
+                    "quantity",
+                    "order_number",
+                    "created_by",
+                    "date_created",
+                ]
+            )
+        ]
 
 
 class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
@@ -371,7 +471,7 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": int(order.date_created.timestamp())
+                    "date_created": int(order.date_created.timestamp()),
                 },
             )
             for order in self.orders.all()
@@ -383,6 +483,17 @@ class CustomerTequilaOrderRecord(BaseCustomerOrderRecord):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Regular Order Record"
         verbose_name_plural: str = "Customer Regular Order Records"
+        indexes = [
+            models.Index(
+                fields=[
+                    "customer_name",
+                    "customer_phone",
+                    "customer_orders_number",
+                    "created_by",
+                    "date_created",
+                ]
+            )
+        ]
 
 
 class CustomerTequilaOrderRecordPayment(BasePayment):
@@ -422,6 +533,20 @@ class CustomerTequilaOrderRecordPayment(BasePayment):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Tequila Order Record Payment"
         verbose_name_plural: str = "Customer Tequila Order Record Payments"
+        indexes = [
+            models.Index(
+                fields=[
+                    "customer_order_record",
+                    "by_credit",
+                    "payment_started",
+                    "payment_status",
+                    "payment_method",
+                    "amount_paid",
+                    "date_paid",
+                    "created_by",
+                ]
+            )
+        ]
 
 
 class RegularOrderRecord(BaseOrderRecord):
@@ -438,6 +563,17 @@ class RegularOrderRecord(BaseOrderRecord):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Regular Order Record"
         verbose_name_plural: str = "Regular Order Records"
+        indexes = [
+            models.Index(
+                fields=[
+                    "item",
+                    "quantity",
+                    "order_number",
+                    "created_by",
+                    "date_created",
+                ]
+            )
+        ]
 
 
 class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
@@ -466,7 +602,7 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": int(order.date_created.timestamp())
+                    "date_created": int(order.date_created.timestamp()),
                 },
             )
             for order in self.orders.all()
@@ -507,6 +643,17 @@ class CustomerRegularOrderRecord(BaseCustomerOrderRecord):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Regular Order Record"
         verbose_name_plural: str = "Customer Regular Order Records"
+        indexes = [
+            models.Index(
+                fields=[
+                    "customer_name",
+                    "customer_phone",
+                    "customer_orders_number",
+                    "created_by",
+                    "date_created",
+                ]
+            )
+        ]
 
 
 class CustomerRegularOrderRecordPayment(BasePayment):
@@ -532,6 +679,21 @@ class CustomerRegularOrderRecordPayment(BasePayment):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Regular Order Record Payment"
         verbose_name_plural: str = "Customer Regular Order Record Payments"
+        indexes = [
+            models.Index(
+                fields=[
+                    "customer_order_record",
+                    "by_credit",
+                    "payment_started",
+                    "payment_status",
+                    "payment_method",
+                    "amount_paid",
+                    "date_paid",
+                    "date_updated",
+                    "created_by",
+                ]
+            )
+        ]
 
 
 class CreditCustomerRegularOrderRecordPayment(BaseCreditCustomerPayment):
@@ -540,7 +702,9 @@ class CreditCustomerRegularOrderRecordPayment(BaseCreditCustomerPayment):
     )
 
     def get_credit_payable_amount(self) -> int:
-        dish_total_price: int = self.record_order_payment_record.customer_order_record.get_total_price
+        dish_total_price: int = (
+            self.record_order_payment_record.customer_order_record.get_total_price
+        )
 
         return dish_total_price - self.amount_paid
 
@@ -548,6 +712,16 @@ class CreditCustomerRegularOrderRecordPayment(BaseCreditCustomerPayment):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer Regular Order Record Payment"
         verbose_name_plural: str = "Credit Customer Regular Order Record Payments"
+        indexes = [
+            models.Index(
+                fields=[
+                    "record_order_payment_record",
+                    "customer",
+                    "date_created",
+                    "amount_paid",
+                ]
+            )
+        ]
 
 
 class CreditCustomerRegularOrderRecordPaymentHistory(models.Model):
@@ -567,6 +741,15 @@ class CreditCustomerRegularOrderRecordPaymentHistory(models.Model):
         verbose_name_plural: Set[
             str
         ] = "Credit Customer Regular Order Record Payment Histories"
+        indexes = [
+            models.Index(
+                fields=[
+                    "credit_customer_payment",
+                    "amount_paid",
+                    "date_paid",
+                ]
+            )
+        ]
 
 
 class CreditCustomerTequilaOrderRecordPayment(BaseCreditCustomerPayment):
@@ -586,6 +769,16 @@ class CreditCustomerTequilaOrderRecordPayment(BaseCreditCustomerPayment):
     class Meta:
         verbose_name: str = "Credit Customer Tequila Order Record Payment"
         verbose_name_plural: str = "Credit Customer Tequila Order Record Payments"
+        indexes = [
+            models.Index(
+                fields=[
+                    "record_order_payment_record",
+                    "customer",
+                    "date_created",
+                    "amount_paid",
+                ]
+            )
+        ]
 
 
 class CreditCustomerTequilaOrderRecordPaymentHistory(models.Model):
@@ -605,9 +798,19 @@ class CreditCustomerTequilaOrderRecordPaymentHistory(models.Model):
         verbose_name_plural: str = (
             "Credit Customer Tequila Order Record Payment Histories"
         )
+        indexes = [
+            models.Index(
+                fields=[
+                    "credit_customer_payment",
+                    "amount_paid",
+                    "date_paid",
+                ]
+            )
+        ]
 
 
 # Start Major Changes
+
 
 class RegularTequilaOrderRecord(models.Model):
     regular_items = models.ManyToManyField(RegularOrderRecord)
@@ -643,7 +846,7 @@ class RegularTequilaOrderRecord(models.Model):
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": int(order.date_created.timestamp())
+                    "date_created": int(order.date_created.timestamp()),
                 },
             )
             for order in self.regular_items.all()
@@ -663,7 +866,7 @@ class RegularTequilaOrderRecord(models.Model):
                     "order_total_price": order.total,
                     "order_number": order.order_number,
                     "created_by": order.created_by.username,
-                    "date_created": int(order.date_created.timestamp())
+                    "date_created": int(order.date_created.timestamp()),
                 },
             )
             for order in self.tequila_items.all()
@@ -675,17 +878,21 @@ class RegularTequilaOrderRecord(models.Model):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Regular and Tequila Order Record"
         verbose_name_plural: str = "Regular and Tequila Order Records"
+        indexes = [models.Index(fields=["order_number", "created_by", "date_created"])]
 
 
 class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
     regular_tequila_order_record = models.ForeignKey(
         RegularTequilaOrderRecord, on_delete=models.CASCADE
     )
-    status = models.CharField(max_length=7, choices=(
-        ("unpaid", "Not Paid"),
-        ("partial", "Partial Paid"),
-        ("paid", "Fully Paid")
-    ))
+    status = models.CharField(
+        max_length=7,
+        choices=(
+            ("unpaid", "Not Paid"),
+            ("partial", "Partial Paid"),
+            ("paid", "Fully Paid"),
+        ),
+    )
 
     def __str__(self) -> str:
 
@@ -709,8 +916,8 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         if paid_amount:
             return (
-                    self.regular_tequila_order_record.get_total_price()
-                    - self.get_paid_amount()
+                self.regular_tequila_order_record.get_total_price()
+                - self.get_paid_amount()
             )
         return self.regular_tequila_order_record.get_total_price()
 
@@ -720,7 +927,7 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         orders: Dict = {
             "drinks": self.regular_tequila_order_record.get_regular_items_details(),
-            "shots": self.regular_tequila_order_record.get_tequila_items_details()
+            "shots": self.regular_tequila_order_record.get_tequila_items_details(),
         }
 
         res["order_structures"] = orders
@@ -732,14 +939,14 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
         total_payment: int = self.get_paid_amount()
 
         if (
-                total_payment
-                and total_payment >= self.regular_tequila_order_record.get_total_price()
+            total_payment
+            and total_payment >= self.regular_tequila_order_record.get_total_price()
         ):
             payment_status: str = "Fully Paid"
         elif (
-                total_payment
-                and self.regular_tequila_order_record.get_total_price() <= 0
-                or not total_payment
+            total_payment
+            and self.regular_tequila_order_record.get_total_price() <= 0
+            or not total_payment
         ):
             payment_status: str = "Not Paid"
         else:
@@ -754,14 +961,14 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
         total_payment: int = self.get_paid_amount()
 
         if (
-                total_payment
-                and total_payment >= self.regular_tequila_order_record.get_total_price()
+            total_payment
+            and total_payment >= self.regular_tequila_order_record.get_total_price()
         ):
             payment_status: str = "Fully Paid"
         elif (
-                total_payment
-                and self.regular_tequila_order_record.get_total_price() <= 0
-                or not total_payment
+            total_payment
+            and self.regular_tequila_order_record.get_total_price() <= 0
+            or not total_payment
         ):
             payment_status: str = "Not Paid"
         else:
@@ -770,11 +977,9 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
         return payment_status
 
     def get_paid_amount(self) -> int:
-        paid_amount: int = (
-            self.customerregulartequilaorderrecordpayment_set.aggregate(
-                total=Sum("amount_paid")
-            )["total"]
-        )
+        paid_amount: int = self.customerregulartequilaorderrecordpayment_set.aggregate(
+            total=Sum("amount_paid")
+        )["total"]
 
         return paid_amount or 0
 
@@ -783,8 +988,8 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         if paid_amount:
             return (
-                    self.regular_tequila_order_record.get_total_price()
-                    - self.get_paid_amount()
+                self.regular_tequila_order_record.get_total_price()
+                - self.get_paid_amount()
             )
         return self.regular_tequila_order_record.get_total_price()
 
@@ -795,7 +1000,7 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
 
         orders: Dict = {
             "drinks": self.regular_tequila_order_record.get_regular_items_details(),
-            "shots": self.regular_tequila_order_record.get_tequila_items_details()
+            "shots": self.regular_tequila_order_record.get_tequila_items_details(),
         }
 
         res["order_structures"] = orders
@@ -806,6 +1011,19 @@ class CustomerRegularTequilaOrderRecord(BaseCustomerOrderRecord):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Regular Order Record"
         verbose_name_plural: str = "Customer Regular Order Records"
+        indexes = [
+            models.Index(
+                fields=[
+                    "regular_tequila_order_record",
+                    "status",
+                    "customer_name",
+                    "customer_phone",
+                    "customer_orders_number",
+                    "created_by",
+                    "date_created",
+                ]
+            )
+        ]
 
 
 class CustomerRegularTequilaOrderRecordPayment(BasePayment):
@@ -833,6 +1051,20 @@ class CustomerRegularTequilaOrderRecordPayment(BasePayment):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Customer Regular Order Record Payment"
         verbose_name_plural: str = "Customer Regular Order Record Payments"
+        indexes = [
+            models.Index(
+                fields=[
+                    "customer_regular_tequila_order_record",
+                    "by_credit",
+                    "payment_started",
+                    "payment_status",
+                    "payment_method",
+                    "amount_paid",
+                    "date_paid",
+                    "created_by",
+                ]
+            )
+        ]
 
 
 class CreditCustomerRegularTequilaOrderRecordPayment(BaseCreditCustomerPayment):
@@ -851,6 +1083,16 @@ class CreditCustomerRegularTequilaOrderRecordPayment(BaseCreditCustomerPayment):
         ordering: List[str] = ["-id"]
         verbose_name: str = "Credit Customer Regular Order Record Payment"
         verbose_name_plural: str = "Credit Customer Regular Order Record Payments"
+        indexes = [
+            models.Index(
+                fields=[
+                    "record_order_payment_record",
+                    "customer",
+                    "date_created",
+                    "amount_paid",
+                ]
+            )
+        ]
 
 
 class CreditCustomerRegularTequilaOrderRecordPaymentHistory(models.Model):
@@ -872,6 +1114,15 @@ class CreditCustomerRegularTequilaOrderRecordPaymentHistory(models.Model):
         verbose_name_plural: str = (
             "Credit Customer Regular and Tequila Order Record Payment Histories"
         )
+        indexes = [
+            models.Index(
+                fields=[
+                    "credit_customer_payment",
+                    "amount_paid",
+                    "date_paid",
+                ]
+            )
+        ]
 
 
 # End Major Changes

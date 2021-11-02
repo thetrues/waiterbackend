@@ -18,10 +18,10 @@ USER_TYPE_CHOICES = (
 class User(AbstractUser):
     """User class inherit from django default user model"""
 
-    mobile_phone = models.CharField(max_length=14, null=True, blank=True)
+    mobile_phone = models.CharField(max_length=14, null=True, blank=True, db_index=True)
     profile_image = models.ImageField(upload_to="users/", null=True, blank=True)
-    address = models.TextField(null=True, blank=True)
-    user_type = models.CharField(max_length=18, choices=USER_TYPE_CHOICES)
+    address = models.TextField(null=True, blank=True, db_index=True)
+    user_type = models.CharField(max_length=18, choices=USER_TYPE_CHOICES, db_index=True)
 
     def __str__(self) -> str:
         return self.username
